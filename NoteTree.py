@@ -3,6 +3,8 @@ import sys, os
 import wx
 import pickle
 
+# van een ibm site afgeplukt
+
 def MsgBox (window, string, title):
      dlg=wx.MessageDialog(window, string, title, wx.OK)
      dlg.ShowModal()
@@ -51,16 +53,8 @@ class main_window(wx.Frame):
             style=wx.TR_HAS_BUTTONS | wx.TR_EDIT_LABELS | wx.TR_HAS_VARIABLE_ROW_HEIGHT)
         self.root = self.tree.AddRoot("MyNotes")
         self.activeitem = self.root
-        self.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.OnItemExpanded, self.tree)
-        self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed, self.tree)
         self.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelChanging, self.tree)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
-        self.Bind(wx.EVT_TREE_BEGIN_LABEL_EDIT, self.OnTreeLabelEdit, self.tree)
-        self.Bind(wx.EVT_TREE_END_LABEL_EDIT, self.OnTreeLabelEditEnd, self.tree)
-        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemActivated, self.tree)
-        self.tree.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
-        self.tree.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
-        self.tree.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
         self.tree.Bind(wx.EVT_KEY_DOWN, self.on_key)
 
         self.editor = wx.TextCtrl(splitter, -1, style=wx.TE_MULTILINE)
@@ -76,10 +70,6 @@ class main_window(wx.Frame):
         self.Show(True)
 
     def on_key(self,event):
-        # wat voor hotkeys?
-        # tree: up, down , tab to text, F2 rename, del delete
-        # text: ctrl Tab next/prev text, tab to tree
-        # global: ctrl-S(ave), Ctrl-L(oad), Ctrl-H(ide)
         skip = True
         keycode = event.GetKeyCode()
         win = event.GetEventObject()
@@ -131,55 +121,16 @@ class main_window(wx.Frame):
     def OnEvtText(self,event): # seems to work
         self.editor.IsModified = True
 
-    def OnRightDown(self, event): # wil ik hier wat mee?
-        pt = event.GetPosition();
-        item, flags = self.tree.HitTest(pt)
-        if item:
-            print(("OnRightDown: %s, %s, %s\n" % (self.tree.GetItemText(item),
-                type(item), item.__class__)))
-            self.tree.SelectItem(item)
-
-    def OnRightUp(self, event): # wil ik hier wat mee?
-        pt = event.GetPosition();
-        item, flags = self.tree.HitTest(pt)
-        if item:
-            print(("OnRightUp: %s (manually starting label edit)\n" %
-                self.tree.GetItemText(item)))
-            self.tree.EditLabel(item)
-
-    def OnLeftDClick(self, event): # wil ik hier wat mee?
-        pt = event.GetPosition();
-        item, flags = self.tree.HitTest(pt)
-        if item:
-            print(("OnLeftDClick: %s" % self.tree.GetItemText(item)))
-            #~ parent = self.tree.GetItemParent(item)
-            #~ self.tree.SortChildren(parent)
-        event.Skip()
-
-    def OnItemExpanded(self, event): # works (tm)
-        item = event.GetItem()
-        if item:
-            print("OnItemExpanded: %s" % self.tree.GetItemText(item))
-        event.Skip()
-
-    def OnItemCollapsed(self, event): # works (tm)
-        item = event.GetItem()
-        if item:
-            print(("OnItemCollapsed: %s" % self.tree.GetItemText(item)))
-        event.Skip()
-
     def OnSelChanging(self, event=None): # works (tm)
         if event.GetItem() == self.root:
             event.Veto()
 
     def OnSelChanged(self, event=None): # works (tm)
-        print("OnSelChanged"),
         self.check_active()
         self.activate_item(event.GetItem())
         event.Skip()
 
     def open(self):
-        print "open(): {0}".format(self.project_file)
         try:
             file = open(self.project_file)
         except IOError:
@@ -194,7 +145,7 @@ class main_window(wx.Frame):
         for tag, text in data:
             item = self.tree.AppendItem (self.root, tag)
             self.tree.SetItemPyData(item, text)
-        ## self.activeitem = self.root
+        self.activeitem = self.root
         self.editor.Clear()
         self.editor.Enable (False)
         self.tree.Expand (self.root)
@@ -212,7 +163,6 @@ class main_window(wx.Frame):
             self.open()
 
     def save(self,event=None):
-        print "save(): {0}".format(self.project_file)
         if os.path.exists(self.project_file):
             pass # backup maken?
         data = []
@@ -250,11 +200,8 @@ class main_window(wx.Frame):
         item = self.tree.GetSelection()
         if item != self.root:
             prev = self.tree.GetPrevSibling(item)
+            self.activeitem = None
             self.tree.Delete(item)
-            if prev.IsOk:
-                print("changing to previous item")
-                self.activeitem = None
-                self.tree.SelectItem(prev, True)
         else:
             MsgBox(self, "Can't delete root", "Error")
 
@@ -265,23 +212,8 @@ class main_window(wx.Frame):
             self.tree.SetItemText(self.activeitem,dlg.GetValue())
         dlg.Destroy()
 
-    def OnTreeLabelEdit(self, event):
-        item=event.GetItem()
-        if item != self.root:
-            print("OnTreeLabelEdit: %s" % self.tree.GetItemText(item))
-            event.Veto()
-
-    def OnTreeLabelEditEnd(self, event):
-        print("OnTreeLabelEditEnd: %s" % self.tree.GetItemText(item))
-        ## self.projectdirty = True
-
-    def OnTreeItemActivated(self, event):
-        print("OnTreeItemActivated: %",)
-        self.check_active()
-        self.activate_item(event.GetItem())
-
     def check_active(self,message=None): # works, I guess
-        if self.activeitem  and self.activeitem != self.root:
+        if self.activeitem and self.activeitem != self.root:
             self.tree.SetItemBold(self.activeitem, False)
             if self.editor.IsModified:
                 if message:
@@ -290,18 +222,13 @@ class main_window(wx.Frame):
 
     def activate_item(self, item): # works too, it would seem
         self.activeitem = item
-        print(self.tree.GetItemText(item))
         if item != self.root:
-            print "item is not root"
             self.tree.SetItemBold(item, True)
             self.editor.SetValue(self.tree.GetItemPyData(item))
             self.editor.Enable(True)
         else:
-            print "item is root"
             self.editor.Clear()
             self.editor.Enable(False)
-        ## self.editor.SetInsertionPoint(0)
-        ## self.editor.SetFocus()
 
     def helppage(self,event=None):
         info = [
