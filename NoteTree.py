@@ -3,10 +3,8 @@ import sys, os
 import wx
 import pickle
 
-# van een ibm site afgeplukt
-
 def MsgBox (window, string, title):
-     dlg=wx.MessageDialog(window, string, title, wxOK)
+     dlg=wx.MessageDialog(window, string, title, wx.OK)
      dlg.ShowModal()
      dlg.Destroy()
 
@@ -38,6 +36,12 @@ class main_window(wx.Frame):
         self.Connect(id, -1, wx.wxEVT_COMMAND_MENU_SELECTED, self.delete_item)
         id = wx.NewId()
         self.mainmenu.Append (menu, '&Note')
+        menu = wx.Menu()
+        id = wx.NewId()
+        menu.Append(id, '&About/Keys', 'About this application and its keyboard shortcuts')
+        self.Connect(id, -1, wx.wxEVT_COMMAND_MENU_SELECTED, self.helppage)
+        id = wx.NewId()
+        self.mainmenu.Append (menu, '&Help')
         self.SetMenuBar (self.mainmenu)
 
         splitter = wx.SplitterWindow (self, -1, style=wx.NO_3D) # |wx.SP_3D
@@ -49,6 +53,7 @@ class main_window(wx.Frame):
         self.activeitem = self.root
         self.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.OnItemExpanded, self.tree)
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed, self.tree)
+        self.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelChanging, self.tree)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
         self.Bind(wx.EVT_TREE_BEGIN_LABEL_EDIT, self.OnTreeLabelEdit, self.tree)
         self.Bind(wx.EVT_TREE_END_LABEL_EDIT, self.OnTreeLabelEditEnd, self.tree)
@@ -56,15 +61,72 @@ class main_window(wx.Frame):
         self.tree.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
         self.tree.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
         self.tree.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
+        self.tree.Bind(wx.EVT_KEY_DOWN, self.on_key)
 
         self.editor = wx.TextCtrl(splitter, -1, style=wx.TE_MULTILINE)
         self.editor.Enable (0)
         self.editor.Bind(wx.EVT_TEXT, self.OnEvtText)
+        self.editor.Bind(wx.EVT_KEY_DOWN, self.on_key)
 
         splitter.SplitVertically (self.tree, self.editor)
         splitter.SetSashPosition (180, True)
+        splitter.Bind(wx.EVT_KEY_DOWN, self.on_key)
+        self.Bind(wx.EVT_KEY_DOWN, self.on_key)
 
         self.Show(True)
+
+    def on_key(self,event):
+        # wat voor hotkeys?
+        # tree: up, down , tab to text, F2 rename, del delete
+        # text: ctrl Tab next/prev text, tab to tree
+        # global: ctrl-S(ave), Ctrl-L(oad), Ctrl-H(ide)
+        skip = True
+        keycode = event.GetKeyCode()
+        win = event.GetEventObject()
+        if event.GetModifiers() == wx.MOD_CONTROL: # evt.ControlDown()
+            if keycode == ord("L"): # 76: Ctrl-L reload tabs
+                self.reread()
+            elif keycode == ord("N"): # 78: Ctrl-N nieuwe tab
+                self.new_item()
+            elif keycode == ord("D"):
+                self.delete_item()
+            elif keycode == ord("H"): # 72: Ctrl-H Hide/minimize
+                if self.opts["AskBeforeHide"]:
+                    dlg = CheckDialog(self,-1,'Apropos')
+                    ## ,                    style = wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.ICON_INFORMATION)
+                    dlg.ShowModal()
+                    if dlg.Check.GetValue():
+                        self.opts["AskBeforeHide"] = False
+                    dlg.Destroy()
+                self.tbi = wx.TaskBarIcon()
+                self.tbi.SetIcon(self.apoicon,"Click to revive Apropos")
+                wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
+                wx.EVT_TASKBAR_RIGHT_UP(self.tbi, self.revive)
+                self.Hide()
+                ## pass # nog uitzoeken hoe
+            elif keycode == ord("S"): # 83: Ctrl-S saven zonder afsluiten
+                self.save()
+            elif keycode == ord("Q"): # 81: Ctrl-Q afsluiten na saven
+                self.exit()
+        elif keycode == wx.WXK_TAB and win == self.editor:
+            if event.GetModifiers() == wx.MOD_CONTROL:
+                item = self.tree.GetNextSibling(self.activeitem)
+                if item.IsOk:
+                    self.activate_item(item)
+            elif event.GetModifiers() == wx.MOD_CONTROL | wx.MOD_SHIFT:
+                item = self.tree.GetPrevSibling(self.activeitem)
+                if item.IsOk:
+                    self.activate_item(item)
+        elif keycode == wx.WXK_F1:
+            self.helppage()
+        elif keycode == wx.WXK_F2 and win == self.tree:
+            self.asktitle()
+        elif keycode == wx.WXK_DELETE and win == self.tree:
+            self.delete_item()
+        elif keycode == wx.WXK_ESCAPE:
+            self.exit()
+        if event and skip:
+            event.Skip()
 
     def OnEvtText(self,event): # seems to work
         self.editor.IsModified = True
@@ -106,7 +168,11 @@ class main_window(wx.Frame):
             print(("OnItemCollapsed: %s" % self.tree.GetItemText(item)))
         event.Skip()
 
-    def OnSelChanged(self, event): # works (tm)
+    def OnSelChanging(self, event=None): # works (tm)
+        if event.GetItem() == self.root:
+            event.Veto()
+
+    def OnSelChanged(self, event=None): # works (tm)
         print("OnSelChanged"),
         self.check_active()
         self.activate_item(event.GetItem())
@@ -128,15 +194,18 @@ class main_window(wx.Frame):
         for tag, text in data:
             item = self.tree.AppendItem (self.root, tag)
             self.tree.SetItemPyData(item, text)
-        self.activeitem = self.root
-        self.tree.Expand (self.root)
+        ## self.activeitem = self.root
         self.editor.Clear()
         self.editor.Enable (False)
+        self.tree.Expand (self.root)
+        item, dummy = self.tree.GetFirstChild(self.root)
+        self.tree.SelectItem(item)
+        self.tree.SetFocus()
         ## self.editor.SetInsertionPoint(0)
         ## self.editor.SetFocus()
         self.projectdirty = False
 
-    def reread(self,vent=None):
+    def reread(self,event=None):
         dlg=wx.MessageDialog(self, 'OK to reload?', 'NoteTree', wx.OK | wx.CANCEL)
         result = dlg.ShowModal()
         if result == wx.ID_OK:
@@ -147,12 +216,11 @@ class main_window(wx.Frame):
         if os.path.exists(self.project_file):
             pass # backup maken?
         data = []
-        root = self.tree.GetRootItem()
-        tag, cookie = self.tree.GetFirstChild(root)
+        tag, cookie = self.tree.GetFirstChild(self.root)
         while tag.IsOk():
             data.append((self.tree.GetItemText(tag),
                 self.tree.GetItemPyData(tag)))
-            tag, cookie = self.tree.GetNextChild(root, cookie)
+            tag, cookie = self.tree.GetNextChild(self.root, cookie)
         file = open(self.project_file,"w")
         pickle.dump(data, file)
         file.close()
@@ -184,9 +252,18 @@ class main_window(wx.Frame):
             prev = self.tree.GetPrevSibling(item)
             self.tree.Delete(item)
             if prev.IsOk:
+                print("changing to previous item")
+                self.activeitem = None
                 self.tree.SelectItem(prev, True)
         else:
-            MsgBox(self, "can't delete root", "Error")
+            MsgBox(self, "Can't delete root", "Error")
+
+    def asktitle(self):
+        dlg = wx.TextEntryDialog(self, 'Nieuwe titel voor het huidige item:',
+                'NoteTree', self.tree.GetItemText(self.activeitem))
+        if dlg.ShowModal() == wx.ID_OK:
+            self.tree.SetItemText(self.activeitem,dlg.GetValue())
+        dlg.Destroy()
 
     def OnTreeLabelEdit(self, event):
         item=event.GetItem()
@@ -204,7 +281,7 @@ class main_window(wx.Frame):
         self.activate_item(event.GetItem())
 
     def check_active(self,message=None): # works, I guess
-        if self.activeitem != self.root:
+        if self.activeitem  and self.activeitem != self.root:
             self.tree.SetItemBold(self.activeitem, False)
             if self.editor.IsModified:
                 if message:
@@ -226,17 +303,40 @@ class main_window(wx.Frame):
         ## self.editor.SetInsertionPoint(0)
         ## self.editor.SetFocus()
 
+    def helppage(self,event=None):
+        info = [
+            "NoteTree door Albert Visser",
+            "Electronisch notitieblokje",
+            "",
+            "Ctrl-N                   - nieuwe notitie",
+            "Ctrl-Tab    in editor of"
+            " CursorDown in tree      - volgende notitie",
+            "Ctrl-Shift-Tab in editor of"
+            " CursorUp   in tree      - vorige notitie",
+            "Ctrl-D of Delete in tree - verwijder notitie",
+            "Ctrl-S                   - alles opslaan",
+            "Ctrl-L                   - alles opnieuw laden",
+            "Ctrl-Q, Esc              - opslaan en sluiten",
+            "Ctrl-H                   - verbergen in system tray",
+            "",
+            "F1                       - deze (help)informatie",
+            "F2                       - wijzig notitie titel",
+            ]
+        dlg = wx.MessageDialog(self, "\n".join(info),'Apropos',
+            wx.OK | wx.ICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy()
+
 class App(wx.App):
     def __init__(self,fn):
         self.fn = fn
         wx.App.__init__(self,False)
-
-    def OnInit(self):
+    ## def OnInit(self):
         frame = main_window(None, -1, "NoteTree - " + self.fn)
         self.SetTopWindow(frame)
         frame.project_file = self.fn
         frame.open()
-        return True
+        ## return True
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
