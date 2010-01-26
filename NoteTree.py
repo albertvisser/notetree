@@ -29,7 +29,7 @@ class main_window(wx.Frame):
         self.Connect(id, -1, wx.wxEVT_COMMAND_MENU_SELECTED, self.save)
         id = wx.NewId()
         menu.Append(id, 'e&Xit', 'Exit program')
-        self.Connect(id, -1, wx.wxEVT_COMMAND_MENU_SELECTED, self.exit)
+        self.Connect(id, -1, wx.wxEVT_COMMAND_MENU_SELECTED, self.afsl)
         self.mainmenu.Append (menu, '&Main')
         menu = wx.Menu()
         id = wx.NewId()
@@ -99,7 +99,7 @@ class main_window(wx.Frame):
             elif keycode == ord("S"): # 83: Ctrl-S saven zonder afsluiten
                 self.save()
             elif keycode == ord("Q"): # 81: Ctrl-Q afsluiten na saven
-                self.exit()
+                self.afsl()
         elif keycode == wx.WXK_TAB and win == self.editor:
             if event.GetModifiers() == wx.MOD_CONTROL:
                 item = self.tree.GetNextSibling(self.activeitem)
@@ -116,7 +116,7 @@ class main_window(wx.Frame):
         elif keycode == wx.WXK_DELETE and win == self.tree:
             self.delete_item()
         elif keycode == wx.WXK_ESCAPE:
-            self.exit()
+            self.afsl()
         if event and skip:
             event.Skip()
 
@@ -167,6 +167,8 @@ class main_window(wx.Frame):
     def save(self,event=None):
         if os.path.exists(self.project_file):
             pass # backup maken?
+        # even zorgen dat de editor inhoud geassocieerd wordt
+        self.check_active()
         data = []
         tag, cookie = self.tree.GetFirstChild(self.root)
         while tag.IsOk():
@@ -177,7 +179,7 @@ class main_window(wx.Frame):
         pickle.dump(data, file)
         file.close()
 
-    def exit(self,event=None):
+    def afsl(self,event=None):
         self.save()
         self.Close()
 
