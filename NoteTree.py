@@ -14,6 +14,8 @@ class main_window(wx.Frame):
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, -1, title, size = (800, 500),
                          style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
+        self.nt_icon = wx.Icon("notetree.ico",wx.BITMAP_TYPE_ICO)
+        self.SetIcon(self.nt_icon)
         mainwindow = self
         self.sb = self.CreateStatusBar()
 
@@ -202,6 +204,7 @@ class main_window(wx.Frame):
             prev = self.tree.GetPrevSibling(item)
             self.activeitem = None
             self.tree.Delete(item)
+            self.activate_item(prev)
         else:
             MsgBox(self, "Can't delete root", "Error")
 
