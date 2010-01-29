@@ -73,10 +73,10 @@ class main_window(wx.Frame):
         self.mainmenu.Append (menu, '&Help')
         self.SetMenuBar (self.mainmenu)
 
-        splitter = wx.SplitterWindow (self, -1, style=wx.NO_3D) # |wx.SP_3D
-        splitter.SetMinimumPaneSize (1)
+        self.splitter = wx.SplitterWindow (self, -1, style=wx.NO_3D) # |wx.SP_3D
+        self.splitter.SetMinimumPaneSize (1)
 
-        self.tree = wx.TreeCtrl (splitter, -1,
+        self.tree = wx.TreeCtrl (self.splitter, -1,
             style=wx.TR_HAS_BUTTONS | wx.TR_EDIT_LABELS | wx.TR_HAS_VARIABLE_ROW_HEIGHT)
         self.root = self.tree.AddRoot("MyNotes")
         self.activeitem = self.root
@@ -84,14 +84,14 @@ class main_window(wx.Frame):
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
         self.tree.Bind(wx.EVT_KEY_DOWN, self.on_key)
 
-        self.editor = wx.TextCtrl(splitter, -1, style=wx.TE_MULTILINE)
-        self.editor.Enable (0)
+        self.editor = wx.TextCtrl(self.splitter, -1, style=wx.TE_MULTILINE)
+        self.editor.Enable(0)
         self.editor.Bind(wx.EVT_TEXT, self.OnEvtText)
         self.editor.Bind(wx.EVT_KEY_DOWN, self.on_key)
 
-        splitter.SplitVertically (self.tree, self.editor)
-        splitter.SetSashPosition (180, True)
-        splitter.Bind(wx.EVT_KEY_DOWN, self.on_key)
+        self.splitter.SplitVertically(self.tree, self.editor)
+        self.splitter.SetSashPosition(180, True)
+        self.splitter.Bind(wx.EVT_KEY_DOWN, self.on_key)
         self.Bind(wx.EVT_KEY_DOWN, self.on_key)
 
         self.Show(True)
@@ -156,7 +156,9 @@ class main_window(wx.Frame):
         event.Skip()
 
     def open(self):
-        self.opts = {"AskBeforeHide":True,"ActiveItem":0}
+        self.opts = {
+            "AskBeforeHide": True,"ActiveItem": 0, "SashPosition": 180,
+            "ScreenSize": (800, 500),}
         self.nt_data = {}
         try:
             file = open(self.project_file)
@@ -169,7 +171,7 @@ class main_window(wx.Frame):
         file.close()
         self.tree.DeleteAllItems()
         self.root = self.tree.AddRoot(os.path.splitext(os.path.split(self.project_file)[1])[0])
-        self.activeitem = self.root
+        item_to_activate = self.root
         self.editor.Clear()
         self.editor.Enable (False)
         for key, value in self.nt_data.items():
@@ -182,6 +184,8 @@ class main_window(wx.Frame):
                 self.tree.SetItemPyData(item, text)
                 if key == self.opts["ActiveItem"]:
                     item_to_activate = item
+        self.SetSize(self.opts["ScreenSize"])
+        self.splitter.SetSashPosition(self.opts["SashPosition"], True)
         self.tree.Expand (self.root)
         self.tree.SelectItem(item_to_activate)
         self.tree.SetFocus()
@@ -194,6 +198,8 @@ class main_window(wx.Frame):
 
     def save(self,event=None):
         self.check_active() # even zorgen dat de editor inhoud geassocieerd wordt
+        self.opts["ScreenSize"] = self.GetSize()
+        self.opts["SashPosition"] = self.splitter.GetSashPosition()
         ky = 0
         self.nt_data = {ky: self.opts}
         tag, cookie = self.tree.GetFirstChild(self.root)
@@ -205,7 +211,6 @@ class main_window(wx.Frame):
                 self.tree.GetItemPyData(tag))
             tag, cookie = self.tree.GetNextChild(self.root, cookie)
         file = open(self.project_file,"w")
-        print self.nt_data
         pickle.dump(self.nt_data, file)
         file.close()
 
