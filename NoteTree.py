@@ -10,6 +10,31 @@ def MsgBox (window, string, title):
      dlg.ShowModal()
      dlg.Destroy()
 
+class CheckDialog(wx.Dialog):
+    def __init__(self,parent,id,title, size=(-1,120), pos=wx.DefaultPosition,
+            style=wx.DEFAULT_DIALOG_STYLE):
+        wx.Dialog.__init__(self,parent,id,title,pos,size,style)
+        pnl = wx.Panel(self,-1)
+        sizer0 = wx.BoxSizer(wx.VERTICAL)
+        sizer0.Add(wx.StaticText(pnl,-1,"\n".join((
+                "NoteTree gaat nu slapen in de System tray",
+                "Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken"
+                ))),1,wx.ALL,5)
+        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        self.Check = wx.CheckBox(pnl, -1, "Deze melding niet meer laten zien")
+        sizer1.Add(self.Check,0,wx.EXPAND)
+        sizer0.Add(sizer1,0,wx.ALIGN_CENTER_HORIZONTAL)
+        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        self.bOk = wx.Button(pnl,id=wx.ID_OK)
+        ## self.bOk.Bind(wx.EVT_BUTTON,self.on_ok)
+        sizer1.Add(self.bOk,0,wx.EXPAND | wx.ALL, 2)
+        sizer0.Add(sizer1,0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL,5)
+        pnl.SetSizer(sizer0)
+        pnl.SetAutoLayout(True)
+        sizer0.Fit(pnl)
+        sizer0.SetSizeHints(pnl)
+        pnl.Layout()
+
 class main_window(wx.Frame):
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, -1, title, size = (800, 500),
@@ -84,18 +109,16 @@ class main_window(wx.Frame):
                 self.delete_item()
             elif keycode == ord("H"): # 72: Ctrl-H Hide/minimize
                 if self.opts["AskBeforeHide"]:
-                    dlg = CheckDialog(self,-1,'Apropos')
-                    ## ,                    style = wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.ICON_INFORMATION)
+                    dlg = CheckDialog(self,-1,'NoteTree')
                     dlg.ShowModal()
                     if dlg.Check.GetValue():
                         self.opts["AskBeforeHide"] = False
                     dlg.Destroy()
                 self.tbi = wx.TaskBarIcon()
-                self.tbi.SetIcon(self.apoicon,"Click to revive Apropos")
+                self.tbi.SetIcon(self.nt_icon,"Click to revive NoteTree")
                 wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
                 wx.EVT_TASKBAR_RIGHT_UP(self.tbi, self.revive)
                 self.Hide()
-                ## pass # nog uitzoeken hoe
             elif keycode == ord("S"): # 83: Ctrl-S saven zonder afsluiten
                 self.save()
             elif keycode == ord("Q"): # 81: Ctrl-Q afsluiten na saven
@@ -133,30 +156,35 @@ class main_window(wx.Frame):
         event.Skip()
 
     def open(self):
+        self.opts = {"AskBeforeHide":True,"ActiveItem":0}
+        self.nt_data = {}
         try:
             file = open(self.project_file)
         except IOError:
             return
         try:
-            data = pickle.load(file)
+            self.nt_data = pickle.load(file)
         except EOFError:
             return
         file.close()
         self.tree.DeleteAllItems()
         self.root = self.tree.AddRoot(os.path.splitext(os.path.split(self.project_file)[1])[0])
-        for tag, text in data:
-            item = self.tree.AppendItem (self.root, tag)
-            self.tree.SetItemPyData(item, text)
         self.activeitem = self.root
         self.editor.Clear()
         self.editor.Enable (False)
+        for key, value in self.nt_data.items():
+            if key == 0 and "AskBeforeHide" in value:
+                for key,val in value.items():
+                    self.opts[key] = val
+            else:
+                tag, text = value
+                item = self.tree.AppendItem (self.root, tag)
+                self.tree.SetItemPyData(item, text)
+                if key == self.opts["ActiveItem"]:
+                    item_to_activate = item
         self.tree.Expand (self.root)
-        item, dummy = self.tree.GetFirstChild(self.root)
-        self.tree.SelectItem(item)
+        self.tree.SelectItem(item_to_activate)
         self.tree.SetFocus()
-        ## self.editor.SetInsertionPoint(0)
-        ## self.editor.SetFocus()
-        self.projectdirty = False
 
     def reread(self,event=None):
         dlg=wx.MessageDialog(self, 'OK to reload?', 'NoteTree', wx.OK | wx.CANCEL)
@@ -165,18 +193,20 @@ class main_window(wx.Frame):
             self.open()
 
     def save(self,event=None):
-        if os.path.exists(self.project_file):
-            pass # backup maken?
-        # even zorgen dat de editor inhoud geassocieerd wordt
-        self.check_active()
-        data = []
+        self.check_active() # even zorgen dat de editor inhoud geassocieerd wordt
+        ky = 0
+        self.nt_data = {ky: self.opts}
         tag, cookie = self.tree.GetFirstChild(self.root)
         while tag.IsOk():
-            data.append((self.tree.GetItemText(tag),
-                self.tree.GetItemPyData(tag)))
+            ky += 1
+            if tag == self.activeitem:
+                self.opts["ActiveItem"] = ky
+            self.nt_data[ky] = (self.tree.GetItemText(tag),
+                self.tree.GetItemPyData(tag))
             tag, cookie = self.tree.GetNextChild(self.root, cookie)
         file = open(self.project_file,"w")
-        pickle.dump(data, file)
+        print self.nt_data
+        pickle.dump(self.nt_data, file)
         file.close()
 
     def afsl(self,event=None):
@@ -209,6 +239,10 @@ class main_window(wx.Frame):
             self.activate_item(prev)
         else:
             MsgBox(self, "Can't delete root", "Error")
+
+    def revive(self,event=None):
+        self.Show()
+        self.tbi.Destroy()
 
     def asktitle(self):
         dlg = wx.TextEntryDialog(self, 'Nieuwe titel voor het huidige item:',
