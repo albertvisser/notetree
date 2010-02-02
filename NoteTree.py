@@ -44,34 +44,31 @@ class main_window(wx.Frame):
         mainwindow = self
         self.sb = self.CreateStatusBar()
 
-        self.mainmenu = wx.MenuBar()
-        menu = wx.Menu()
-        id = wx.NewId()
-        menu.Append(id, '&ReRead', 'Reread .ini file')
-        self.Connect(id, -1, wx.wxEVT_COMMAND_MENU_SELECTED, self.reread)
-        id = wx.NewId()
-        menu.Append(id, '&Save', 'Save .ini file')
-        self.Connect(id, -1, wx.wxEVT_COMMAND_MENU_SELECTED, self.save)
-        id = wx.NewId()
-        menu.Append(id, 'e&Xit', 'Exit program')
-        self.Connect(id, -1, wx.wxEVT_COMMAND_MENU_SELECTED, self.afsl)
-        self.mainmenu.Append (menu, '&Main')
-        menu = wx.Menu()
-        id = wx.NewId()
-        menu.Append(id, '&New', 'Add note')
-        self.Connect(id, -1, wx.wxEVT_COMMAND_MENU_SELECTED, self.new_item)
-        id = wx.NewId()
-        menu.Append(id, '&Delete', 'Remove note')
-        self.Connect(id, -1, wx.wxEVT_COMMAND_MENU_SELECTED, self.delete_item)
-        id = wx.NewId()
-        self.mainmenu.Append (menu, '&Note')
-        menu = wx.Menu()
-        id = wx.NewId()
-        menu.Append(id, '&About/Keys', 'About this application and its keyboard shortcuts')
-        self.Connect(id, -1, wx.wxEVT_COMMAND_MENU_SELECTED, self.helppage)
-        id = wx.NewId()
-        self.mainmenu.Append (menu, '&Help')
-        self.SetMenuBar (self.mainmenu)
+        self.menudata = (
+            ("&Main",(
+                    ("Re&Load (Ctrl-L)",self.reread, 'Reread .ini file'),
+                    ("&Save (Ctrl-S)",self.save, 'Save .ini file'),
+                    ("",None,None),
+                    ("&Root title (Shift-F2)", self.rename, 'Rename root'),
+                    ("",None,None),
+                    ("&Hide (Ctrl-H)", self.hide, 'verbergen in system tray'),
+                    ("",None,None),
+                    ("e&Xit (Ctrl-Q, Esc)",self.afsl, 'Exit program'),
+                ),),
+            ("&Note",(
+                    ("&New (Ctrl-N)", self.new_item, 'Add note'),
+                    ("&Delete (Ctrl-D, Del)", self.delete_item, 'Remove note'),
+                    ("Note &Title (F2)",self.ask_title, 'Rename current note'),
+                    ("",None,None),
+                    ("&Forward (Ctrl-PgDn)",self.next_note,'View next note'),
+                    ("&Back (Ctrl-PgUp)",self.prev_note,'View previous note'),
+                ),),
+            ("&Help",(
+                    ("&About",self.info_page, 'About this application'),
+                    ("&Keys (F1)",self.help_page, 'Keyboard shortcuts'),
+                ),),
+            )
+        self.create_menu()
 
         self.splitter = wx.SplitterWindow (self, -1, style=wx.NO_3D) # |wx.SP_3D
         self.splitter.SetMinimumPaneSize (1)
@@ -96,6 +93,21 @@ class main_window(wx.Frame):
 
         self.Show(True)
 
+    def create_menu(self):
+        menuBar = wx.MenuBar()
+        for item, data in self.menudata:
+            menu_label = item
+            submenu = wx.Menu()
+            for label, handler, info in data:
+                if label != "":
+                    menu_item = wx.MenuItem(submenu, -1, label, info)
+                    self.Bind(wx.EVT_MENU, handler, menu_item)
+                else:
+                    menu_item = wx.MenuItem(submenu, wx.ID_SEPARATOR)
+                submenu.AppendItem(menu_item)
+            menuBar.Append(submenu, menu_label)
+        self.SetMenuBar(menuBar)
+
     def on_key(self,event):
         skip = True
         keycode = event.GetKeyCode()
@@ -108,34 +120,22 @@ class main_window(wx.Frame):
             elif keycode == ord("D"):
                 self.delete_item()
             elif keycode == ord("H"): # 72: Ctrl-H Hide/minimize
-                if self.opts["AskBeforeHide"]:
-                    dlg = CheckDialog(self,-1,'NoteTree')
-                    dlg.ShowModal()
-                    if dlg.Check.GetValue():
-                        self.opts["AskBeforeHide"] = False
-                    dlg.Destroy()
-                self.tbi = wx.TaskBarIcon()
-                self.tbi.SetIcon(self.nt_icon,"Click to revive NoteTree")
-                wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
-                wx.EVT_TASKBAR_RIGHT_UP(self.tbi, self.revive)
-                self.Hide()
+                self.hide()
             elif keycode == ord("S"): # 83: Ctrl-S saven zonder afsluiten
                 self.save()
             elif keycode == ord("Q"): # 81: Ctrl-Q afsluiten na saven
                 self.afsl()
-        elif keycode == wx.WXK_TAB and win == self.editor:
-            if event.GetModifiers() == wx.MOD_CONTROL:
-                item = self.tree.GetNextSibling(self.activeitem)
-                if item.IsOk:
-                    self.activate_item(item)
-            elif event.GetModifiers() == wx.MOD_CONTROL | wx.MOD_SHIFT:
-                item = self.tree.GetPrevSibling(self.activeitem)
-                if item.IsOk:
-                    self.activate_item(item)
+            elif keycode == wx.WXK_PAGEDOWN: #  and win == self.editor:
+                self.next_note()
+            elif keycode == wx.WXK_PAGEUP: #  and win == self.editor:
+                self.prev_note()
         elif keycode == wx.WXK_F1:
-            self.helppage()
-        elif keycode == wx.WXK_F2 and win == self.tree:
-            self.asktitle()
+            self.help_page()
+        elif keycode == wx.WXK_F2: # and win == self.tree:
+            if event.GetModifiers() == wx.MOD_SHIFT:
+                self.rename()
+            else:
+                self.ask_title()
         elif keycode == wx.WXK_DELETE and win == self.tree:
             self.delete_item()
         elif keycode == wx.WXK_ESCAPE:
@@ -158,7 +158,7 @@ class main_window(wx.Frame):
     def open(self):
         self.opts = {
             "AskBeforeHide": True,"ActiveItem": 0, "SashPosition": 180,
-            "ScreenSize": (800, 500),}
+            "ScreenSize": (800, 500), "RootTitle": "MyNotes"}
         self.nt_data = {}
         try:
             file = open(self.project_file)
@@ -184,6 +184,7 @@ class main_window(wx.Frame):
                 self.tree.SetItemPyData(item, text)
                 if key == self.opts["ActiveItem"]:
                     item_to_activate = item
+        self.tree.SetItemText(self.root,self.opts["RootTitle"])
         self.SetSize(self.opts["ScreenSize"])
         self.splitter.SetSashPosition(self.opts["SashPosition"], True)
         self.tree.Expand (self.root)
@@ -196,7 +197,7 @@ class main_window(wx.Frame):
         if result == wx.ID_OK:
             self.open()
 
-    def save(self,event=None):
+    def save(self, event=None):
         self.check_active() # even zorgen dat de editor inhoud geassocieerd wordt
         self.opts["ScreenSize"] = self.GetSize()
         self.opts["SashPosition"] = self.splitter.GetSashPosition()
@@ -214,7 +215,31 @@ class main_window(wx.Frame):
         pickle.dump(self.nt_data, file)
         file.close()
 
-    def afsl(self,event=None):
+    def rename(self, event=None):
+        dlg = wx.TextEntryDialog(self, 'Geef nieuwe titel voor het hoofditem:',
+                'NoteTree', self.tree.GetItemText(self.root))
+        if dlg.ShowModal() == wx.ID_OK:
+            self.tree.SetItemText(self.root,dlg.GetValue())
+        dlg.Destroy()
+
+    def hide(self, event=None):
+        if self.opts["AskBeforeHide"]:
+            dlg = CheckDialog(self,-1,'NoteTree')
+            dlg.ShowModal()
+            if dlg.Check.GetValue():
+                self.opts["AskBeforeHide"] = False
+            dlg.Destroy()
+        self.tbi = wx.TaskBarIcon()
+        self.tbi.SetIcon(self.nt_icon,"Click to revive NoteTree")
+        wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
+        wx.EVT_TASKBAR_RIGHT_UP(self.tbi, self.revive)
+        self.Hide()
+
+    def revive(self, event=None):
+        self.Show()
+        self.tbi.Destroy()
+
+    def afsl(self, event=None):
         self.save()
         self.Close()
 
@@ -245,16 +270,26 @@ class main_window(wx.Frame):
         else:
             MsgBox(self, "Can't delete root", "Error")
 
-    def revive(self,event=None):
-        self.Show()
-        self.tbi.Destroy()
-
-    def asktitle(self):
+    def ask_title(self):
         dlg = wx.TextEntryDialog(self, 'Nieuwe titel voor het huidige item:',
                 'NoteTree', self.tree.GetItemText(self.activeitem))
         if dlg.ShowModal() == wx.ID_OK:
             self.tree.SetItemText(self.activeitem,dlg.GetValue())
         dlg.Destroy()
+
+    def next_note(self, event=None):
+        item = self.tree.GetNextSibling(self.activeitem)
+        if item.IsOk():
+            self.activate_item(item)
+        else:
+            MsgBox(self, "Er is geen volgende", "Error")
+
+    def prev_note(self, event=None):
+        item = self.tree.GetPrevSibling(self.activeitem)
+        if item.IsOk():
+            self.activate_item(item)
+        else:
+            MsgBox(self, "Er is geen vorige", "Error")
 
     def check_active(self,message=None): # works, I guess
         if self.activeitem and self.activeitem != self.root:
@@ -274,15 +309,22 @@ class main_window(wx.Frame):
             self.editor.Clear()
             self.editor.Enable(False)
 
-    def helppage(self,event=None):
+    def info_page(self,event=None):
         info = [
             "NoteTree door Albert Visser",
             "Electronisch notitieblokje",
-            "",
+            ]
+        dlg = wx.MessageDialog(self, "\n".join(info),'Apropos',
+            wx.OK | wx.ICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    def help_page(self,event=None):
+        info = [
             "Ctrl-N                   - nieuwe notitie",
-            "Ctrl-Tab    in editor of"
+            "Ctrl-PgDn    in editor of"
             " CursorDown in tree      - volgende notitie",
-            "Ctrl-Shift-Tab in editor of"
+            "Ctrl-PgUp    in editor of"
             " CursorUp   in tree      - vorige notitie",
             "Ctrl-D of Delete in tree - verwijder notitie",
             "Ctrl-S                   - alles opslaan",
@@ -292,6 +334,7 @@ class main_window(wx.Frame):
             "",
             "F1                       - deze (help)informatie",
             "F2                       - wijzig notitie titel",
+            "Shift-F2                 - wijzig root titel",
             ]
         dlg = wx.MessageDialog(self, "\n".join(info),'Apropos',
             wx.OK | wx.ICON_INFORMATION)
@@ -313,6 +356,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         INI = sys.argv[1]
     else:
-        INI = 'MyMan.ini'
+        INI = 'NoteTree.ini'
     app = App(INI)
     app.MainLoop()
