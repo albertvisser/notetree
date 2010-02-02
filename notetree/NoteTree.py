@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, os
+import os
 import wx
 import pickle
 
@@ -39,7 +39,8 @@ class main_window(wx.Frame):
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, -1, title, size = (800, 500),
                          style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
-        self.nt_icon = wx.Icon("notetree.ico",wx.BITMAP_TYPE_ICO)
+        self.nt_icon = wx.Icon(os.path.join(
+            os.path.dirname(__file__),"notetree.ico"),wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.nt_icon)
         mainwindow = self
         self.sb = self.CreateStatusBar()
@@ -345,17 +346,11 @@ class App(wx.App):
     def __init__(self,fn):
         self.fn = fn
         wx.App.__init__(self,False)
-    ## def OnInit(self):
         frame = main_window(None, -1, "NoteTree - " + self.fn)
         self.SetTopWindow(frame)
         frame.project_file = self.fn
         frame.open()
-        ## return True
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        INI = sys.argv[1]
-    else:
-        INI = 'NoteTree.ini'
-    app = App(INI)
+    app = App('NoteTree.ini')
     app.MainLoop()
