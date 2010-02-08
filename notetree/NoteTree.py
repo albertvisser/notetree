@@ -249,11 +249,9 @@ class main_window(wx.Frame):
         dlg = wx.TextEntryDialog (self, "Geef een titel op voor het nieuwe item", "Notetree")
         if dlg.ShowModal() == wx.ID_OK:
             text = dlg.GetValue()
-            self.check_active()
             item = self.tree.AppendItem (self.root, text)
-            self.activeitem = item
             self.tree.SetItemPyData(item, "")
-
+            self.tree.SelectItem(item)
             self.tree.Expand (self.root)
             self.editor.Clear()
             self.editor.Enable(True)
@@ -281,14 +279,14 @@ class main_window(wx.Frame):
     def next_note(self, event=None):
         item = self.tree.GetNextSibling(self.activeitem)
         if item.IsOk():
-            self.activate_item(item)
+            self.tree.SelectItem(item)
         else:
             MsgBox(self, "Er is geen volgende", "Error")
 
     def prev_note(self, event=None):
         item = self.tree.GetPrevSibling(self.activeitem)
         if item.IsOk():
-            self.activate_item(item)
+            self.tree.SelectItem(item)
         else:
             MsgBox(self, "Er is geen vorige", "Error")
 
