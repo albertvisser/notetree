@@ -313,7 +313,7 @@ class main_window(wx.Frame):
             "NoteTree door Albert Visser",
             "Electronisch notitieblokje",
             ]
-        dlg = wx.MessageDialog(self, "\n".join(info),'Apropos',
+        dlg = wx.MessageDialog(self, "\n".join(info),'NoteTree',
             wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
@@ -335,7 +335,7 @@ class main_window(wx.Frame):
             "F2                       - wijzig notitie titel",
             "Shift-F2                 - wijzig root titel",
             ]
-        dlg = wx.MessageDialog(self, "\n".join(info),'Apropos',
+        dlg = wx.MessageDialog(self, "\n".join(info),'NoteTree',
             wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
