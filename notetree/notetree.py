@@ -265,7 +265,11 @@ class main_window(wx.Frame):
             prev = self.tree.GetPrevSibling(item)
             self.activeitem = None
             self.tree.Delete(item)
-            self.activate_item(prev)
+            if self.tree.GetItemText(prev):
+                self.activate_item(prev)
+            else:
+                self.editor.Clear()
+                self.editor.Enable(False)
         else:
             MsgBox(self, "Can't delete root", "Error")
 
