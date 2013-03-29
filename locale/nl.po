@@ -1,0 +1,208 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2013-03-29 12:52+CET\n"
+"PO-Revision-Date: 2013-03-29 13:19+0100\n"
+"Last-Translator: Albert Visser <albert@lemoncurry>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+#: notetree_intl.py:29
+msgid "sleep_message"
+msgstr ""
+"NoteTree gaat nu slapen in de System tray\n"
+"Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken"
+
+#: notetree_intl.py:31
+msgid "hide_message"
+msgstr "Deze melding niet meer laten zien"
+
+#: notetree_intl.py:89
+msgid "m_main"
+msgstr "&Main"
+
+#: notetree_intl.py:90
+msgid "h_reload"
+msgstr "ini file opnieuw lezen"
+
+#: notetree_intl.py:90
+msgid "m_reload"
+msgstr "&Laden (Ctrl-L)"
+
+#: notetree_intl.py:91
+msgid "h_save"
+msgstr "ini file opslaan"
+
+#: notetree_intl.py:91
+msgid "m_save"
+msgstr "Op&slaan (Ctrl-S)"
+
+#: notetree_intl.py:93
+msgid "h_root"
+msgstr "Hoofditem hernoemen"
+
+#: notetree_intl.py:93
+msgid "m_root"
+msgstr "Hoofditem &titel (Shift-F2)"
+
+#: notetree_intl.py:95
+msgid "h_hide"
+msgstr "verbergen in system tray"
+
+#: notetree_intl.py:95
+msgid "m_hide"
+msgstr "&Verberg (Ctrl-H)"
+
+#: notetree_intl.py:96
+msgid "h_lang"
+msgstr "Wijzig de taal van het programma"
+
+#: notetree_intl.py:96
+msgid "m_lang"
+msgstr "T&aal"
+
+#: notetree_intl.py:98
+msgid "h_exit"
+msgstr "programma afsluiten"
+
+#: notetree_intl.py:98
+msgid "m_exit"
+msgstr "e&Xit (Ctrl-Q, Esc)"
+
+#: notetree_intl.py:100
+msgid "m_note"
+msgstr "&Notitie"
+
+#: notetree_intl.py:101
+msgid "h_new"
+msgstr "Notitie toevoegen"
+
+#: notetree_intl.py:101
+msgid "m_new"
+msgstr "&Nieuw (Ctrl-N)"
+
+#: notetree_intl.py:102
+msgid "h_delete"
+msgstr "notitie verwijderen"
+
+#: notetree_intl.py:102
+msgid "m_delete"
+msgstr "Verwij&der (ctrl-D, Del)"
+
+#: notetree_intl.py:103
+msgid "h_name"
+msgstr "Huidige notitie hernoemen"
+
+#: notetree_intl.py:103
+msgid "m_name"
+msgstr "Notitie&titel"
+
+#: notetree_intl.py:105
+msgid "h_forward"
+msgstr "Bekijk volgende notitie"
+
+#: notetree_intl.py:105
+msgid "m_forward"
+msgstr "&Verder"
+
+#: notetree_intl.py:106
+msgid "h_back"
+msgstr "Bekijk vorige notitie"
+
+#: notetree_intl.py:106
+msgid "m_back"
+msgstr "&Terug"
+
+#: notetree_intl.py:108
+msgid "m_help"
+msgstr "&Help"
+
+#: notetree_intl.py:109
+msgid "h_about"
+msgstr "Meer over deze applicatie"
+
+#: notetree_intl.py:109
+msgid "m_about"
+msgstr "&Over"
+
+#: notetree_intl.py:110
+msgid "h_keys"
+msgstr "Handige toetscombinaties"
+
+#: notetree_intl.py:110
+msgid "m_keys"
+msgstr "&Sneltoetsen (F1)"
+
+#: notetree_intl.py:229
+msgid "ask_reload"
+msgstr "OK om ini file opnieuw te laden (wijzigingen gaan verloren)?"
+
+#: notetree_intl.py:253
+msgid "t_root"
+msgstr "Geef nieuwe titel voor het hoofditem:"
+
+#: notetree_intl.py:267
+msgid "revive_message"
+msgstr "Klik hier om NoteTree te activeren"
+
+#: notetree_intl.py:282
+msgid "t_new"
+msgstr "Geef een titel op voor het nieuwe item:"
+
+#: notetree_intl.py:303
+msgid "no_delete_root"
+msgstr "Hoofditem kan niet verwijderd worden"
+
+#: notetree_intl.py:306
+msgid "t_name"
+msgstr "Geef nieuwe titel voor het huidige item:"
+
+#: notetree_intl.py:317
+msgid "no_next_item"
+msgstr "Er is geen volgende"
+
+#: notetree_intl.py:324
+msgid "no_prev_item"
+msgstr "Er is geen vorige"
+
+#: notetree_intl.py:345
+msgid "info_text"
+msgstr ""
+"NoteTree door Albert Visser\n"
+"Electronisch notitieblokje"
+
+#: notetree_intl.py:351
+msgid "help_text"
+msgstr ""
+"Ctrl-N                   - nieuwe notitie\n"
+"Ctrl-PgDn    in editor of CursorDown in tree      - volgende notitie\n"
+"Ctrl-PgUp    in editor of CursorUp   in tree      - vorige notitie\n"
+"Ctrl-D of Delete in tree - verwijder notitie\n"
+"Ctrl-S                   - alles opslaan\n"
+"Ctrl-L                   - alles opnieuw laden\n"
+"Ctrl-Q, Esc              - opslaan en sluiten\n"
+"Ctrl-H                   - verbergen in system tray\n"
+"F1                       - deze (help)informatie\n"
+"F2                       - wijzig notitie titel\n"
+"Shift-F2                 - wijzig root titel"
+
+#: notetree_intl.py:360
+msgid "t_en"
+msgstr "Engels"
+
+#: notetree_intl.py:360
+msgid "t_nl"
+msgstr "Nederlands"
+
+#: notetree_intl.py:362
+msgid "t_lang"
+msgstr "Kies een taal"
+

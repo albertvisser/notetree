@@ -1,9 +1,19 @@
 #!/usr/bin/env python
+# van een ibm site afgeplukt
 import os
 import wx
 import pickle
+import gettext
 
-# van een ibm site afgeplukt
+app_title = "NoteTree"
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+locale = os.path.join(HERE, 'locale')
+print locale
+gettext.install(app_title, locale)
+languages = {'nl': gettext.translation(app_title, locale, languages=['nl']),
+    'en': gettext.translation(app_title, locale, languages=['en'])}
+
+root_title = "MyNotes"
 
 def MsgBox (window, string, title):
      dlg=wx.MessageDialog(window, string, title, wx.OK)
@@ -16,26 +26,24 @@ class CheckDialog(wx.Dialog):
         wx.Dialog.__init__(self,parent,id,title,pos,size,style)
         pnl = wx.Panel(self,-1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer0.Add(wx.StaticText(pnl,-1,"\n".join((
-                "NoteTree gaat nu slapen in de System tray",
-                "Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken"
-                ))),1,wx.ALL,5)
+        sizer0.Add(wx.StaticText(pnl,-1,_("sleep_message")),1,wx.ALL,5)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.Check = wx.CheckBox(pnl, -1, "Deze melding niet meer laten zien")
+        self.Check = wx.CheckBox(pnl, -1, _("hide_message"))
         sizer1.Add(self.Check,0,wx.EXPAND)
         sizer0.Add(sizer1,0,wx.ALIGN_CENTER_HORIZONTAL)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
         self.bOk = wx.Button(pnl,id=wx.ID_OK)
         ## self.bOk.Bind(wx.EVT_BUTTON,self.on_ok)
         sizer1.Add(self.bOk,0,wx.EXPAND | wx.ALL, 2)
-        sizer0.Add(sizer1,0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL,5)
+        sizer0.Add(sizer1,0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL |
+            wx.ALIGN_CENTER_VERTICAL,5)
         pnl.SetSizer(sizer0)
         pnl.SetAutoLayout(True)
         sizer0.Fit(pnl)
         sizer0.SetSizeHints(pnl)
         pnl.Layout()
 
-class main_window(wx.Frame):
+class MainWindow(wx.Frame):
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, -1, title, size = (800, 500),
                          style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
@@ -45,38 +53,19 @@ class main_window(wx.Frame):
         mainwindow = self
         self.sb = self.CreateStatusBar()
 
-        self.menudata = (
-            ("&Main",(
-                    ("Re&Load (Ctrl-L)",self.reread, 'Reread .ini file'),
-                    ("&Save (Ctrl-S)",self.save, 'Save .ini file'),
-                    ("",None,None),
-                    ("&Root title (Shift-F2)", self.rename, 'Rename root'),
-                    ("",None,None),
-                    ("&Hide (Ctrl-H)", self.hide, 'verbergen in system tray'),
-                    ("",None,None),
-                    ("e&Xit (Ctrl-Q, Esc)",self.afsl, 'Exit program'),
-                ),),
-            ("&Note",(
-                    ("&New (Ctrl-N)", self.new_item, 'Add note'),
-                    ("&Delete (Ctrl-D, Del)", self.delete_item, 'Remove note'),
-                    ("Note &Title (F2)",self.ask_title, 'Rename current note'),
-                    ("",None,None),
-                    ("&Forward (Ctrl-PgDn)",self.next_note,'View next note'),
-                    ("&Back (Ctrl-PgUp)",self.prev_note,'View previous note'),
-                ),),
-            ("&Help",(
-                    ("&About",self.info_page, 'About this application'),
-                    ("&Keys (F1)",self.help_page, 'Keyboard shortcuts'),
-                ),),
-            )
+        menuBar = wx.MenuBar()
+        self.SetMenuBar(menuBar)
         self.create_menu()
 
         self.splitter = wx.SplitterWindow (self, -1, style=wx.NO_3D) # |wx.SP_3D
         self.splitter.SetMinimumPaneSize (1)
 
-        self.tree = wx.TreeCtrl (self.splitter, -1,
-            style=wx.TR_HAS_BUTTONS | wx.TR_EDIT_LABELS | wx.TR_HAS_VARIABLE_ROW_HEIGHT)
-        self.root = self.tree.AddRoot("MyNotes")
+        self.tree = wx.TreeCtrl (self.splitter, -1, style=
+            wx.TR_HAS_BUTTONS |
+            wx.TR_EDIT_LABELS |
+            wx.TR_HAS_VARIABLE_ROW_HEIGHT
+            )
+        self.root = self.tree.AddRoot(root_title)
         self.activeitem = self.root
         self.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelChanging, self.tree)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
@@ -95,8 +84,37 @@ class main_window(wx.Frame):
         self.Show(True)
 
     def create_menu(self):
-        menuBar = wx.MenuBar()
-        for item, data in self.menudata:
+        print("(re)creating menu")
+        menudata = (
+            (_("m_main"), (
+                    (_("m_reload"), self.reread, _("h_reload")),
+                    (_("m_save"), self.save, _("h_save")),
+                    ("", None, None),
+                    (_("m_root"), self.rename, _("h_root")),
+                    ("", None, None),
+                    (_("m_hide"), self.hide, _("h_hide")),
+                    (_("m_lang"), self.choose_language, _("h_lang")),
+                    ("", None, None),
+                    (_("m_exit"),self.afsl, _("h_exit")),
+                ), ),
+            (_("m_note"), (
+                    (_("m_new"), self.new_item, _("h_new")),
+                    (_("m_delete"), self.delete_item, _("h_delete")),
+                    (_("m_name"), self.ask_title, _("h_name")),
+                    ("", None, None),
+                    (_("m_forward"), self.next_note,_("h_forward")),
+                    (_("m_back"), self.prev_note,_("h_back")),
+                ), ),
+            (_("m_help"), (
+                    (_("m_about"), self.info_page, _("h_about")),
+                    (_("m_keys"), self.help_page, _("h_keys")),
+                ), ),
+            )
+        menu_bar = self.GetMenuBar()
+        menuitems = menu_bar.GetMenus()
+        has_items = bool(menuitems)
+        ix = 0
+        for item, data in menudata:
             menu_label = item
             submenu = wx.Menu()
             for label, handler, info in data:
@@ -106,8 +124,12 @@ class main_window(wx.Frame):
                 else:
                     menu_item = wx.MenuItem(submenu, wx.ID_SEPARATOR)
                 submenu.AppendItem(menu_item)
-            menuBar.Append(submenu, menu_label)
-        self.SetMenuBar(menuBar)
+            if has_items:
+                menu_bar.Replace(ix, submenu, menu_label)
+                menuitems[ix][0].Destroy()
+            else:
+                menu_bar.Append(submenu, menu_label)
+            ix += 1
 
     def on_key(self,event):
         skip = True
@@ -130,6 +152,8 @@ class main_window(wx.Frame):
                 self.next_note()
             elif keycode == wx.WXK_PAGEUP: #  and win == self.editor:
                 self.prev_note()
+            elif keycode == wx.WXK_F1:
+                self.choose_language()
         elif keycode == wx.WXK_F1:
             self.help_page()
         elif keycode == wx.WXK_F2: # and win == self.tree:
@@ -157,9 +181,15 @@ class main_window(wx.Frame):
         event.Skip()
 
     def open(self):
+        print("calling open")
         self.opts = {
-            "AskBeforeHide": True,"ActiveItem": 0, "SashPosition": 180,
-            "ScreenSize": (800, 500), "RootTitle": "MyNotes"}
+            "AskBeforeHide": True,
+            "ActiveItem": 0,
+            "SashPosition": 180,
+            "ScreenSize": (800, 500),
+            'Language': 'en',
+            "RootTitle": root_title
+            }
         self.nt_data = {}
         try:
             file = open(self.project_file)
@@ -171,7 +201,8 @@ class main_window(wx.Frame):
             return
         file.close()
         self.tree.DeleteAllItems()
-        self.root = self.tree.AddRoot(os.path.splitext(os.path.split(self.project_file)[1])[0])
+        self.root = self.tree.AddRoot(os.path.splitext(os.path.split(
+            self.project_file)[1])[0])
         item_to_activate = self.root
         self.editor.Clear()
         self.editor.Enable (False)
@@ -185,6 +216,8 @@ class main_window(wx.Frame):
                 self.tree.SetItemPyData(item, text)
                 if key == self.opts["ActiveItem"]:
                     item_to_activate = item
+        languages[self.opts["Language"]].install()
+        print('installing language "{}"'.format(self.opts["Language"]))
         self.tree.SetItemText(self.root,self.opts["RootTitle"])
         self.SetSize(self.opts["ScreenSize"])
         self.splitter.SetSashPosition(self.opts["SashPosition"], True)
@@ -193,7 +226,7 @@ class main_window(wx.Frame):
         self.tree.SetFocus()
 
     def reread(self,event=None):
-        dlg=wx.MessageDialog(self, 'OK to reload?', 'NoteTree', wx.OK | wx.CANCEL)
+        dlg=wx.MessageDialog(self, _("ask_reload"), app_title, wx.OK | wx.CANCEL)
         result = dlg.ShowModal()
         if result == wx.ID_OK:
             self.open()
@@ -217,21 +250,21 @@ class main_window(wx.Frame):
         file.close()
 
     def rename(self, event=None):
-        dlg = wx.TextEntryDialog(self, 'Geef nieuwe titel voor het hoofditem:',
-                'NoteTree', self.tree.GetItemText(self.root))
+        dlg = wx.TextEntryDialog(self, _("t_root"), app_title,
+                self.tree.GetItemText(self.root))
         if dlg.ShowModal() == wx.ID_OK:
             self.tree.SetItemText(self.root,dlg.GetValue())
         dlg.Destroy()
 
     def hide(self, event=None):
         if self.opts["AskBeforeHide"]:
-            dlg = CheckDialog(self,-1,'NoteTree')
+            dlg = CheckDialog(self,-1,app_title)
             dlg.ShowModal()
             if dlg.Check.GetValue():
                 self.opts["AskBeforeHide"] = False
             dlg.Destroy()
         self.tbi = wx.TaskBarIcon()
-        self.tbi.SetIcon(self.nt_icon,"Click to revive NoteTree")
+        self.tbi.SetIcon(self.nt_icon,_("revive_message"))
         wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
         wx.EVT_TASKBAR_RIGHT_UP(self.tbi, self.revive)
         self.Hide()
@@ -246,7 +279,7 @@ class main_window(wx.Frame):
 
     def new_item(self, event=None): # works
         # kijk waar de cursor staat (of altijd onderaan toevoegen?)
-        dlg = wx.TextEntryDialog (self, "Geef een titel op voor het nieuwe item", "Notetree")
+        dlg = wx.TextEntryDialog (self, _("t_new"), app_title)
         if dlg.ShowModal() == wx.ID_OK:
             text = dlg.GetValue()
             item = self.tree.AppendItem (self.root, text)
@@ -271,11 +304,11 @@ class main_window(wx.Frame):
                 self.editor.Clear()
                 self.editor.Enable(False)
         else:
-            MsgBox(self, "Can't delete root", "Error")
+            MsgBox(self, _("no_delete_root"), app_title)
 
-    def ask_title(self):
-        dlg = wx.TextEntryDialog(self, 'Nieuwe titel voor het huidige item:',
-                'NoteTree', self.tree.GetItemText(self.activeitem))
+    def ask_title(self, event=None):
+        dlg = wx.TextEntryDialog(self, _("t_name"), app_title,
+                self.tree.GetItemText(self.activeitem))
         if dlg.ShowModal() == wx.ID_OK:
             self.tree.SetItemText(self.activeitem,dlg.GetValue())
         dlg.Destroy()
@@ -285,14 +318,14 @@ class main_window(wx.Frame):
         if item.IsOk():
             self.tree.SelectItem(item)
         else:
-            MsgBox(self, "Er is geen volgende", "Error")
+            MsgBox(self, _("no_next_item"), app_title)
 
     def prev_note(self, event=None):
         item = self.tree.GetPrevSibling(self.activeitem)
         if item.IsOk():
             self.tree.SelectItem(item)
         else:
-            MsgBox(self, "Er is geen vorige", "Error")
+            MsgBox(self, _("no_prev_item"), app_title)
 
     def check_active(self,message=None): # works, I guess
         if self.activeitem and self.activeitem != self.root:
@@ -313,42 +346,49 @@ class main_window(wx.Frame):
             self.editor.Enable(False)
 
     def info_page(self,event=None):
-        info = [
-            "NoteTree door Albert Visser",
-            "Electronisch notitieblokje",
-            ]
-        dlg = wx.MessageDialog(self, "\n".join(info),'NoteTree',
+        dlg = wx.MessageDialog(self, _("info_text"), app_title,
             wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
 
     def help_page(self,event=None):
-        info = [
-            "Ctrl-N                   - nieuwe notitie",
-            "Ctrl-PgDn    in editor of"
-            " CursorDown in tree      - volgende notitie",
-            "Ctrl-PgUp    in editor of"
-            " CursorUp   in tree      - vorige notitie",
-            "Ctrl-D of Delete in tree - verwijder notitie",
-            "Ctrl-S                   - alles opslaan",
-            "Ctrl-L                   - alles opnieuw laden",
-            "Ctrl-Q, Esc              - opslaan en sluiten",
-            "Ctrl-H                   - verbergen in system tray",
-            "",
-            "F1                       - deze (help)informatie",
-            "F2                       - wijzig notitie titel",
-            "Shift-F2                 - wijzig root titel",
-            ]
-        dlg = wx.MessageDialog(self, "\n".join(info),'NoteTree',
+        dlg = wx.MessageDialog(self, _("help_text"), app_title,
             wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
+        dlg.Destroy()
+
+    def choose_language(self, event=None):
+        """toon dialoog om taal te kiezen en verwerk antwoord
+        """
+        data = [(code, _('t_{}'.format(code))) for code in ('nl', 'en')]
+        ## data = [('nl', _('t_nl')), ('en', _('t_en'))]
+        dlg = wx.SingleChoiceDialog(self,
+            _("t_lang"), "Apropos",
+            [x[1] for x in data],
+            wx.CHOICEDLG_STYLE
+            )
+        for idx, lang in enumerate([x[0] for x in data]):
+            if lang == self.opts["Language"]:
+                dlg.SetSelection(idx)
+                break
+        h = dlg.ShowModal()
+        if h == wx.ID_OK:
+            sel = dlg.GetStringSelection()
+            for idx, lang in enumerate([x[1] for x in data]):
+                if lang == sel:
+                    code = data[idx][0]
+                    self.opts["Language"] = code
+                    languages[code].install()
+                    print('installing language "{}"'.format(code))
+                    self.create_menu()
+                    break
         dlg.Destroy()
 
 class App(wx.App):
     def __init__(self,fn):
         self.fn = fn
         wx.App.__init__(self,False)
-        frame = main_window(None, -1, "NoteTree - " + self.fn)
+        frame = MainWindow(None, -1, " - ".join((app_title, self.fn)))
         self.SetTopWindow(frame)
         frame.project_file = self.fn
         frame.open()
