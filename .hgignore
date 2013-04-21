@@ -8,3 +8,5 @@ syntax: glob
 *txt
 *ini
 pylint*
+*mo
+*po
