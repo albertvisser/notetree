@@ -6,20 +6,20 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2013-03-29 12:52+CET\n"
-"PO-Revision-Date: 2013-03-29 13:19+0100\n"
+"PO-Revision-Date: 2013-09-20 19:05+0100\n"
 "Last-Translator: Albert Visser <albert@lemoncurry>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #: notetree_intl.py:29
 msgid "sleep_message"
 msgstr ""
 "NoteTree wil now go to sleep in the System tray\n"
-"An icont will will come up - click to activate"
+"An icon will will come up - click to activate"
 
 #: notetree_intl.py:31
 msgid "hide_message"
@@ -31,7 +31,7 @@ msgstr "&Main"
 
 #: notetree_intl.py:90
 msgid "h_reload"
-msgstr "Reread .ini file"
+msgstr "Reread notes file"
 
 #: notetree_intl.py:90
 msgid "m_reload"
@@ -39,7 +39,7 @@ msgstr "Re&Load (Ctrl-L)"
 
 #: notetree_intl.py:91
 msgid "h_save"
-msgstr "Save .ini file"
+msgstr "Save notes file"
 
 #: notetree_intl.py:91
 msgid "m_save"
@@ -205,4 +205,3 @@ msgstr "Dutch"
 #: notetree_intl.py:362
 msgid "t_lang"
 msgstr "Select language"
-

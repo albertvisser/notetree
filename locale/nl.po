@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2013-03-29 12:52+CET\n"
-"PO-Revision-Date: 2013-03-29 13:19+0100\n"
+"PO-Revision-Date: 2013-09-20 19:01+0100\n"
 "Last-Translator: Albert Visser <albert@lemoncurry>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #: notetree_intl.py:29
 msgid "sleep_message"
@@ -31,7 +31,7 @@ msgstr "&Main"
 
 #: notetree_intl.py:90
 msgid "h_reload"
-msgstr "ini file opnieuw lezen"
+msgstr "notities bestand opnieuw lezen"
 
 #: notetree_intl.py:90
 msgid "m_reload"
@@ -39,7 +39,7 @@ msgstr "&Laden (Ctrl-L)"
 
 #: notetree_intl.py:91
 msgid "h_save"
-msgstr "ini file opslaan"
+msgstr "notities bestand opslaan"
 
 #: notetree_intl.py:91
 msgid "m_save"
@@ -103,7 +103,7 @@ msgstr "Huidige notitie hernoemen"
 
 #: notetree_intl.py:103
 msgid "m_name"
-msgstr "Notitie&titel"
+msgstr "Notitie &titel"
 
 #: notetree_intl.py:105
 msgid "h_forward"
@@ -205,4 +205,3 @@ msgstr "Nederlands"
 #: notetree_intl.py:362
 msgid "t_lang"
 msgstr "Kies een taal"
-
