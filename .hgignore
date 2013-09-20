@@ -6,7 +6,8 @@ syntax: glob
 *pyc
 *log
 *txt
-*ini
+*ini*
 pylint*
 *mo
 *po
+*pck*
