@@ -383,4 +383,4 @@ def main(fn):
     app.MainLoop()
 
 if __name__ == "__main__":
-    main('NoteTree.ini')
+    main('NoteTree.pck')
