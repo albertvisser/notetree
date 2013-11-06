@@ -374,13 +374,13 @@ class MainWindow(wx.Frame):
         dlg.Destroy()
 
 def main(fn):
-    self.fn = fn
+    ## self.fn = fn
     app = wx.App(False)
-    frame = MainWindow(None, -1, " - ".join((app_title, self.fn)))
-    self.SetTopWindow(frame)
-    frame.project_file = self.fn
+    frame = MainWindow(None, -1, " - ".join((app_title, fn))) # self.fn)))
+    app.SetTopWindow(frame)
+    frame.project_file = fn # self.fn
     frame.open()
     app.MainLoop()
 
 if __name__ == "__main__":
-    main('NoteTree.pck')
+    main('NoteTree_wx.pck')
