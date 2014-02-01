@@ -16,7 +16,15 @@ Perhaps I can even combine this with Apropos, keeping this simplified version ar
 may make researching stuff like that easier.
 
 In the mean time, I used this app to try out implementing classic gettext
-multilanguage support
+multilanguage support.
+
+
+Usage
+-----
+
+Call ``nt_start.pyw`` from the top directory to start with a standard file in the
+working directory, or use a file name as an argument to work with that.
+
 
 Requirements
 ------------
