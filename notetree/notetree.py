@@ -5,6 +5,7 @@
 # van een ibm site afgeplukt
 import os
 import sys
+from datetime import datetime
 import PyQt4.QtGui as gui
 import PyQt4.QtCore as core
 try:
@@ -186,7 +187,7 @@ class MainWindow(gui.QMainWindow):
                     self.nt_data = pck.load(f_in)
                 except EOFError:
                     gui.QMessageBox.information(self, app_title, "Geen NoteTree bestand")
-                    return
+                    ## return
         self.root = self.tree.takeTopLevelItem(0)
         ## self.root = self.tree.AddRoot(os.path.splitext(os.path.split(
             ## self.project_file)[1])[0])
@@ -211,9 +212,9 @@ class MainWindow(gui.QMainWindow):
                     ## self.editor.setText(text)
                     ## self.editor.setEnabled(True)
         languages[self.opts["Language"]].install()
-        print('installing language "{}"'.format(self.opts["Language"]))
+        ## print('installing language "{}"'.format(self.opts["Language"]))
         self.resize(*self.opts["ScreenSize"])
-        print(self.opts['SashPosition'])
+        ## print(self.opts['SashPosition'])
         try:
             self.splitter.restoreState(self.opts['SashPosition'])
         except TypeError:
@@ -241,10 +242,12 @@ class MainWindow(gui.QMainWindow):
         for num in range(self.root.childCount()):
             ky = num + 1
             tag = self.root.child(num).text(0)
-            if tag == self.activeitem:
-                self.opts["ActiveItem"] = ky
+            ## print(tag, self.activeitem.text(0), num)
+            ## if tag == self.activeitem:
+                ## self.opts["ActiveItem"] = ky
             text = self.root.child(num).text(1)
             self.nt_data[ky] = (str(tag), str(text))
+        self.opts["ActiveItem"] = self.root.indexOfChild(self.activeitem) + 1
         with open(self.project_file,"wb") as _out:
             pck.dump(self.nt_data, _out, protocol=2)
 
@@ -275,7 +278,8 @@ class MainWindow(gui.QMainWindow):
 
     def new_item(self, event=None):
         # kijk waar de cursor staat (of altijd onderaan toevoegen?)
-        text, ok = gui.QInputDialog.getText(self, app_title, _("t_new"))
+        start = datetime.today().strftime("%d-%m-%Y %H:%M:%S")
+        text, ok = gui.QInputDialog.getText(self, app_title, _("t_new"), text=start)
         if ok:
             item = gui.QTreeWidgetItem()
             item.setText(0, text)
@@ -297,7 +301,7 @@ class MainWindow(gui.QMainWindow):
                 self.activate_item(prev)
             else:
                 self.editor.clear()
-                self.editor.Enable(False)
+                self.editor.setEnabled(False)
         else:
             message(self, _("no_delete_root"), app_title)
 
@@ -305,7 +309,7 @@ class MainWindow(gui.QMainWindow):
         text, ok = gui.QInputDialog.getText(self, app_title, _("t_name"),
             gui.QLineEdit.Normal, self.activeitem.text(0))
         if ok:
-            self.activeitem.setText(text)
+            self.activeitem.setText(0, text)
 
     def next_note(self, event=None):
         idx = self.root.indexOfChild(self.activeitem)
