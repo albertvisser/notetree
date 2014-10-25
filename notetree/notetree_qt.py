@@ -212,6 +212,7 @@ class MainWindow(gui.QMainWindow):
                     (_("m_back"), self.prev_note,_("h_back"), 'Ctrl+PgUp'),
                 ), ),
             ( "Selecteren", (
+                ("Alles", self.no_selection, "Laat alle teksten zien", None),
                 ("Trefwoord", self.keyword_select, "Selecteer teksten bij een trefwoord", None),
                 ("Tekst", self.text_select, "Selecteer teksten die een bepaalde frase bevatten", None),
                 ), ),
@@ -222,12 +223,16 @@ class MainWindow(gui.QMainWindow):
             )
         menu_bar = self.menuBar()
         menu_bar.clear()
+        self.selactions = []
         for item, data in menudata:
             menu_label = item
             submenu = menu_bar.addMenu(menu_label)
             for label, handler, info, key in data:
                 if label:
                     action = submenu.addAction(label, handler)
+                    if label in ('Alles', 'Trefwoord', 'Tekst'):
+                        action.setCheckable(True)
+                        self.selactions.append(action)
                     if key:
                         action.setShortcuts([x for x in key.split(",")])
                     action.setStatusTip(info)
@@ -286,25 +291,11 @@ class MainWindow(gui.QMainWindow):
         self.editor.clear()
         self.editor.setEnabled(False)
         # TODO apply selection while building tree
-        for key, value in self.nt_data.items():
-            if key == 0 and "AskBeforeHide" in value:
-                for key, val in value.items():
-                    self.opts[key] = val
-            else:
-                try:                    # TO BE REMOVED
-                    tag, text = value   # this code makes it possible
-                    keywords = []       # to read existing datafiles
-                except ValueError:      # should become obsolete pretty soon
-                    tag, text, keywords = value
-                item = gui.QTreeWidgetItem()
-                item.setText(0, tag)
-                item.setText(1, text)
-                item.setData(1, core.Qt.UserRole, keywords)
-                self.root.addChild(item)
-                if key == self.opts["ActiveItem"]:
-                    item_to_activate = item
-                    ## self.editor.setText(text)
-                    ## self.editor.setEnabled(True)
+        options = self.nt_data.get(0, [])
+        if "AskBeforeHide" in options:
+            for key, val in options.items():
+                self.opts[key] = val
+        item_to_activate = self.build_tree(first_time=True)
         languages[self.opts["Language"]].install()
         ## print('installing language "{}"'.format(self.opts["Language"]))
         self.resize(*self.opts["ScreenSize"])
@@ -317,31 +308,72 @@ class MainWindow(gui.QMainWindow):
         self.tree.setCurrentItem(item_to_activate)
         self.tree.setFocus()
 
+    def build_tree(self, first_time=False):
+        if not first_time:
+            self.tree_to_dict()
+            self.root = self.tree.takeTopLevelItem(0)
+            self.root = gui.QTreeWidgetItem()
+            self.root.setText(0, self.opts["RootTitle"])
+            self.tree.addTopLevelItem(self.root)
+        item_to_activate = self.root
+        self.activeitem = None
+        seltype = 0
+        for key, value in self.nt_data.items():
+            if key == 0:
+                continue
+            try:                    # TO BE REMOVED
+                tag, text = value   # this code makes it possible
+                keywords = []       # to read existing datafiles
+            except ValueError:      # should become obsolete pretty soon
+                tag, text, keywords = value
+            seltype, seldata = self.opts["Selection"]
+            if seltype == 1 and seldata not in keywords:
+                continue
+            if seltype == 2 and seldata not in text:
+                continue
+            item = gui.QTreeWidgetItem()
+            if not item_to_activate: # make sure this is only set to root if selection is empty
+                item_to_activate = item
+            item.setText(0, tag)
+            item.setData(0, core.Qt.UserRole, key)
+            item.setText(1, text)
+            item.setData(1, core.Qt.UserRole, keywords)
+            self.root.addChild(item)
+            print(key, self.opts["ActiveItem"])
+            if key == self.opts["ActiveItem"]:
+                print("setting item_to_activate to", item)
+                item_to_activate = item
+                ## self.editor.setText(text)
+                ## self.editor.setEnabled(True)
+        for action in self.selactions:
+            action.setChecked(False)
+        self.selactions[seltype].setChecked(True)
+        self.tree.expandItem(self.root)
+        return item_to_activate
+
     def reread(self,event=None):
         dlg = gui.QMessageBox.question(self, app_title, _("ask_reload"),
             gui.QMessageBox.Yes | gui.QMessageBox.No)
         if dlg == gui.QMessageBox.Yes:
             self.open()
 
-    def save(self, event=None):
+    def tree_to_dict(self):
         self.check_active() # even zorgen dat de editor inhoud geassocieerd wordt
-        self.opts["ScreenSize"] = self.width(), self.height() # tuple(self.size())
-        self.opts["SashPosition"] = self.splitter.saveState()
-        ## self.opts.pop("SashPosition")
-        ## if not isinstance(self.opts["RootTitle"], str):
-            ## self.opts["RootTitle"] = str(self.opts["RootTitle"])
-        self.nt_data = {0: self.opts}
-        data = []
         for num in range(self.root.childCount()):
-            ky = num + 1
             tag = self.root.child(num).text(0)
-            ## print(tag, self.activeitem.text(0), num)
-            ## if tag == self.activeitem:
-                ## self.opts["ActiveItem"] = ky
+            ky = self.root.child(num).data(0, core.Qt.UserRole)
             text = self.root.child(num).text(1)
             trefw = self.root.child(num).data(1, core.Qt.UserRole)
             self.nt_data[ky] = (str(tag), str(text), trefw)
-        self.opts["ActiveItem"] = self.root.indexOfChild(self.activeitem) + 1
+
+    def save(self, event=None):
+        self.tree_to_dict() # check for changed values in tree not in dict
+        self.opts["ScreenSize"] = self.width(), self.height() # tuple(self.size())
+        self.opts["SashPosition"] = self.splitter.saveState()
+        ## self.opts["ActiveItem"] = self.root.indexOfChild(self.activeitem) + 1
+        self.opts["ActiveItem"] = self.activeitem.data(0, core.Qt.UserRole)
+        self.nt_data[0] = self.opts
+        ## self.nt_data = {0: self.opts}
         with open(self.project_file,"wb") as _out:
             pck.dump(self.nt_data, _out, protocol=2)
 
@@ -431,6 +463,9 @@ class MainWindow(gui.QMainWindow):
                 self.activeitem.setText(1,self.editor.toPlainText())
 
     def activate_item(self, item):
+        self.editor.clear()
+        if not item:
+            return
         self.activeitem = item
         if item != self.root:
             font = item.font(0)
@@ -439,7 +474,6 @@ class MainWindow(gui.QMainWindow):
             self.editor.setText(item.text(1))
             self.editor.setEnabled(True)
         else:
-            self.editor.clear()
             self.editor.setEnabled(False)
 
     def info_page(self,event=None):
@@ -464,7 +498,6 @@ class MainWindow(gui.QMainWindow):
                     code = data[idx][0]
                     self.opts["Language"] = code
                     languages[code].install()
-                    print('installing language "{}"'.format(code))
                     self.create_menu()
                     break
 
@@ -475,6 +508,13 @@ class MainWindow(gui.QMainWindow):
         ok = dlg.exec_()
         if ok == gui.QDialog.Accepted:
             self.activeitem.setData(1, core.Qt.UserRole, self.new_keywords)
+
+    def no_selection(self, event=None):
+        """make sure nothing is selected"""
+        self.opts["Selection"] = (0, "")
+        self.sb.showMessage('show all text items')
+        item_to_activate = self.build_tree()
+        self.tree.setCurrentItem(item_to_activate)
 
     def keyword_select(self, event=None):
         """Open a dialog where a keyword can be chosen to select texts that it's
@@ -487,13 +527,18 @@ class MainWindow(gui.QMainWindow):
         try:
             selindex = selection_list.index(seltext)
         except ValueError:
-            pass # selindex = -1
+            selindex = -1
         text, ok = gui.QInputDialog.getItem(self, app_title,
             "Enter keyword to search for", selection_list, current=selindex)
         if ok:
             self.opts['Selection'] = (1, text)
-            gui.QMessageBox.information(self, app_title,
-                'select based on keyword "{}"'.format(text))
+            self.sb.showMessage('show text items using keyword "{}"'.format(text))
+            print("root is nu:", self.root)
+            print("active item:", self.activeitem)
+            item_to_activate = self.build_tree()
+            print("root is nu:", self.root)
+            print("item to activate:", item_to_activate)
+            self.tree.setCurrentItem(item_to_activate)
 
     def text_select(self, event=None):
         """Open a dialog box where text can be entered that the texts to be selected
@@ -506,9 +551,9 @@ class MainWindow(gui.QMainWindow):
             "Enter text to search for", gui.QLineEdit.Normal, seltext)
         if ok:
             self.opts['Selection'] = (2, text)
-            # TODO finish this
-            gui.QMessageBox.information(self, app_title,
-                'selection based on text "{}"'.format(text))
+            self.sb.showMessage('show text items containing "{}"'.format(text))
+            item_to_activate = self.build_tree()
+            self.tree.setCurrentItem(item_to_activate)
 
 
 
