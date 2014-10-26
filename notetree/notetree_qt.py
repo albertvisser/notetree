@@ -37,11 +37,11 @@ class KeywordsDialog(gui.QDialog):
         # define widgets
         self.fromlist = gui.QListWidget(self)
         self.fromlist.setSelectionMode(gui.QAbstractItemView.MultiSelection)
-        fromto_button = gui.QPushButton('&Select trefwoord(en)')
+        fromto_button = gui.QPushButton(_("b_tag"))
         fromto_button.clicked.connect(self.move_right)
-        tofrom_button = gui.QPushButton('&Unselect trefwoord(en)')
+        tofrom_button = gui.QPushButton(_("b_untag"))
         tofrom_button.clicked.connect(self.move_left)
-        addtrefw_button = gui.QPushButton('&New trefwoord')
+        addtrefw_button = gui.QPushButton(_("b_newtag"))
         addtrefw_button.clicked.connect(self.add_trefw)
         self.tolist = gui.QListWidget(self)
         self.tolist.setSelectionMode(gui.QAbstractItemView.MultiSelection)
@@ -206,15 +206,15 @@ class MainWindow(gui.QMainWindow):
                     (_("m_delete"), self.delete_item, _("h_delete"), 'Ctrl+D,Delete'),
                     (_("m_name"), self.ask_title, _("h_name"), 'F2'),
                     ("", None, None, None),
-                    ("trefwoorden", self.link_keywords, "Ken trefwoorden toe aan deze tekst", 'F6'),
+                    (_("m_tags"), self.link_keywords, _("h_tags"), 'F6'),
                     ("", None, None, None),
                     (_("m_forward"), self.next_note,_("h_forward"), 'Ctrl+PgDown'),
                     (_("m_back"), self.prev_note,_("h_back"), 'Ctrl+PgUp'),
                 ), ),
-            ( "Selecteren", (
-                ("Alles", self.no_selection, "Laat alle teksten zien", None),
-                ("Trefwoord", self.keyword_select, "Selecteer teksten bij een trefwoord", None),
-                ("Tekst", self.text_select, "Selecteer teksten die een bepaalde frase bevatten", None),
+            ( _("m_select"), (
+                (_("m_selall"), self.no_selection, _("h_selall"), None),
+                (_("m_seltag"), self.keyword_select, _("h_seltag"), None),
+                (_("m_seltxt"), self.text_select, _("h_seltxt"), None),
                 ), ),
             (_("m_help"), (
                     (_("m_about"), self.info_page, _("h_about"), None),
@@ -230,7 +230,7 @@ class MainWindow(gui.QMainWindow):
             for label, handler, info, key in data:
                 if label:
                     action = submenu.addAction(label, handler)
-                    if label in ('Alles', 'Trefwoord', 'Tekst'):
+                    if label in (_("m_selall"), _("m_seltag"), _("m_seltxt")):
                         action.setCheckable(True)
                         self.selactions.append(action)
                     if key:
@@ -512,7 +512,7 @@ class MainWindow(gui.QMainWindow):
     def no_selection(self, event=None):
         """make sure nothing is selected"""
         self.opts["Selection"] = (0, "")
-        self.sb.showMessage('show all text items')
+        self.sb.showMessage(_("h_selall"))
         item_to_activate = self.build_tree()
         self.tree.setCurrentItem(item_to_activate)
 
@@ -529,10 +529,10 @@ class MainWindow(gui.QMainWindow):
         except ValueError:
             selindex = -1
         text, ok = gui.QInputDialog.getItem(self, app_title,
-            "Enter keyword to search for", selection_list, current=selindex)
+            _("i_seltag"), selection_list, current=selindex)
         if ok:
             self.opts['Selection'] = (1, text)
-            self.sb.showMessage('show text items using keyword "{}"'.format(text))
+            self.sb.showMessage(_("s_seltag").format(text))
             print("root is nu:", self.root)
             print("active item:", self.activeitem)
             item_to_activate = self.build_tree()
@@ -548,10 +548,10 @@ class MainWindow(gui.QMainWindow):
         if seltype != 2:
             seltext = ''
         text, ok = gui.QInputDialog.getText(self, app_title,
-            "Enter text to search for", gui.QLineEdit.Normal, seltext)
+            _("i_seltxt"), gui.QLineEdit.Normal, seltext)
         if ok:
             self.opts['Selection'] = (2, text)
-            self.sb.showMessage('show text items containing "{}"'.format(text))
+            self.sb.showMessage(_("s_seltxt").format(text))
             item_to_activate = self.build_tree()
             self.tree.setCurrentItem(item_to_activate)
 

@@ -5,181 +5,230 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2013-03-29 12:52+CET\n"
-"PO-Revision-Date: 2013-09-20 19:05+0100\n"
-"Last-Translator: Albert Visser <albert@lemoncurry>\n"
+"POT-Creation-Date: 2014-10-26 12:23+CET\n"
+"PO-Revision-Date: 2014-10-26 14:05+0100\n"
+"Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
 "X-Generator: Poedit 1.5.4\n"
+"Language: Python\n"
 
-#: notetree_intl.py:29
+#: notetree_qt.py:40
+msgid "b_tag"
+msgstr "&Select tag(s)"
+
+#: notetree_qt.py:42
+msgid "b_untag"
+msgstr "&Unselect tag(s)"
+
+#: notetree_qt.py:44
+msgid "b_newtag"
+msgstr "&New tag"
+
+#: notetree_qt.py:121
 msgid "sleep_message"
 msgstr ""
 "NoteTree wil now go to sleep in the System tray\n"
 "An icon will will come up - click to activate"
 
-#: notetree_intl.py:31
+#: notetree_qt.py:122
 msgid "hide_message"
 msgstr "Don't show this message anymore"
 
-#: notetree_intl.py:89
-msgid "m_main"
-msgstr "&Main"
-
-#: notetree_intl.py:90
-msgid "h_reload"
-msgstr "Reread notes file"
-
-#: notetree_intl.py:90
-msgid "m_reload"
-msgstr "Re&Load (Ctrl-L)"
-
-#: notetree_intl.py:91
-msgid "h_save"
-msgstr "Save notes file"
-
-#: notetree_intl.py:91
-msgid "m_save"
-msgstr "&Save (Ctrl-S)"
-
-#: notetree_intl.py:93
-msgid "h_root"
-msgstr "Rename root item"
-
-#: notetree_intl.py:93
-msgid "m_root"
-msgstr "&Root title (Shift-F2)"
-
-#: notetree_intl.py:95
-msgid "h_hide"
-msgstr "Hide in system tray"
-
-#: notetree_intl.py:95
-msgid "m_hide"
-msgstr "&Hide (Ctrl-H)"
-
-#: notetree_intl.py:96
-msgid "h_lang"
-msgstr "Change the interface language"
-
-#: notetree_intl.py:96
-msgid "m_lang"
-msgstr "L&anguage"
-
-#: notetree_intl.py:98
-msgid "h_exit"
-msgstr "Exit program"
-
-#: notetree_intl.py:98
-msgid "m_exit"
-msgstr "e&Xit (Ctrl-Q, Esc)"
-
-#: notetree_intl.py:100
-msgid "m_note"
-msgstr "&Note"
-
-#: notetree_intl.py:101
-msgid "h_new"
-msgstr "Add Note"
-
-#: notetree_intl.py:101
-msgid "m_new"
-msgstr "&New (Ctrl-N)"
-
-#: notetree_intl.py:102
-msgid "h_delete"
-msgstr "Remove note"
-
-#: notetree_intl.py:102
-msgid "m_delete"
-msgstr "&Delete (ctrl-D, Del)"
-
-#: notetree_intl.py:103
-msgid "h_name"
-msgstr "Rename current note"
-
-#: notetree_intl.py:103
-msgid "m_name"
-msgstr "Note &Title"
-
-#: notetree_intl.py:105
-msgid "h_forward"
-msgstr "View next note"
-
-#: notetree_intl.py:105
-msgid "m_forward"
-msgstr "&Forward (Ctrl-PgDn)"
-
-#: notetree_intl.py:106
-msgid "h_back"
-msgstr "View previous note"
-
-#: notetree_intl.py:106
-msgid "m_back"
-msgstr "&Back (Ctrl-PgUp)"
-
-#: notetree_intl.py:108
-msgid "m_help"
-msgstr "&Help"
-
-#: notetree_intl.py:109
-msgid "h_about"
-msgstr "About this application"
-
-#: notetree_intl.py:109
-msgid "m_about"
-msgstr "&About"
-
-#: notetree_intl.py:110
-msgid "h_keys"
-msgstr "Keyboard shortcuts"
-
-#: notetree_intl.py:110
-msgid "m_keys"
-msgstr "&Keys (F1)"
-
-#: notetree_intl.py:229
-msgid "ask_reload"
-msgstr "OK to reload?"
-
-#: notetree_intl.py:253
-msgid "t_root"
-msgstr "New title for root item:"
-
-#: notetree_intl.py:267
+#: notetree_qt.py:163 notetree_qt.py:394
 msgid "revive_message"
 msgstr "Click to revive NoteTree"
 
-#: notetree_intl.py:282
+#: notetree_qt.py:193
+msgid "m_main"
+msgstr "&Main"
+
+#: notetree_qt.py:194
+msgid "h_reload"
+msgstr "Reread notes file"
+
+#: notetree_qt.py:194
+msgid "m_reload"
+msgstr "Re&Load "
+
+#: notetree_qt.py:195
+msgid "h_save"
+msgstr "Save notes file"
+
+#: notetree_qt.py:195
+msgid "m_save"
+msgstr "&Save "
+
+#: notetree_qt.py:197
+msgid "h_root"
+msgstr "Rename root item"
+
+#: notetree_qt.py:197
+msgid "m_root"
+msgstr "&Root title "
+
+#: notetree_qt.py:199
+msgid "h_hide"
+msgstr "Hide in system tray"
+
+#: notetree_qt.py:199
+msgid "m_hide"
+msgstr "&Hide "
+
+#: notetree_qt.py:200
+msgid "h_lang"
+msgstr "Change the interface language"
+
+#: notetree_qt.py:200
+msgid "m_lang"
+msgstr "L&anguage"
+
+#: notetree_qt.py:202
+msgid "h_exit"
+msgstr "Exit program"
+
+#: notetree_qt.py:202
+msgid "m_exit"
+msgstr "e&Xit "
+
+#: notetree_qt.py:204
+msgid "m_note"
+msgstr "&Note"
+
+#: notetree_qt.py:205
+msgid "h_new"
+msgstr "Add Note"
+
+#: notetree_qt.py:205
+msgid "m_new"
+msgstr "&New "
+
+#: notetree_qt.py:206
+msgid "h_delete"
+msgstr "Remove note"
+
+#: notetree_qt.py:206
+msgid "m_delete"
+msgstr "&Delete"
+
+#: notetree_qt.py:207
+msgid "h_name"
+msgstr "Rename current note"
+
+#: notetree_qt.py:207
+msgid "m_name"
+msgstr "Note &Title"
+
+#: notetree_qt.py:209
+msgid "h_tags"
+msgstr "Add tag(s) to this note"
+
+#: notetree_qt.py:209
+msgid "m_tags"
+msgstr "&Tags"
+
+#: notetree_qt.py:211
+msgid "h_forward"
+msgstr "View next note"
+
+#: notetree_qt.py:211
+msgid "m_forward"
+msgstr "&Forward"
+
+#: notetree_qt.py:212
+msgid "h_back"
+msgstr "View previous note"
+
+#: notetree_qt.py:212
+msgid "m_back"
+msgstr "&Back "
+
+#: notetree_qt.py:214
+msgid "m_select"
+msgstr "&Select"
+
+#: notetree_qt.py:215
+msgid "m_selall"
+msgstr "&All"
+
+#: notetree_qt.py:215 notetree_qt.py:515
+msgid "h_selall"
+msgstr "Show all notes"
+
+#: notetree_qt.py:216
+msgid "h_seltag"
+msgstr "Show notes with a given tag"
+
+#: notetree_qt.py:216
+msgid "m_seltag"
+msgstr "&Tag"
+
+#: notetree_qt.py:217
+msgid "h_seltxt"
+msgstr "Show notes with given content"
+
+#: notetree_qt.py:217
+msgid "m_seltxt"
+msgstr "&Content"
+
+#: notetree_qt.py:219
+msgid "m_help"
+msgstr "&Help"
+
+#: notetree_qt.py:220
+msgid "h_about"
+msgstr "About this application"
+
+#: notetree_qt.py:220
+msgid "m_about"
+msgstr "&About"
+
+#: notetree_qt.py:221
+msgid "h_keys"
+msgstr "Keyboard shortcuts"
+
+#: notetree_qt.py:221
+msgid "m_keys"
+msgstr "&Keys "
+
+#: notetree_qt.py:355
+msgid "ask_reload"
+msgstr "OK to reload?"
+
+#: notetree_qt.py:381
+msgid "t_root"
+msgstr "New title for root item:"
+
+#: notetree_qt.py:408
 msgid "t_new"
 msgstr "Title for new note:"
 
-#: notetree_intl.py:303
+#: notetree_qt.py:433
 msgid "no_delete_root"
 msgstr "Can't delete root"
 
-#: notetree_intl.py:306
+#: notetree_qt.py:436
 msgid "t_name"
 msgstr "New totle for current note:"
 
-#: notetree_intl.py:317
+#: notetree_qt.py:446
 msgid "no_next_item"
 msgstr "No next note"
 
-#: notetree_intl.py:324
+#: notetree_qt.py:453
 msgid "no_prev_item"
 msgstr "No previous note"
 
-#: notetree_intl.py:345
+#: notetree_qt.py:480
 msgid "info_text"
 msgstr ""
 "NoteTree by Albert Visser\n"
 "Electronic notebook"
 
-#: notetree_intl.py:351
+#: notetree_qt.py:483
 msgid "help_text"
 msgstr ""
 "Ctrl-N                   - new note\n"
@@ -192,7 +241,28 @@ msgstr ""
 "Ctrl-H                   - hide in system tray\n"
 "F1                       - this (help) info\n"
 "F2                       - edit note title\n"
-"Shift-F2                 - edit root title"
+"Shift-F2                 - edit root title\n"
+"F6                       - add/remove tags"
+
+#: notetree_qt.py:493
+msgid "t_lang"
+msgstr "Select language"
+
+#: notetree_qt.py:532
+msgid "i_seltag"
+msgstr "Enter tag to search for"
+
+#: notetree_qt.py:535
+msgid "s_seltag"
+msgstr "Show notes with keyword `{}`"
+
+#: notetree_qt.py:551
+msgid "i_seltxt"
+msgstr "Enter text to search for"
+
+#: notetree_qt.py:554
+msgid "s_seltxt"
+msgstr "Show notes containing `{}`"
 
 #: notetree_intl.py:360
 msgid "t_en"
@@ -201,7 +271,3 @@ msgstr "English"
 #: notetree_intl.py:360
 msgid "t_nl"
 msgstr "Dutch"
-
-#: notetree_intl.py:362
-msgid "t_lang"
-msgstr "Select language"
