@@ -24,6 +24,10 @@ gettext.install(app_title, locale)
 languages = {'nl': gettext.translation(app_title, locale, languages=['nl']),
     'en': gettext.translation(app_title, locale, languages=['en'])}
 
+# dynamically built translatable string symbols resolved so that they can be recognized
+_('t_nl')
+_('t_en')
+
 root_title = "MyNotes"
 
 class KeywordsDialog(gui.QDialog):
@@ -32,11 +36,13 @@ class KeywordsDialog(gui.QDialog):
     def __init__(self, parent):
         self.parent = parent
         gui.QDialog.__init__(self, parent)
-        self.setWindowTitle(app_title)
+        self.setWindowTitle('{} - {}'.format(app_title, _("w_tags")))
         self.setWindowIcon(self.parent.nt_icon)
+        self.resize(400, 256)
         # define widgets
         self.fromlist = gui.QListWidget(self)
         self.fromlist.setSelectionMode(gui.QAbstractItemView.MultiSelection)
+        text = gui.QLabel(_("t_tags"), self)
         fromto_button = gui.QPushButton(_("b_tag"))
         fromto_button.clicked.connect(self.move_right)
         tofrom_button = gui.QPushButton(_("b_untag"))
@@ -58,16 +64,23 @@ class KeywordsDialog(gui.QDialog):
         # do layout and show
         vbox = gui.QVBoxLayout()
         hbox = gui.QHBoxLayout()
-        hbox.addWidget(self.fromlist)
+        vbox2 = gui.QVBoxLayout()
+        vbox2.addWidget(gui.QLabel(_("t_left"), self))
+        vbox2.addWidget(self.fromlist)
+        hbox.addLayout(vbox2)
         vbox2 = gui.QVBoxLayout()
         vbox2.addStretch()
+        vbox2.addWidget(text)
         vbox2.addWidget(fromto_button)
         vbox2.addWidget(tofrom_button)
         vbox2.addSpacing(10)
         vbox2.addWidget(addtrefw_button)
         vbox2.addStretch()
         hbox.addLayout(vbox2)
-        hbox.addWidget(self.tolist)
+        vbox2 = gui.QVBoxLayout()
+        vbox2.addWidget(gui.QLabel(_("t_right"), self))
+        vbox2.addWidget(self.tolist)
+        hbox.addLayout(vbox2)
         vbox.addLayout(hbox)
         hbox = gui.QHBoxLayout()
         hbox.addStretch()
@@ -94,7 +107,7 @@ class KeywordsDialog(gui.QDialog):
             from_.takeItem(from_.row(item))
             to.addItem(item)
 
-    def add_trefw(self, event): # TODO
+    def add_trefw(self, event):
         """nieuwe trefwoorden opgeven en direct in de linkerlijst zetten
         """
         text, ok = gui.QInputDialog.getText(self, app_title, "Geef nieuw trefwoord op")
@@ -480,13 +493,24 @@ class MainWindow(gui.QMainWindow):
         gui.QMessageBox.information(self, app_title, _("info_text"))
 
     def help_page(self,event=None):
-        gui.QMessageBox.information(self, app_title, _("help_text"))
+        ## gui.QMessageBox.information(self, app_title, _("help_text"))
+        ## return
+        dlg = gui.QDialog(self)
+        data = [x.split(' - ', 1) for x in _("help_text").split('\n')]
+        gbox = gui.QGridLayout()
+        line = 0
+        for left, right in data:
+            gbox.addWidget(gui.QLabel(left, self), line, 0)
+            gbox.addWidget(gui.QLabel(right, self), line, 1)
+            line += 1
+        dlg.setWindowTitle(app_title + _("t_keys")) # ' keys'
+        dlg.setLayout(gbox)
+        dlg.exec_()
 
     def choose_language(self, event=None):
         """toon dialoog om taal te kiezen en verwerk antwoord
         """
         data = [(code, _('t_{}'.format(code))) for code in ('nl', 'en')]
-        ## data = [('nl', _('t_nl')), ('en', _('t_en'))]
         for idx, lang in enumerate([x[0] for x in data]):
             if lang == self.opts["Language"]:
                 break
