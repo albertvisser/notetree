@@ -503,7 +503,7 @@ class MainWindow(gui.QMainWindow):
             gbox.addWidget(gui.QLabel(left, self), line, 0)
             gbox.addWidget(gui.QLabel(right, self), line, 1)
             line += 1
-        dlg.setWindowTitle(app_title + _("t_keys")) # ' keys'
+        dlg.setWindowTitle(app_title + " " + _("t_keys")) # ' keys'
         dlg.setLayout(gbox)
         dlg.exec_()
 
@@ -514,7 +514,7 @@ class MainWindow(gui.QMainWindow):
         for idx, lang in enumerate([x[0] for x in data]):
             if lang == self.opts["Language"]:
                 break
-        text, ok = gui.QInputDialog.getItem(self, app_title,_("t_lang"),
+        text, ok = gui.QInputDialog.getItem(self, app_title, _("t_lang"),
             [x[1] for x in data], current=idx, editable=False)
         if ok:
             for idx, lang in enumerate([x[1] for x in data]):
@@ -557,11 +557,7 @@ class MainWindow(gui.QMainWindow):
         if ok:
             self.opts['Selection'] = (1, text)
             self.sb.showMessage(_("s_seltag").format(text))
-            print("root is nu:", self.root)
-            print("active item:", self.activeitem)
             item_to_activate = self.build_tree()
-            print("root is nu:", self.root)
-            print("item to activate:", item_to_activate)
             self.tree.setCurrentItem(item_to_activate)
 
     def text_select(self, event=None):
