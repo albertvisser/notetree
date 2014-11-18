@@ -277,6 +277,8 @@ class MainWindow(gui.QMainWindow):
 
     def open(self):
         self.opts = {
+            "Application": "NoteTree",
+            "Version": "Qt",
             "AskBeforeHide": True,
             "ActiveItem": 0,
             "SashPosition": 180,
@@ -305,6 +307,10 @@ class MainWindow(gui.QMainWindow):
         self.editor.setEnabled(False)
         # TODO apply selection while building tree
         options = self.nt_data.get(0, [])
+        test = options.get("Application", None)
+        if test and test != 'NoteTree':
+            gui.QMessageBox.information(self, app_title, "Geen NoteTree bestand")
+            ## return
         if "AskBeforeHide" in options:
             for key, val in options.items():
                 self.opts[key] = val
@@ -422,6 +428,7 @@ class MainWindow(gui.QMainWindow):
         if ok:
             item = gui.QTreeWidgetItem()
             item.setText(0, text)
+            item.setData(0, core.Qt.UserRole, self.root.childCount() + 1)
             item.setText(1, "")
             item.setData(1, core.Qt.UserRole, [])
             self.root.addChild(item)

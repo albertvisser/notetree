@@ -277,6 +277,8 @@ class MainWindow(gui.QMainWindow):
 
     def open(self):
         self.opts = {
+            "Application": "NoteTree",
+            "Version": "Qt",
             "AskBeforeHide": True,
             "ActiveItem": 0,
             "SashPosition": 180,
@@ -294,6 +296,12 @@ class MainWindow(gui.QMainWindow):
                 except EOFError:
                     gui.QMessageBox.information(self, app_title, "Geen NoteTree bestand")
                     ## return
+                else:
+                    options = self.nt_data.get(0, [])
+                    test = options.get("Application", None)
+                    if test and test != "NoteTree":
+                        return "{} is geen correct NoteTree bestand".format(
+                            self.project_file)
         self.root = self.tree.takeTopLevelItem(0)
         ## self.root = self.tree.AddRoot(os.path.splitext(os.path.split(
             ## self.project_file)[1])[0])
@@ -422,6 +430,7 @@ class MainWindow(gui.QMainWindow):
         if ok:
             item = gui.QTreeWidgetItem()
             item.setText(0, text)
+            item.setData(0, core.Qt.UserRole, self.root.childCount() + 1)
             item.setText(1, "")
             item.setData(1, core.Qt.UserRole, [])
             self.root.addChild(item)
@@ -583,8 +592,11 @@ def main(fnaam):
     frame = MainWindow(parent=None, title=" - ".join((app_title, fnaam)))
     frame.show()
     frame.project_file = fnaam
-    frame.open()
-    sys.exit(app.exec_())
+    mld = frame.open()
+    if mld:
+        gui.QMessageBox.information(frame, "Error", mld)
+    else:
+        sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main('NoteTree.pck')
