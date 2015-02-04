@@ -380,6 +380,7 @@ class MainWindow(gui.QMainWindow):
 
     def tree_to_dict(self):
         self.check_active() # even zorgen dat de editor inhoud geassocieerd wordt
+        self.nt_data = {}
         for num in range(self.root.childCount()):
             tag = self.root.child(num).text(0)
             ky = self.root.child(num).data(0, core.Qt.UserRole)
@@ -445,12 +446,6 @@ class MainWindow(gui.QMainWindow):
         if item != self.root:
             idx = self.root.indexOfChild(item)
             self.root.removeChild(item)
-            if idx > 1:
-                prev = self.root.child(idx - 1)
-                self.activate_item(prev)
-            else:
-                self.editor.clear()
-                self.editor.setEnabled(False)
         else:
             gui.QMessageBox.information(self, app_title, _("no_delete_root"))
 
