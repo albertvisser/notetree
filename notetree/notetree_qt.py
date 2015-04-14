@@ -296,6 +296,12 @@ class MainWindow(gui.QMainWindow):
                 except EOFError:
                     gui.QMessageBox.information(self, app_title, "Geen NoteTree bestand")
                     ## return
+                else:
+                    options = self.nt_data.get(0, [])
+                    test = options.get("Application", None)
+                    if test and test != "NoteTree":
+                        return "{} is geen correct NoteTree bestand".format(
+                            self.project_file)
         self.root = self.tree.takeTopLevelItem(0)
         ## self.root = self.tree.AddRoot(os.path.splitext(os.path.split(
             ## self.project_file)[1])[0])
@@ -307,10 +313,6 @@ class MainWindow(gui.QMainWindow):
         self.editor.setEnabled(False)
         # TODO apply selection while building tree
         options = self.nt_data.get(0, [])
-        test = options.get("Application", None)
-        if test and test != 'NoteTree':
-            gui.QMessageBox.information(self, app_title, "Geen NoteTree bestand")
-            ## return
         if "AskBeforeHide" in options:
             for key, val in options.items():
                 self.opts[key] = val
@@ -378,6 +380,7 @@ class MainWindow(gui.QMainWindow):
 
     def tree_to_dict(self):
         self.check_active() # even zorgen dat de editor inhoud geassocieerd wordt
+        self.nt_data = {}
         for num in range(self.root.childCount()):
             tag = self.root.child(num).text(0)
             ky = self.root.child(num).data(0, core.Qt.UserRole)
@@ -443,12 +446,6 @@ class MainWindow(gui.QMainWindow):
         if item != self.root:
             idx = self.root.indexOfChild(item)
             self.root.removeChild(item)
-            if idx > 1:
-                prev = self.root.child(idx - 1)
-                self.activate_item(prev)
-            else:
-                self.editor.clear()
-                self.editor.setEnabled(False)
         else:
             gui.QMessageBox.information(self, app_title, _("no_delete_root"))
 
@@ -590,8 +587,11 @@ def main(fnaam):
     frame = MainWindow(parent=None, title=" - ".join((app_title, fnaam)))
     frame.show()
     frame.project_file = fnaam
-    frame.open()
-    sys.exit(app.exec_())
+    mld = frame.open()
+    if mld:
+        gui.QMessageBox.information(frame, "Error", mld)
+    else:
+        sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main('NoteTree.pck')
