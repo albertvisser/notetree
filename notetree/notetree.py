@@ -584,7 +584,7 @@ class MainWindow(gui.QMainWindow):
 def main(fnaam):
     ## self.fn = fnaam
     app = gui.QApplication(sys.argv)
-    frame = MainWindow(parent=None, title=" - ".join((app_title, fnaam)))
+    frame = MainWindow(parent=None, title=" - ".join((fnaam, app_title)))
     frame.show()
     frame.project_file = fnaam
     mld = frame.open()
