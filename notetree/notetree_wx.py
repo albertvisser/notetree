@@ -186,7 +186,7 @@ class MainWindow(wx.Frame):
             }
         self.nt_data = {}
         try:
-            file = open(self.project_file)
+            file = open(self.project_file, 'rb')
         except IOError:
             return
         try:
@@ -240,7 +240,7 @@ class MainWindow(wx.Frame):
             self.nt_data[ky] = (self.tree.GetItemText(tag),
                 self.tree.GetItemPyData(tag))
             tag, cookie = self.tree.GetNextChild(self.root, cookie)
-        file = open(self.project_file,"w")
+        file = open(self.project_file,"wb")
         pickle.dump(self.nt_data, file)
         file.close()
 
