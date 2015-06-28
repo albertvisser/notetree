@@ -367,7 +367,9 @@ class MainWindow(gui.QMainWindow):
                 ## self.editor.setText(text)
                 ## self.editor.setEnabled(True)
         for action in self.selactions:
+            print('unchecking', action.text())
             action.setChecked(False)
+        print('checking', action.text())
         self.selactions[seltype].setChecked(True)
         self.tree.expandItem(self.root)
         return item_to_activate
@@ -532,6 +534,9 @@ class MainWindow(gui.QMainWindow):
     def link_keywords(self, event=None):
         """Open a dialog where keywords can be assigned to the text
         """
+        test = self.activeitem
+        if test is None: return
+        if test.data(1, core.Qt.UserRole) is None: return
         dlg = KeywordsDialog(self)
         ok = dlg.exec_()
         if ok == gui.QDialog.Accepted:
