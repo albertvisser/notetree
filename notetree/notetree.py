@@ -339,7 +339,9 @@ class MainWindow(gui.QMainWindow):
         item_to_activate = self.root
         self.activeitem = None
         seltype = 0
+        ## seltype, seldata = self.opts["Selection"]
         for key, value in self.nt_data.items():
+            print(key, value)
             if key == 0:
                 continue
             try:                    # TO BE REMOVED
@@ -369,7 +371,7 @@ class MainWindow(gui.QMainWindow):
         for action in self.selactions:
             print('unchecking', action.text())
             action.setChecked(False)
-        print('checking', action.text())
+        print('checking', self.selactions[seltype].text())
         self.selactions[seltype].setChecked(True)
         self.tree.expandItem(self.root)
         return item_to_activate
@@ -388,6 +390,7 @@ class MainWindow(gui.QMainWindow):
             ky = self.root.child(num).data(0, core.Qt.UserRole)
             text = self.root.child(num).text(1)
             trefw = self.root.child(num).data(1, core.Qt.UserRole)
+            print(ky, tag, text, trefw)
             self.nt_data[ky] = (str(tag), str(text), trefw)
 
     def save(self, event=None):
@@ -430,10 +433,11 @@ class MainWindow(gui.QMainWindow):
         # kijk waar de cursor staat (of altijd onderaan toevoegen?)
         start = datetime.today().strftime("%d-%m-%Y %H:%M:%S")
         text, ok = gui.QInputDialog.getText(self, app_title, _("t_new"), text=start)
+        print('new item:', text, ok)
         if ok:
             item = gui.QTreeWidgetItem()
             item.setText(0, text)
-            item.setData(0, core.Qt.UserRole, self.root.childCount() + 1)
+            item.setData(0, core.Qt.UserRole, text)
             item.setText(1, "")
             item.setData(1, core.Qt.UserRole, [])
             self.root.addChild(item)
