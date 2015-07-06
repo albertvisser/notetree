@@ -338,8 +338,8 @@ class MainWindow(gui.QMainWindow):
             self.tree.addTopLevelItem(self.root)
         item_to_activate = self.root
         self.activeitem = None
-        seltype = 0
-        ## seltype, seldata = self.opts["Selection"]
+        ## seltype = 0
+        seltype, seldata = self.opts["Selection"]
         for key, value in self.nt_data.items():
             print(key, value)
             if key == 0:
@@ -349,7 +349,7 @@ class MainWindow(gui.QMainWindow):
                 keywords = []       # to read existing datafiles
             except ValueError:      # should become obsolete pretty soon
                 tag, text, keywords = value
-            seltype, seldata = self.opts["Selection"]
+            ## seltype, seldata = self.opts["Selection"]
             if seltype == 1 and seldata not in keywords:
                 continue
             if seltype == 2 and seldata not in text:
@@ -384,7 +384,7 @@ class MainWindow(gui.QMainWindow):
 
     def tree_to_dict(self):
         self.check_active() # even zorgen dat de editor inhoud geassocieerd wordt
-        self.nt_data = {}
+        ## self.nt_data = {}
         for num in range(self.root.childCount()):
             tag = self.root.child(num).text(0)
             ky = self.root.child(num).data(0, core.Qt.UserRole)
@@ -452,6 +452,8 @@ class MainWindow(gui.QMainWindow):
         if item != self.root:
             idx = self.root.indexOfChild(item)
             self.root.removeChild(item)
+            ky = item.data(0, core.Qt.UserRole)
+            del self.nt_data[ky]
         else:
             gui.QMessageBox.information(self, app_title, _("no_delete_root"))
 
