@@ -8,27 +8,24 @@ import sys
 from datetime import datetime
 import PyQt4.QtGui as gui
 import PyQt4.QtCore as core
-try:
-    import cPickle as pck
-except ImportError:
-    import pickle as pck
 import logging
 logging.basicConfig(filename='doctree_qt.log', level=logging.DEBUG,
     format='%(asctime)s %(message)s')
 import gettext
+from notetree.notetree_shared import NoteTreeMixin, app_title, root_title, languages
 
-app_title = "NoteTree"
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-locale = os.path.join(HERE, 'locale')
-gettext.install(app_title, locale)
-languages = {'nl': gettext.translation(app_title, locale, languages=['nl']),
-    'en': gettext.translation(app_title, locale, languages=['en'])}
+## app_title = "NoteTree"
+## HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+## locale = os.path.join(HERE, 'locale')
+## gettext.install(app_title, locale)
+## languages = {'nl': gettext.translation(app_title, locale, languages=['nl']),
+    ## 'en': gettext.translation(app_title, locale, languages=['en'])}
 
-# dynamically built translatable string symbols resolved so that they can be recognized
-_('t_nl')
-_('t_en')
+## # dynamically built translatable string symbols resolved so that they can be recognized
+## _('t_nl')
+## _('t_en')
 
-root_title = "MyNotes"
+## root_title = "MyNotes"
 
 class KeywordsDialog(gui.QDialog):
     """Dialoog voor het koppelen van trefwoorden
@@ -162,7 +159,7 @@ class CheckDialog(gui.QDialog):
             self.parent.opts["AskBeforeHide"] = False
         gui.QDialog.done(self, 0)
 
-class MainWindow(gui.QMainWindow):
+class MainWindow(gui.QMainWindow, NoteTreeMixin):
     def __init__(self, parent=None, title=''):
         gui.QMainWindow.__init__(self)
         self.nt_icon = gui.QIcon(os.path.join(os.path.dirname(__file__),
@@ -202,42 +199,10 @@ class MainWindow(gui.QMainWindow):
         ## self.editor.keyReleaseEvent.connect(self.on_key2)
 
     def create_menu(self):
-        menudata = (
-            (_("m_main"), (
-                    (_("m_reload"), self.reread, _("h_reload"), 'Ctrl+L'),
-                    (_("m_save"), self.save, _("h_save"), 'Ctrl+S'),
-                    ("", None, None, None),
-                    (_("m_root"), self.rename, _("h_root"), 'Shift+F2'),
-                    ("", None, None, None),
-                    (_("m_hide"), self.hide_me, _("h_hide"), 'Ctrl+H'),
-                    (_("m_lang"), self.choose_language, _("h_lang"), 'Ctrl+F1'),
-                    ("", None, None, None),
-                    (_("m_exit"), self.close, _("h_exit"), 'Ctrl+Q,Escape'),
-                ), ),
-            (_("m_note"), (
-                    (_("m_new"), self.new_item, _("h_new"), 'Ctrl+N'),
-                    (_("m_delete"), self.delete_item, _("h_delete"), 'Ctrl+D,Delete'),
-                    (_("m_name"), self.ask_title, _("h_name"), 'F2'),
-                    ("", None, None, None),
-                    (_("m_tags"), self.link_keywords, _("h_tags"), 'F6'),
-                    ("", None, None, None),
-                    (_("m_forward"), self.next_note,_("h_forward"), 'Ctrl+PgDown'),
-                    (_("m_back"), self.prev_note,_("h_back"), 'Ctrl+PgUp'),
-                ), ),
-            ( _("m_select"), (
-                (_("m_selall"), self.no_selection, _("h_selall"), None),
-                (_("m_seltag"), self.keyword_select, _("h_seltag"), None),
-                (_("m_seltxt"), self.text_select, _("h_seltxt"), None),
-                ), ),
-            (_("m_help"), (
-                    (_("m_about"), self.info_page, _("h_about"), None),
-                    (_("m_keys"), self.help_page, _("h_keys"), 'F1'),
-                ), ),
-            )
         menu_bar = self.menuBar()
         menu_bar.clear()
         self.selactions = []
-        for item, data in menudata:
+        for item, data in self.get_menudata(): # defined in mixin class
             menu_label = item
             submenu = menu_bar.addMenu(menu_label)
             for label, handler, info, key in data:
@@ -275,33 +240,15 @@ class MainWindow(gui.QMainWindow):
         #log('size hint for item {}'.format(h.sizeHint(0)))
         self.activate_item(h)
 
+    def closeEvent(self, event=None):
+        self.save()
+        event.accept()
+
     def open(self):
-        self.opts = {
-            "Application": "NoteTree",
-            "Version": "Qt",
-            "AskBeforeHide": True,
-            "ActiveItem": 0,
-            "SashPosition": 180,
-            "ScreenSize": (800, 500),
-            'Language': 'en',
-            "RootTitle": root_title,
-            "Keywords": [],
-            "Selection": (0, '')
-            }
-        self.nt_data = {}
-        if os.path.exists(self.project_file):
-            with open(self.project_file, "rb") as f_in:
-                try:
-                    self.nt_data = pck.load(f_in)
-                except EOFError:
-                    gui.QMessageBox.information(self, app_title, "Geen NoteTree bestand")
-                    ## return
-                else:
-                    options = self.nt_data.get(0, [])
-                    test = options.get("Application", None)
-                    if test and test != "NoteTree":
-                        return "{} is geen correct NoteTree bestand".format(
-                            self.project_file)
+        msg = NoteTreeMixin.open(self, "Qt", root_title)
+        if msg:
+            gui.QMessageBox.information(self, app_title, msg)
+            return
         self.root = self.tree.takeTopLevelItem(0)
         ## self.root = self.tree.AddRoot(os.path.splitext(os.path.split(
             ## self.project_file)[1])[0])
@@ -312,13 +259,7 @@ class MainWindow(gui.QMainWindow):
         self.editor.clear()
         self.editor.setEnabled(False)
         # TODO apply selection while building tree
-        options = self.nt_data.get(0, [])
-        if "AskBeforeHide" in options:
-            for key, val in options.items():
-                self.opts[key] = val
         item_to_activate = self.build_tree(first_time=True)
-        languages[self.opts["Language"]].install()
-        ## print('installing language "{}"'.format(self.opts["Language"]))
         self.resize(*self.opts["ScreenSize"])
         ## print(self.opts['SashPosition'])
         try:
@@ -399,16 +340,14 @@ class MainWindow(gui.QMainWindow):
         self.opts["SashPosition"] = self.splitter.saveState()
         ## self.opts["ActiveItem"] = self.root.indexOfChild(self.activeitem) + 1
         self.opts["ActiveItem"] = self.activeitem.data(0, core.Qt.UserRole)
-        self.nt_data[0] = self.opts
-        ## self.nt_data = {0: self.opts}
-        with open(self.project_file,"wb") as _out:
-            pck.dump(self.nt_data, _out, protocol=2)
+        NoteTreeMixin._save(self)
 
     def rename(self, event=None):
         text, ok = gui.QInputDialog.getText(self, app_title, _("t_root"),
             gui.QLineEdit.Normal, self.root.text(0))
         if ok:
-            self.root.setText(text)
+            self.opts["RootTitle"] = text
+            self.root.setText(0, text)
 
     def hide_me(self, event=None):
         if self.opts["AskBeforeHide"]:
@@ -424,10 +363,6 @@ class MainWindow(gui.QMainWindow):
         else:
             self.show()
             self.tray_icon.hide()
-
-    def closeEvent(self, event=None):
-        self.save()
-        event.accept()
 
     def new_item(self, event=None):
         # kijk waar de cursor staat (of altijd onderaan toevoegen?)

@@ -1,20 +1,30 @@
+# -*- coding: utf-8 -*-
 # van een ibm site afgeplukt
 import os
 import wx
-import pickle
+from datetime import datetime
 import gettext
+from notetree_shared import NoteTreeMixin, app_title, root_title, languages
 
-app_title = "NoteTree"
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-locale = os.path.join(HERE, 'locale')
-print locale
-gettext.install(app_title, locale)
-languages = {'nl': gettext.translation(app_title, locale, languages=['nl']),
-    'en': gettext.translation(app_title, locale, languages=['en'])}
+## app_title = "NoteTree"
+## HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+## locale = os.path.join(HERE, 'locale')
+## print locale
+## gettext.install(app_title, locale)
+## languages = {'nl': gettext.translation(app_title, locale, languages=['nl']),
+    ## 'en': gettext.translation(app_title, locale, languages=['en'])}
 
-root_title = "MyNotes"
+## root_title = "MyNotes"
+
+class KeywordsDialog(wx.Dialog):
+    """Dialoog voor het koppelen van trefwoorden
+    """
+    pass
 
 class CheckDialog(wx.Dialog):
+    """Dialoog om te melden dat de applicatie verborgen gaat worden
+    AskBeforeHide bepaalt of deze getoond wordt of niet
+    """
     def __init__(self,parent,id,title, size=(-1,120), pos=wx.DefaultPosition,
             style=wx.DEFAULT_DIALOG_STYLE):
         wx.Dialog.__init__(self,parent,id,title,pos,size,style)
@@ -37,7 +47,7 @@ class CheckDialog(wx.Dialog):
         sizer0.SetSizeHints(pnl)
         pnl.Layout()
 
-class MainWindow(wx.Frame):
+class MainWindow(wx.Frame, NoteTreeMixin):
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, -1, title, size = (800, 500),
                          style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
@@ -46,6 +56,8 @@ class MainWindow(wx.Frame):
         self.SetIcon(self.nt_icon)
         mainwindow = self
         self.sb = self.CreateStatusBar()
+
+        # tray icon wordt pas opgezet in de hide() methode
 
         menuBar = wx.MenuBar()
         self.SetMenuBar(menuBar)
@@ -79,45 +91,43 @@ class MainWindow(wx.Frame):
 
     def create_menu(self):
         print("(re)creating menu")
-        menudata = (
-            (_("m_main"), (
-                    (_("m_reload"), self.reread, _("h_reload")),
-                    (_("m_save"), self.save, _("h_save")),
-                    ("", None, None),
-                    (_("m_root"), self.rename, _("h_root")),
-                    ("", None, None),
-                    (_("m_hide"), self.hide, _("h_hide")),
-                    (_("m_lang"), self.choose_language, _("h_lang")),
-                    ("", None, None),
-                    (_("m_exit"),self.afsl, _("h_exit")),
-                ), ),
-            (_("m_note"), (
-                    (_("m_new"), self.new_item, _("h_new")),
-                    (_("m_delete"), self.delete_item, _("h_delete")),
-                    (_("m_name"), self.ask_title, _("h_name")),
-                    ("", None, None),
-                    (_("m_forward"), self.next_note,_("h_forward")),
-                    (_("m_back"), self.prev_note,_("h_back")),
-                ), ),
-            (_("m_help"), (
-                    (_("m_about"), self.info_page, _("h_about")),
-                    (_("m_keys"), self.help_page, _("h_keys")),
-                ), ),
-            )
         menu_bar = self.GetMenuBar()
         menuitems = menu_bar.GetMenus()
         has_items = bool(menuitems)
         ix = 0
-        for item, data in menudata:
+        self.keydef_to_method = {}
+        for item, data in self.get_menudata(): # defined in mixin class
             menu_label = item
             submenu = wx.Menu()
-            for label, handler, info in data:
+            for label, handler, info, keydef in data:
                 if label != "":
                     menu_item = wx.MenuItem(submenu, -1, label, info)
                     self.Bind(wx.EVT_MENU, handler, menu_item)
                 else:
                     menu_item = wx.MenuItem(submenu, wx.ID_SEPARATOR)
                 submenu.AppendItem(menu_item)
+                if keydef:
+                    for key in keydef.split(','):
+                        mod = ''
+                        if '+' in key:
+                            mod, key = key.split('+')
+                        if key == 'F1':
+                            key = wx.WXK_F1
+                        elif key == 'F2':
+                            key = wx.WXK_F2
+                        elif key == 'F6':
+                            key = wx.WXK_F6
+                        elif key == 'Escape':
+                            key = wx.WXK_ESCAPE
+                        elif key == 'Delete':
+                            key = wx.WXK_DELETE
+                        elif key == 'PgDown':
+                            key = wx.WXK_PAGEDOWN
+                        elif key == 'PgUp':
+                            key = wx.WXK_PAGEUP
+                        else:
+                            key = ord(key)
+                        self.keydef_to_method[(mod, key)] = handler
             if has_items:
                 menu_bar.Replace(ix, submenu, menu_label)
                 menuitems[ix][0].Destroy()
@@ -129,95 +139,71 @@ class MainWindow(wx.Frame):
         skip = True
         keycode = event.GetKeyCode()
         win = event.GetEventObject()
-        if event.GetModifiers() == wx.MOD_CONTROL: # evt.ControlDown()
-            if keycode == ord("L"): # 76: Ctrl-L reload tabs
-                self.reread()
-            elif keycode == ord("N"): # 78: Ctrl-N nieuwe tab
-                self.new_item()
-            elif keycode == ord("D"):
-                self.delete_item()
-            elif keycode == ord("H"): # 72: Ctrl-H Hide/minimize
-                self.hide()
-            elif keycode == ord("S"): # 83: Ctrl-S saven zonder afsluiten
-                self.save()
-            elif keycode == ord("Q"): # 81: Ctrl-Q afsluiten na saven
-                self.afsl()
-            elif keycode == wx.WXK_PAGEDOWN: #  and win == self.editor:
-                self.next_note()
-            elif keycode == wx.WXK_PAGEUP: #  and win == self.editor:
-                self.prev_note()
-            elif keycode == wx.WXK_F1:
-                self.choose_language()
-        elif keycode == wx.WXK_F1:
-            self.help_page()
-        elif keycode == wx.WXK_F2: # and win == self.tree:
-            if event.GetModifiers() == wx.MOD_SHIFT:
-                self.rename()
+        mod = ''
+        test = event.GetModifiers()
+        if test == wx.MOD_CONTROL:
+            mod = 'Ctrl'
+        elif test == wx.MOD_SHIFT:
+            mod = 'Shift'
+        if (mod, keycode) in self.keydef_to_method:
+            if keycode == wx.WXK_DELETE and win != self.tree:
+                pass # delete key should work normally when not in tree
             else:
-                self.ask_title()
-        elif keycode == wx.WXK_DELETE and win == self.tree:
-            self.delete_item()
-        elif keycode == wx.WXK_ESCAPE:
-            self.afsl()
+                self.keydef_to_method[mod, keycode]()
         if event and skip:
+            print 'skipping'
             event.Skip()
 
-    def OnEvtText(self,event): # seems to work
+    def OnEvtText(self,event):
         self.editor.IsModified = True
 
-    def OnSelChanging(self, event=None): # works (tm)
+    def OnSelChanging(self, event=None):
         if event.GetItem() == self.root:
             event.Veto()
 
-    def OnSelChanged(self, event=None): # works (tm)
+    def OnSelChanged(self, event=None):
+        test = event.GetItem()
         self.check_active()
         self.activate_item(event.GetItem())
         event.Skip()
 
+    def close(self, event=None):
+        self.save()
+        self.Close()
+
     def open(self):
-        print("calling open")
-        self.opts = {
-            "AskBeforeHide": True,
-            "ActiveItem": 0,
-            "SashPosition": 180,
-            "ScreenSize": (800, 500),
-            'Language': 'en',
-            "RootTitle": root_title
-            }
-        self.nt_data = {}
-        try:
-            file = open(self.project_file, 'rb')
-        except IOError:
+        msg = NoteTreeMixin.open(self, "Wx", root_title)
+        self.tree.SetFocus()
+        if self.nt_data == {}:
             return
-        try:
-            self.nt_data = pickle.load(file)
-        except EOFError:
+        if msg:
+            self.showmsg(msg)
             return
-        file.close()
         self.tree.DeleteAllItems()
         self.root = self.tree.AddRoot(os.path.splitext(os.path.split(
             self.project_file)[1])[0])
         item_to_activate = self.root
         self.editor.Clear()
         self.editor.Enable (False)
-        for key, value in self.nt_data.items():
-            if key == 0 and "AskBeforeHide" in value:
-                for key,val in value.items():
-                    self.opts[key] = val
-            else:
-                tag, text = value
-                item = self.tree.AppendItem (self.root, tag)
-                self.tree.SetItemPyData(item, text)
-                if key == self.opts["ActiveItem"]:
-                    item_to_activate = item
-        languages[self.opts["Language"]].install()
-        print('installing language "{}"'.format(self.opts["Language"]))
-        self.tree.SetItemText(self.root,self.opts["RootTitle"])
+        item_to_activate = self.build_tree(first_time=True)
+        self.tree.SetItemText(self.root, self.opts["RootTitle"])
         self.SetSize(self.opts["ScreenSize"])
         self.splitter.SetSashPosition(self.opts["SashPosition"], True)
         self.tree.Expand (self.root)
         self.tree.SelectItem(item_to_activate)
         self.tree.SetFocus()
+
+    def build_tree(self, first_time=False):
+        item_to_return = self.root
+        self.activeitem = None
+        for key, value in self.nt_data.items():
+            if key <> 0:
+                tag, text = value
+                item = self.tree.AppendItem (self.root, tag)
+                self.tree.SetItemPyData(item, text)
+                if key == self.opts["ActiveItem"]:
+                    item_to_return = item
+        return item_to_return
 
     def reread(self,event=None):
         dlg=wx.MessageDialog(self, _("ask_reload"), app_title, wx.OK | wx.CANCEL)
@@ -226,12 +212,10 @@ class MainWindow(wx.Frame):
             self.open()
         dlg.Destroy()
 
-    def save(self, event=None):
+    def tree_to_dict(self):
         self.check_active() # even zorgen dat de editor inhoud geassocieerd wordt
-        self.opts["ScreenSize"] = self.GetSize()
-        self.opts["SashPosition"] = self.splitter.GetSashPosition()
+        self.nt_data = {} # don't forget to remove this when we apply selections
         ky = 0
-        self.nt_data = {ky: self.opts}
         tag, cookie = self.tree.GetFirstChild(self.root)
         while tag.IsOk():
             ky += 1
@@ -240,9 +224,12 @@ class MainWindow(wx.Frame):
             self.nt_data[ky] = (self.tree.GetItemText(tag),
                 self.tree.GetItemPyData(tag))
             tag, cookie = self.tree.GetNextChild(self.root, cookie)
-        file = open(self.project_file,"wb")
-        pickle.dump(self.nt_data, file)
-        file.close()
+
+    def save(self, event=None):
+        self.tree_to_dict() # check for changed values in tree not in dict
+        self.opts["ScreenSize"] = self.GetSize()
+        self.opts["SashPosition"] = self.splitter.GetSashPosition()
+        NoteTreeMixin._save(self)
 
     def rename(self, event=None):
         dlg = wx.TextEntryDialog(self, _("t_root"), app_title,
@@ -251,7 +238,7 @@ class MainWindow(wx.Frame):
             self.tree.SetItemText(self.root,dlg.GetValue())
         dlg.Destroy()
 
-    def hide(self, event=None):
+    def hide_me(self, event=None):
         if self.opts["AskBeforeHide"]:
             dlg = CheckDialog(self,-1,app_title)
             dlg.ShowModal()
@@ -268,17 +255,15 @@ class MainWindow(wx.Frame):
         self.Show()
         self.tbi.Destroy()
 
-    def afsl(self, event=None):
-        self.save()
-        self.Close()
-
-    def new_item(self, event=None): # works
+    def new_item(self, event=None):
         # kijk waar de cursor staat (of altijd onderaan toevoegen?)
-        dlg = wx.TextEntryDialog (self, _("t_new"), app_title)
+        start = datetime.today().strftime("%d-%m-%Y %H:%M:%S")
+        dlg = wx.TextEntryDialog (self, _("t_new"), app_title, start)
         if dlg.ShowModal() == wx.ID_OK:
             text = dlg.GetValue()
             item = self.tree.AppendItem (self.root, text)
             self.tree.SetItemPyData(item, "")
+            # maybe set data to a tuple of (dict key, editor text, list of keywords)
             self.tree.SelectItem(item)
             self.tree.Expand (self.root)
             self.editor.Clear()
@@ -299,13 +284,13 @@ class MainWindow(wx.Frame):
                 self.editor.Clear()
                 self.editor.Enable(False)
         else:
-            wx.MessageBox(_("no_delete_root"), app_title, self)
+            self.showmsg(_("no_delete_root"))
 
     def ask_title(self, event=None):
         dlg = wx.TextEntryDialog(self, _("t_name"), app_title,
                 self.tree.GetItemText(self.activeitem))
         if dlg.ShowModal() == wx.ID_OK:
-            self.tree.SetItemText(self.activeitem,dlg.GetValue())
+            self.tree.SetItemText(self.activeitem, dlg.GetValue())
         dlg.Destroy()
 
     def next_note(self, event=None):
@@ -313,24 +298,25 @@ class MainWindow(wx.Frame):
         if item.IsOk():
             self.tree.SelectItem(item)
         else:
-            wx.MessageBox(_("no_next_item"), app_title, self)
+            self.showmsg(_("no_next_item"))
 
     def prev_note(self, event=None):
         item = self.tree.GetPrevSibling(self.activeitem)
         if item.IsOk():
             self.tree.SelectItem(item)
         else:
-            wx.MessageBox(_("no_prev_item"), app_title, self)
+            self.showmsg(_("no_prev_item"))
 
-    def check_active(self,message=None): # works, I guess
+    def check_active(self, message=None):
         if self.activeitem and self.activeitem != self.root:
             self.tree.SetItemBold(self.activeitem, False)
             if self.editor.IsModified:
                 if message:
-                    print(message)
-                self.tree.SetItemPyData(self.activeitem,self.editor.GetValue())
+                    self.showmsg(message)
+                text = self.editor.GetValue()
+                self.tree.SetItemPyData(self.activeitem, self.editor.GetValue())
 
-    def activate_item(self, item): # works too, it would seem
+    def activate_item(self, item):
         self.activeitem = item
         if item != self.root:
             self.tree.SetItemBold(item, True)
@@ -341,10 +327,10 @@ class MainWindow(wx.Frame):
             self.editor.Enable(False)
 
     def info_page(self,event=None):
-        wx.MessageBox(_("info_text"), app_title, wx.OK | wx.ICON_INFORMATION, self)
+        self.showmsg(_("info_text"))
 
     def help_page(self,event=None):
-        wx.MessageBox(_("help_text"), app_title, wx.OK | wx.ICON_INFORMATION, self)
+        self.showmsg(_("help_text"))
 
     def choose_language(self, event=None):
         """toon dialoog om taal te kiezen en verwerk antwoord
@@ -372,6 +358,19 @@ class MainWindow(wx.Frame):
                     self.create_menu()
                     break
         dlg.Destroy()
+    def link_keywords(self, event=None):
+        pass
+
+    def no_selection(self, event=None):
+        pass
+
+    def keyword_select(self, event=None):
+        pass
+
+    def text_select(self, event=None):
+        pass
+    def showmsg(self, message):
+        wx.MessageBox(message, app_title, wx.OK | wx.ICON_INFORMATION, self)
 
 def main(fn):
     ## self.fn = fn
