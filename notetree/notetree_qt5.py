@@ -539,7 +539,3 @@ def main(fnaam):
         wdg.QMessageBox.information(frame, "Error", mld)
     else:
         sys.exit(app.exec_())
-
-if __name__ == "__main__":
-    main('NoteTree_qt5.pck')
-    app.MainLoop()

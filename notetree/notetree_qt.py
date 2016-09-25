@@ -538,7 +538,3 @@ def main(fnaam):
         gui.QMessageBox.information(frame, "Error", mld)
     else:
         sys.exit(app.exec_())
-
-if __name__ == "__main__":
-    main('NoteTree.pck')
-    app.MainLoop()
