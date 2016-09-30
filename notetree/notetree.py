@@ -2,11 +2,11 @@
 
 def nt_main(filename, toolkit):
     if toolkit == 'wx':
-        from notetree_wx import main
+        from notetree.notetree_wx import main
     elif toolkit == 'qt':
-        from notetree_qt import main
+        from notetree.notetree_qt import main
     elif toolkit == 'qt5':
-        from notetree_qt5 import main
+        from notetree.notetree_qt5 import main
     main(filename)
 
 if __name__ == "__main__":
