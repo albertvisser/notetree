@@ -6,14 +6,13 @@
 import os
 import sys
 from datetime import datetime
-import PyQt5.QtWidgets as wdg
-import PyQt5.QtGui as gui
-import PyQt5.QtCore as core
+import PyQt4.QtGui as gui
+import PyQt4.QtCore as core
 import logging
 logging.basicConfig(filename='doctree_qt.log', level=logging.DEBUG,
     format='%(asctime)s %(message)s')
 import gettext
-from .notetree_shared import NoteTreeMixin, app_title, root_title, languages
+from notetree.notetree_shared import NoteTreeMixin, app_title, root_title, languages
 
 ## app_title = "NoteTree"
 ## HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,29 +27,29 @@ from .notetree_shared import NoteTreeMixin, app_title, root_title, languages
 
 ## root_title = "MyNotes"
 
-class KeywordsDialog(wdg.QDialog):
+class KeywordsDialog(gui.QDialog):
     """Dialoog voor het koppelen van trefwoorden
     """
     def __init__(self, parent):
         self.parent = parent
-        super().__init__(parent)
+        gui.QDialog.__init__(self, parent)
         self.setWindowTitle('{} - {}'.format(app_title, _("w_tags")))
         self.setWindowIcon(self.parent.nt_icon)
         self.resize(400, 256)
         # define widgets
-        self.fromlist = wdg.QListWidget(self)
-        self.fromlist.setSelectionMode(wdg.QAbstractItemView.MultiSelection)
-        text = wdg.QLabel(_("t_tags"), self)
-        fromto_button = wdg.QPushButton(_("b_tag"))
+        self.fromlist = gui.QListWidget(self)
+        self.fromlist.setSelectionMode(gui.QAbstractItemView.MultiSelection)
+        text = gui.QLabel(_("t_tags"), self)
+        fromto_button = gui.QPushButton(_("b_tag"))
         fromto_button.clicked.connect(self.move_right)
-        tofrom_button = wdg.QPushButton(_("b_untag"))
+        tofrom_button = gui.QPushButton(_("b_untag"))
         tofrom_button.clicked.connect(self.move_left)
-        addtrefw_button = wdg.QPushButton(_("b_newtag"))
+        addtrefw_button = gui.QPushButton(_("b_newtag"))
         addtrefw_button.clicked.connect(self.add_trefw)
-        self.tolist = wdg.QListWidget(self)
-        self.tolist.setSelectionMode(wdg.QAbstractItemView.MultiSelection)
-        bbox = wdg.QDialogButtonBox(wdg.QDialogButtonBox.Ok |
-            wdg.QDialogButtonBox.Cancel)
+        self.tolist = gui.QListWidget(self)
+        self.tolist.setSelectionMode(gui.QAbstractItemView.MultiSelection)
+        bbox = gui.QDialogButtonBox(gui.QDialogButtonBox.Ok |
+            gui.QDialogButtonBox.Cancel)
         bbox.accepted.connect(self.accept)
         bbox.rejected.connect(self.reject)
         # get data from parent
@@ -60,13 +59,13 @@ class KeywordsDialog(wdg.QDialog):
         self.tolist.addItems(curr_trefw)
         self.fromlist.addItems([x for x in all_trefw if x not in curr_trefw])
         # do layout and show
-        vbox = wdg.QVBoxLayout()
-        hbox = wdg.QHBoxLayout()
-        vbox2 = wdg.QVBoxLayout()
-        vbox2.addWidget(wdg.QLabel(_("t_left"), self))
+        vbox = gui.QVBoxLayout()
+        hbox = gui.QHBoxLayout()
+        vbox2 = gui.QVBoxLayout()
+        vbox2.addWidget(gui.QLabel(_("t_left"), self))
         vbox2.addWidget(self.fromlist)
         hbox.addLayout(vbox2)
-        vbox2 = wdg.QVBoxLayout()
+        vbox2 = gui.QVBoxLayout()
         vbox2.addStretch()
         vbox2.addWidget(text)
         vbox2.addWidget(fromto_button)
@@ -75,12 +74,12 @@ class KeywordsDialog(wdg.QDialog):
         vbox2.addWidget(addtrefw_button)
         vbox2.addStretch()
         hbox.addLayout(vbox2)
-        vbox2 = wdg.QVBoxLayout()
-        vbox2.addWidget(wdg.QLabel(_("t_right"), self))
+        vbox2 = gui.QVBoxLayout()
+        vbox2.addWidget(gui.QLabel(_("t_right"), self))
         vbox2.addWidget(self.tolist)
         hbox.addLayout(vbox2)
         vbox.addLayout(hbox)
-        hbox = wdg.QHBoxLayout()
+        hbox = gui.QHBoxLayout()
         hbox.addStretch()
         hbox.addWidget(bbox)
         hbox.addStretch()
@@ -108,7 +107,7 @@ class KeywordsDialog(wdg.QDialog):
     def add_trefw(self, event):
         """nieuwe trefwoorden opgeven en direct in de linkerlijst zetten
         """
-        text, ok = wdg.QInputDialog.getText(self, app_title, "Geef nieuw trefwoord op")
+        text, ok = gui.QInputDialog.getText(self, app_title, "Geef nieuw trefwoord op")
         if ok:
             self.parent.opts["Keywords"].append(text)
             self.tolist.addItem(text)
@@ -118,33 +117,33 @@ class KeywordsDialog(wdg.QDialog):
         """
         self.parent.new_keywords = [self.tolist.item(i).text() for i in range(
             len(self.tolist))]
-        super().accept()
+        gui.QDialog.accept(self)
 
-class CheckDialog(wdg.QDialog):
+class CheckDialog(gui.QDialog):
     """Dialoog om te melden dat de applicatie verborgen gaat worden
     AskBeforeHide bepaalt of deze getoond wordt of niet
     """
     def __init__(self, parent):
         self.parent = parent
-        super().__init__(parent)
+        gui.QDialog.__init__(self, parent)
         self.setWindowTitle(app_title)
         self.setWindowIcon(self.parent.nt_icon)
-        txt = wdg.QLabel(_("sleep_message"), self)
-        self.check = wdg.QCheckBox(_("hide_message"), self)
-        ok_button = wdg.QPushButton("&Ok", self)
-        ok_button.clicked.connect(self.klaar)
+        txt = gui.QLabel(_("sleep_message"), self)
+        self.check = gui.QCheckBox(_("hide_message"), self)
+        ok_button = gui.QPushButton("&Ok", self)
+        self.connect(ok_button, core.SIGNAL('clicked()'), self.klaar)
 
-        vbox = wdg.QVBoxLayout()
+        vbox = gui.QVBoxLayout()
 
-        hbox = wdg.QHBoxLayout()
+        hbox = gui.QHBoxLayout()
         hbox.addWidget(txt)
         vbox.addLayout(hbox)
 
-        hbox = wdg.QHBoxLayout()
+        hbox = gui.QHBoxLayout()
         hbox.addWidget(self.check)
         vbox.addLayout(hbox)
 
-        hbox = wdg.QHBoxLayout()
+        hbox = gui.QHBoxLayout()
         hbox.addWidget(ok_button)
         hbox.insertStretch(0, 1)
         hbox.addStretch(1)
@@ -158,11 +157,11 @@ class CheckDialog(wdg.QDialog):
         "dialoog afsluiten"
         if self.check.isChecked():
             self.parent.opts["AskBeforeHide"] = False
-        super().done(0)
+        gui.QDialog.done(self, 0)
 
-class MainWindow(wdg.QMainWindow, NoteTreeMixin):
+class MainWindow(gui.QMainWindow, NoteTreeMixin):
     def __init__(self, parent=None, title=''):
-        super().__init__()
+        gui.QMainWindow.__init__(self)
         self.nt_icon = gui.QIcon(os.path.join(os.path.dirname(__file__),
             "notetree.ico"))
         self.setWindowIcon(self.nt_icon)
@@ -170,29 +169,31 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         self.setWindowTitle(title)
         self.sb = self.statusBar()
 
-        self.tray_icon = wdg.QSystemTrayIcon(self.nt_icon, self)
+        self.tray_icon = gui.QSystemTrayIcon(self.nt_icon, self)
         self.tray_icon.setToolTip(_("revive_message"))
-        ## self.tray_icon.clicked.connect(self.revive)
-        ## tray_signal = "activated(QSystemTrayIcon::ActivationReason)"
-        self.tray_icon.activated.connect(self.revive)
+        self.connect(self.tray_icon, core.SIGNAL('clicked'),
+            self.revive)
+        tray_signal = "activated(QSystemTrayIcon::ActivationReason)"
+        self.connect(self.tray_icon, core.SIGNAL(tray_signal),
+            self.revive)
         self.tray_icon.hide()
 
         menubar = self.menuBar()
         self.create_menu()
 
-        self.splitter = wdg.QSplitter(self)
+        self.splitter = gui.QSplitter(self)
         self.setCentralWidget(self.splitter)
 
-        self.tree = wdg.QTreeWidget(self)
+        self.tree = gui.QTreeWidget(self)
         self.tree.setColumnCount(2)
         self.tree.hideColumn(1)
-        self.tree.headerItem().setHidden(True)
-        self.tree.setSelectionMode(wdg.QTreeWidget.SingleSelection)
+        self.tree.setItemHidden(self.tree.headerItem(), True)
+        self.tree.setSelectionMode(gui.QTreeWidget.SingleSelection)
         self.splitter.addWidget(self.tree)
         self.tree.itemSelectionChanged.connect(self.changeselection)
         ## self.tree.keyReleaseEvent.connect(self.on_key)
 
-        self.editor = wdg.QTextEdit(self)
+        self.editor = gui.QTextEdit(self)
         self.editor.setEnabled(False)
         self.splitter.addWidget(self.editor)
         ## self.editor.keyReleaseEvent.connect(self.on_key2)
@@ -246,12 +247,12 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
     def open(self):
         msg = NoteTreeMixin.open(self, "Qt", root_title)
         if msg:
-            wdg.QMessageBox.information(self, app_title, msg)
+            gui.QMessageBox.information(self, app_title, msg)
             return
         self.root = self.tree.takeTopLevelItem(0)
         ## self.root = self.tree.AddRoot(os.path.splitext(os.path.split(
             ## self.project_file)[1])[0])
-        self.root = wdg.QTreeWidgetItem()
+        self.root = gui.QTreeWidgetItem()
         self.root.setText(0, self.opts["RootTitle"])
         self.tree.addTopLevelItem(self.root)
         self.activeitem = item_to_activate = self.root
@@ -273,7 +274,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         if not first_time:
             self.tree_to_dict()
             self.root = self.tree.takeTopLevelItem(0)
-            self.root = wdg.QTreeWidgetItem()
+            self.root = gui.QTreeWidgetItem()
             self.root.setText(0, self.opts["RootTitle"])
             self.tree.addTopLevelItem(self.root)
         item_to_activate = self.root
@@ -294,7 +295,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
                 continue
             if seltype == 2 and seldata not in text:
                 continue
-            item = wdg.QTreeWidgetItem()
+            item = gui.QTreeWidgetItem()
             if not item_to_activate: # make sure this is only set to root if selection is empty
                 item_to_activate = item
             item.setText(0, tag)
@@ -317,9 +318,9 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         return item_to_activate
 
     def reread(self,event=None):
-        dlg = wdg.QMessageBox.question(self, app_title, _("ask_reload"),
-            wdg.QMessageBox.Yes | wdg.QMessageBox.No)
-        if dlg == wdg.QMessageBox.Yes:
+        dlg = gui.QMessageBox.question(self, app_title, _("ask_reload"),
+            gui.QMessageBox.Yes | gui.QMessageBox.No)
+        if dlg == gui.QMessageBox.Yes:
             self.open()
 
     def tree_to_dict(self):
@@ -342,8 +343,8 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         NoteTreeMixin._save(self)
 
     def rename(self, event=None):
-        text, ok = wdg.QInputDialog.getText(self, app_title, _("t_root"),
-            wdg.QLineEdit.Normal, self.root.text(0))
+        text, ok = gui.QInputDialog.getText(self, app_title, _("t_root"),
+            gui.QLineEdit.Normal, self.root.text(0))
         if ok:
             self.opts["RootTitle"] = text
             self.root.setText(0, text)
@@ -355,9 +356,9 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         self.hide()
 
     def revive(self, event=None):
-        if event == wdg.QSystemTrayIcon.Unknown:
+        if event == gui.QSystemTrayIcon.Unknown:
             self.tray_icon.showMessage(app_title, _("revive_message"))
-        elif event == wdg.QSystemTrayIcon.Context:
+        elif event == gui.QSystemTrayIcon.Context:
             pass
         else:
             self.show()
@@ -366,16 +367,15 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
     def new_item(self, event=None):
         # kijk waar de cursor staat (of altijd onderaan toevoegen?)
         start = datetime.today().strftime("%d-%m-%Y %H:%M:%S")
-        text, ok = wdg.QInputDialog.getText(self, app_title, _("t_new"), text=start)
+        text, ok = gui.QInputDialog.getText(self, app_title, _("t_new"), text=start)
         print('new item:', text, ok)
         if ok:
-            item = wdg.QTreeWidgetItem()
+            item = gui.QTreeWidgetItem()
             item.setText(0, text)
             item.setData(0, core.Qt.UserRole, text)
             item.setText(1, "")
             item.setData(1, core.Qt.UserRole, [])
             self.root.addChild(item)
-            self.nt_data[text] = ""
             self.tree.setCurrentItem(item)
             self.root.setExpanded(True)
             self.editor.clear()
@@ -387,15 +387,14 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         if item != self.root:
             idx = self.root.indexOfChild(item)
             self.root.removeChild(item)
-            print(self.nt_data)
             ky = item.data(0, core.Qt.UserRole)
             del self.nt_data[ky]
         else:
-            wdg.QMessageBox.information(self, app_title, _("no_delete_root"))
+            gui.QMessageBox.information(self, app_title, _("no_delete_root"))
 
     def ask_title(self, event=None):
-        text, ok = wdg.QInputDialog.getText(self, app_title, _("t_name"),
-            wdg.QLineEdit.Normal, self.activeitem.text(0))
+        text, ok = gui.QInputDialog.getText(self, app_title, _("t_name"),
+            gui.QLineEdit.Normal, self.activeitem.text(0))
         if ok:
             self.activeitem.setText(0, text)
 
@@ -404,14 +403,14 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         if idx < self.root.childCount() - 1:
             self.tree.setCurrentItem(self.root.child(idx + 1))
         else:
-            wdg.QMessageBox.information(self, app_title, _("no_next_item"))
+            gui.QMessageBox.information(self, app_title, _("no_next_item"))
 
     def prev_note(self, event=None):
         idx = self.root.indexOfChild(self.activeitem)
         if idx > 0:
             self.tree.setCurrentItem(self.root.child(idx - 1))
         else:
-            wdg.QMessageBox.information(self, app_title, _("no_prev_item"))
+            gui.QMessageBox.information(self, app_title, _("no_prev_item"))
 
     def check_active(self, message=None):
         if self.activeitem and self.activeitem != self.root:
@@ -438,18 +437,18 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             self.editor.setEnabled(False)
 
     def info_page(self,event=None):
-        wdg.QMessageBox.information(self, app_title, _("info_text"))
+        gui.QMessageBox.information(self, app_title, _("info_text"))
 
     def help_page(self,event=None):
         ## gui.QMessageBox.information(self, app_title, _("help_text"))
         ## return
-        dlg = wdg.QDialog(self)
+        dlg = gui.QDialog(self)
         data = [x.split(' - ', 1) for x in _("help_text").split('\n')]
-        gbox = wdg.QGridLayout()
+        gbox = gui.QGridLayout()
         line = 0
         for left, right in data:
-            gbox.addWidget(wdg.QLabel(left, self), line, 0)
-            gbox.addWidget(wdg.QLabel(right, self), line, 1)
+            gbox.addWidget(gui.QLabel(left, self), line, 0)
+            gbox.addWidget(gui.QLabel(right, self), line, 1)
             line += 1
         dlg.setWindowTitle(app_title + " " + _("t_keys")) # ' keys'
         dlg.setLayout(gbox)
@@ -462,7 +461,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         for idx, lang in enumerate([x[0] for x in data]):
             if lang == self.opts["Language"]:
                 break
-        text, ok = wdg.QInputDialog.getItem(self, app_title, _("t_lang"),
+        text, ok = gui.QInputDialog.getItem(self, app_title, _("t_lang"),
             [x[1] for x in data], current=idx, editable=False)
         if ok:
             for idx, lang in enumerate([x[1] for x in data]):
@@ -481,7 +480,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         if test.data(1, core.Qt.UserRole) is None: return
         dlg = KeywordsDialog(self)
         ok = dlg.exec_()
-        if ok == wdg.QDialog.Accepted:
+        if ok == gui.QDialog.Accepted:
             self.activeitem.setData(1, core.Qt.UserRole, self.new_keywords)
 
     def no_selection(self, event=None):
@@ -503,7 +502,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             selindex = selection_list.index(seltext)
         except ValueError:
             selindex = -1
-        text, ok = wdg.QInputDialog.getItem(self, app_title,
+        text, ok = gui.QInputDialog.getItem(self, app_title,
             _("i_seltag"), selection_list, current=selindex)
         if ok:
             self.opts['Selection'] = (1, text)
@@ -518,8 +517,8 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         seltype, seltext = self.opts['Selection']
         if seltype != 2:
             seltext = ''
-        text, ok = wdg.QInputDialog.getText(self, app_title,
-            _("i_seltxt"), wdg.QLineEdit.Normal, seltext)
+        text, ok = gui.QInputDialog.getText(self, app_title,
+            _("i_seltxt"), gui.QLineEdit.Normal, seltext)
         if ok:
             self.opts['Selection'] = (2, text)
             self.sb.showMessage(_("s_seltxt").format(text))
@@ -530,12 +529,12 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
 
 def main(fnaam):
     ## self.fn = fnaam
-    app = wdg.QApplication(sys.argv)
+    app = gui.QApplication(sys.argv)
     frame = MainWindow(parent=None, title=" - ".join((fnaam, app_title)))
     frame.show()
     frame.project_file = fnaam
     mld = frame.open()
     if mld:
-        wdg.QMessageBox.information(frame, "Error", mld)
+        gui.QMessageBox.information(frame, "Error", mld)
     else:
         sys.exit(app.exec_())
