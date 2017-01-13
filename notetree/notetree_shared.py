@@ -1,5 +1,6 @@
 import gettext
 import os
+import collections
 app_title = "NoteTree"
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 locale = os.path.join(HERE, 'locale')
@@ -67,7 +68,7 @@ class NoteTreeMixin:
             "Keywords": [],
             "Selection": (0, '')
             }
-        self.nt_data = {}
+        self.nt_data = collections.OrderedDict()
         ## # wx versie:
         ## try:
             ## file = open(self.project_file, 'rb')
