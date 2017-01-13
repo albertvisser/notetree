@@ -172,8 +172,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
 
         self.tray_icon = wdg.QSystemTrayIcon(self.nt_icon, self)
         self.tray_icon.setToolTip(_("revive_message"))
-        ## self.tray_icon.clicked.connect(self.revive)
-        ## tray_signal = "activated(QSystemTrayIcon::ActivationReason)"
         self.tray_icon.activated.connect(self.revive)
         self.tray_icon.hide()
 
@@ -190,12 +188,10 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         self.tree.setSelectionMode(wdg.QTreeWidget.SingleSelection)
         self.splitter.addWidget(self.tree)
         self.tree.itemSelectionChanged.connect(self.changeselection)
-        ## self.tree.keyReleaseEvent.connect(self.on_key)
 
         self.editor = wdg.QTextEdit(self)
         self.editor.setEnabled(False)
         self.splitter.addWidget(self.editor)
-        ## self.editor.keyReleaseEvent.connect(self.on_key2)
 
     def create_menu(self):
         menu_bar = self.menuBar()
@@ -216,27 +212,12 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
                 else:
                     submenu.addSeparator()
 
-    ## def keyReleaseEvent(self, event):
-        ## keycode = event.key()
-        ## if keycode == wx.WXK_DELETE:
-            ## self.delete_item()
-        ## elif keycode == wx.WXK_ESCAPE:
-            ## self.afsl()
-        ## gui.QTreeWidget.keyReleaseEvent(self, event)
-
-    ## def on_key2(self, event):
-        ## keycode = event.key()
-        ## if keycode == wx.WXK_ESCAPE:
-            ## self.afsl()
-        ## gui.QTextEdit.keyReleaseEvent(self, event)
-
     def changeselection(self, event=None):
         test = self.tree.selectedItems()
         if test == self.root:
             return
         self.check_active()
         h = self.tree.currentItem()
-        #log('size hint for item {}'.format(h.sizeHint(0)))
         self.activate_item(h)
 
     def closeEvent(self, event=None):
@@ -249,8 +230,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             wdg.QMessageBox.information(self, app_title, msg)
             return
         self.root = self.tree.takeTopLevelItem(0)
-        ## self.root = self.tree.AddRoot(os.path.splitext(os.path.split(
-            ## self.project_file)[1])[0])
         self.root = wdg.QTreeWidgetItem()
         self.root.setText(0, self.opts["RootTitle"])
         self.tree.addTopLevelItem(self.root)
@@ -260,7 +239,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         # TODO apply selection while building tree
         item_to_activate = self.build_tree(first_time=True)
         self.resize(*self.opts["ScreenSize"])
-        ## print(self.opts['SashPosition'])
         try:
             self.splitter.restoreState(self.opts['SashPosition'])
         except TypeError:
@@ -281,7 +259,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         ## seltype = 0
         seltype, seldata = self.opts["Selection"]
         for key, value in self.nt_data.items():
-            print(key, value)
             if key == 0:
                 continue
             try:                    # TO BE REMOVED
@@ -289,7 +266,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
                 keywords = []       # to read existing datafiles
             except ValueError:      # should become obsolete pretty soon
                 tag, text, keywords = value
-            ## seltype, seldata = self.opts["Selection"]
             if seltype == 1 and seldata not in keywords:
                 continue
             if seltype == 2 and seldata not in text:
@@ -302,14 +278,9 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             item.setText(1, text)
             item.setData(1, core.Qt.UserRole, keywords)
             self.root.addChild(item)
-            print(key, self.opts["ActiveItem"])
             if key == self.opts["ActiveItem"]:
-                print("setting item_to_activate to", item)
                 item_to_activate = item
-                ## self.editor.setText(text)
-                ## self.editor.setEnabled(True)
         for action in self.selactions:
-            print('unchecking', action.text())
             action.setChecked(False)
         print('checking', self.selactions[seltype].text())
         self.selactions[seltype].setChecked(True)
@@ -324,20 +295,17 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
 
     def tree_to_dict(self):
         self.check_active() # even zorgen dat de editor inhoud geassocieerd wordt
-        ## self.nt_data = {}
         for num in range(self.root.childCount()):
             tag = self.root.child(num).text(0)
             ky = self.root.child(num).data(0, core.Qt.UserRole)
             text = self.root.child(num).text(1)
             trefw = self.root.child(num).data(1, core.Qt.UserRole)
-            print(ky, tag, text, trefw)
             self.nt_data[ky] = (str(tag), str(text), trefw)
 
     def save(self, event=None):
         self.tree_to_dict() # check for changed values in tree not in dict
         self.opts["ScreenSize"] = self.width(), self.height() # tuple(self.size())
         self.opts["SashPosition"] = self.splitter.saveState()
-        ## self.opts["ActiveItem"] = self.root.indexOfChild(self.activeitem) + 1
         self.opts["ActiveItem"] = self.activeitem.data(0, core.Qt.UserRole)
         NoteTreeMixin._save(self)
 
@@ -367,7 +335,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         # kijk waar de cursor staat (of altijd onderaan toevoegen?)
         start = datetime.today().strftime("%d-%m-%Y %H:%M:%S")
         text, ok = wdg.QInputDialog.getText(self, app_title, _("t_new"), text=start)
-        print('new item:', text, ok)
         if ok:
             item = wdg.QTreeWidgetItem()
             item.setText(0, text)
@@ -387,7 +354,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         if item != self.root:
             idx = self.root.indexOfChild(item)
             self.root.removeChild(item)
-            print(self.nt_data)
             ky = item.data(0, core.Qt.UserRole)
             del self.nt_data[ky]
         else:
