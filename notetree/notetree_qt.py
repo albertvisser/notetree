@@ -40,6 +40,7 @@ class KeywordsDialog(wdg.QDialog):
         # define widgets
         self.fromlist = wdg.QListWidget(self)
         self.fromlist.setSelectionMode(wdg.QAbstractItemView.MultiSelection)
+        self.fromlist.itemDoubleClicked.connect(self.move_right)
         text = wdg.QLabel(_("t_tags"), self)
         fromto_button = wdg.QPushButton(_("b_tag"))
         fromto_button.clicked.connect(self.move_right)
@@ -49,6 +50,7 @@ class KeywordsDialog(wdg.QDialog):
         addtrefw_button.clicked.connect(self.add_trefw)
         self.tolist = wdg.QListWidget(self)
         self.tolist.setSelectionMode(wdg.QAbstractItemView.MultiSelection)
+        self.tolist.itemDoubleClicked.connect(self.move_left)
         bbox = wdg.QDialogButtonBox(wdg.QDialogButtonBox.Ok |
             wdg.QDialogButtonBox.Cancel)
         bbox.accepted.connect(self.accept)
