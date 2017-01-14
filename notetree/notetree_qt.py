@@ -198,16 +198,18 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
     def create_menu(self):
         menu_bar = self.menuBar()
         menu_bar.clear()
-        self.selactions = []
+        self.selactions = {}
+        self.seltypes = []
         for item, data in self.get_menudata(): # defined in mixin class
             menu_label = item
             submenu = menu_bar.addMenu(menu_label)
             for label, handler, info, key in data:
                 if label:
                     action = submenu.addAction(label, handler)
-                    if label in (_("m_selall"), _("m_seltag"), _("m_seltxt")):
+                    if menu_label == _("m_select"):
+                        self.seltypes.append(label)
                         action.setCheckable(True)
-                        self.selactions.append(action)
+                        self.selactions[label] = action
                     if key:
                         action.setShortcuts([x for x in key.split(",")])
                     action.setStatusTip(info)
@@ -282,10 +284,10 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             self.root.addChild(item)
             if key == self.opts["ActiveItem"]:
                 item_to_activate = item
-        for action in self.selactions:
+        for action in self.selactions.values():
             action.setChecked(False)
-        print('checking', self.selactions[seltype].text())
-        self.selactions[seltype].setChecked(True)
+        print('checking', self.selactions[self.seltypes[seltype]].text())
+        self.selactions[self.seltypes[seltype]].setChecked(True)
         self.tree.expandItem(self.root)
         return item_to_activate
 
@@ -459,6 +461,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         item_to_activate = self.build_tree()
         self.tree.setCurrentItem(item_to_activate)
 
+
     def keyword_select(self, event=None):
         """Open a dialog where a keyword can be chosen to select texts that it's
         assigned to
@@ -478,6 +481,9 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             self.sb.showMessage(_("s_seltag").format(text))
             item_to_activate = self.build_tree()
             self.tree.setCurrentItem(item_to_activate)
+        else:
+            self.selactions[_("m_seltag")].setChecked(False)
+
 
     def text_select(self, event=None):
         """Open a dialog box where text can be entered that the texts to be selected
@@ -493,6 +499,8 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             self.sb.showMessage(_("s_seltxt").format(text))
             item_to_activate = self.build_tree()
             self.tree.setCurrentItem(item_to_activate)
+        else:
+            self.selactions[_("m_seltxt")].setChecked(False)
 
 
 
