@@ -39,7 +39,7 @@ class KeywordsDialog(wdg.QDialog):
         self.resize(400, 256)
         # define widgets
         self.fromlist = wdg.QListWidget(self)
-        self.fromlist.setSelectionMode(wdg.QAbstractItemView.MultiSelection)
+        self.fromlist.setSelectionMode(wdg.QAbstractItemView.ExtendedSelection)
         self.fromlist.itemDoubleClicked.connect(self.move_right)
         text = wdg.QLabel(_("t_tags"), self)
         fromto_button = wdg.QPushButton(_("b_tag"))
@@ -48,13 +48,16 @@ class KeywordsDialog(wdg.QDialog):
         tofrom_button.clicked.connect(self.move_left)
         addtrefw_button = wdg.QPushButton(_("b_newtag"))
         addtrefw_button.clicked.connect(self.add_trefw)
+        help_button = wdg.QPushButton(_("m_keys"))
+        help_button.clicked.connect(self.keys_help)
         self.tolist = wdg.QListWidget(self)
-        self.tolist.setSelectionMode(wdg.QAbstractItemView.MultiSelection)
+        self.tolist.setSelectionMode(wdg.QAbstractItemView.ExtendedSelection)
         self.tolist.itemDoubleClicked.connect(self.move_left)
         bbox = wdg.QDialogButtonBox(wdg.QDialogButtonBox.Ok |
             wdg.QDialogButtonBox.Cancel)
         bbox.accepted.connect(self.accept)
         bbox.rejected.connect(self.reject)
+        self.create_actions()
         # get data from parent
         all_trefw = self.parent.opts['Keywords']
         self.data = self.parent.activeitem
@@ -75,6 +78,7 @@ class KeywordsDialog(wdg.QDialog):
         vbox2.addWidget(tofrom_button)
         vbox2.addSpacing(10)
         vbox2.addWidget(addtrefw_button)
+        vbox2.addWidget(help_button)
         vbox2.addStretch()
         hbox.addLayout(vbox2)
         vbox2 = wdg.QVBoxLayout()
@@ -89,20 +93,54 @@ class KeywordsDialog(wdg.QDialog):
         vbox.addLayout(hbox)
         self.setLayout(vbox)
 
+    def create_actions(self):
+        self.actionlist = (
+            ('a_from', 'Ctrl+L', self.activate_left),
+            (_('b_tag'), 'Ctrl+Right', self.move_right),
+            ('a_to', 'Ctrl+R', self.activate_right),
+            (_('b_untag'), 'Ctrl+Left', self.move_left),
+            (_('b_newtag'), 'Ctrl+N', self.add_trefw),
+            )
+        for name, shortcut, callback in self.actionlist:
+            act = wdg.QAction(name, self)
+            act.setShortcut(shortcut)
+            act.triggered.connect(callback)
+            self.addAction(act)
+
+    def activate_left(self, *args):
+        print('activate left')
+        self._activate(self.fromlist)
+
+    def activate_right(self, *args):
+        print('activate right')
+        self._activate(self.tolist)
+
+    def _activate(self, win):
+        ## items = win.selectedItems()
+        ## if not items:
+        item = win.currentItem()
+        if not item:
+            item = win.item(0)
+        item.setSelected(True)
+        win.setFocus(True)
+
     def move_right(self, event):
         """trefwoord selecteren
         """
-        self.moveitem(self.fromlist, self.tolist)
+        print('move to right')
+        self._moveitem(self.fromlist, self.tolist)
 
     def move_left(self, event):
         """trefwoord on-selecteren
         """
-        self.moveitem(self.tolist, self.fromlist)
+        print('move to left')
+        self._moveitem(self.tolist, self.fromlist)
 
-    def moveitem(self, from_, to):
+    def _moveitem(self, from_, to):
         """trefwoord verplaatsen van de ene lijst naar de andere
         """
         selected = from_.selectedItems()
+        print('moving', selected)
         for item in selected:
             from_.takeItem(from_.row(item))
             to.addItem(item)
@@ -114,6 +152,25 @@ class KeywordsDialog(wdg.QDialog):
         if ok:
             self.parent.opts["Keywords"].append(text)
             self.tolist.addItem(text)
+
+    def keys_help(self):
+        dlg = wdg.QDialog(self)
+        data = [x.split(' - ', 1) for x in (
+            'Activate left listbox - Ctrl+L',
+            'Assign tag - Ctrl+right',
+            'Activate right listbox - Ctrl+R',
+            'Unassign tag - Ctrl+left',
+            'Create new tag - Ctrl+N',
+            )]
+        gbox = wdg.QGridLayout()
+        line = 0
+        for left, right in data:
+            gbox.addWidget(wdg.QLabel(left, self), line, 0)
+            gbox.addWidget(wdg.QLabel(right, self), line, 1)
+            line += 1
+        dlg.setWindowTitle(app_title + " " + _("t_keys")) # ' keys'
+        dlg.setLayout(gbox)
+        dlg.exec_()
 
     def accept(self):
         """geef de geselecteerde trefwoorden aan het hoofdprogramma
@@ -286,7 +343,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
                 item_to_activate = item
         for action in self.selactions.values():
             action.setChecked(False)
-        print('checking', self.selactions[self.seltypes[seltype]].text())
         self.selactions[self.seltypes[seltype]].setChecked(True)
         self.tree.expandItem(self.root)
         return item_to_activate
