@@ -19,6 +19,26 @@ try:
 except ImportError:
     import pickle as pck
 
+# wrappers rond pickle ivm aanroep vanuit conversie utilities
+def load_file(filename):
+    """
+    raiset EOFError als file niet gelezen kan worden
+    geeft geen resultaat als bestand niet bestaat
+    """
+    if not os.path.exists(filename):
+        return
+    with open(filename, "rb") as f_in:
+        nt_data = pck.load(f_in)
+        options = nt_data.get(0, [])
+        test = options.get("Application", None)
+        if test and test != "NoteTree":
+            raise EOFError("{} is geen NoteTree bestand".format(filename))
+    return nt_data
+
+def save_file(filename,nt_data):
+    with open(filename,"wb") as _out:
+        pck.dump(nt_data, _out, protocol=2)
+
 class NoteTreeMixin:
 
     def get_menudata(self):
@@ -78,29 +98,22 @@ class NoteTreeMixin:
             "RevOrder": False,
             }
         self.nt_data = collections.OrderedDict()
-        ## # wx versie:
-        ## try:
-            ## file = open(self.project_file, 'rb')
-        ## except IOError:
-            ## return
-        ## try:
-            ## self.nt_data = pickle.load(file)
-        ## except EOFError:
-            ## return
-        ## file.close()
-        ## # qt versie:
-        if os.path.exists(self.project_file):
-            with open(self.project_file, "rb") as f_in:
-                try:
-                    self.nt_data = pck.load(f_in)
-                except EOFError:
-                    return "Geen NoteTree bestand"
-                else:
-                    options = self.nt_data.get(0, [])
-                    test = options.get("Application", None)
-                    if test and test != "NoteTree":
-                        return "{} is geen correct NoteTree bestand".format(
-                            self.project_file)
+        ## if os.path.exists(self.project_file):
+            ## with open(self.project_file, "rb") as f_in:
+                ## try:
+                    ## self.nt_data = pck.load(f_in)
+                ## except EOFError:
+                    ## return "Geen NoteTree bestand"
+                ## else:
+                    ## options = self.nt_data.get(0, [])
+                    ## test = options.get("Application", None)
+                    ## if test and test != "NoteTree":
+                        ## return "{} is geen correct NoteTree bestand".format(
+                            ## self.project_file)
+        try:
+            self.nt_data = load_file(self.project_file)
+        except EOFError as e:
+            return e
         options = self.nt_data.get(0, [])
         if "AskBeforeHide" in options:
             for key, val in options.items():
@@ -111,8 +124,7 @@ class NoteTreeMixin:
     def _save(self):
         self.nt_data[0] = self.opts
         ## self.nt_data = {0: self.opts}
-        with open(self.project_file,"wb") as _out:
-            pck.dump(self.nt_data, _out, protocol=2)
+        save_file(self.project_file)
 
     def reread(self): raise NotImplementedError
     def save(self): raise NotImplementedError

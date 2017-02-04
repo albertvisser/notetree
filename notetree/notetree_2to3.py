@@ -6,43 +6,20 @@ lees een doctree file en sla het op zonder de sashposition vanuit de gui
 to be run under Python 2
 """
 import sys
-import os
+import os.path
 import shutil
-import cPickle as pck
-## import PyQt4.QtGui as gui
-## import PyQt4.QtCore as core
+from notetree_shared import load_file, save_file
 
 usage = """\
 usage: [python] doctree_2to3.py <filename>
 """
-def load(fname):
-    mld = ""
-    try:
-        f_in = open(fname, "rb")
-    except IOError:
-        return "couldn't open {}".format(fname)
-    try:
-        nt_data = pck.load(f_in)
-    except EOFError:
-        mld = "couldn't load data from {}".format(fname)
-    finally:
-        f_in.close()
-    if mld:
-        return mld
-    try:
-        test = nt_data[0]["AskBeforeHide"]
-    except (ValueError, KeyError):
-        return "{} is not a valid Doctree data file".format(fname)
-    return nt_data
 
 def save(fname, data):
     try:
         shutil.copyfile(fname, fname + ".py2")
     except IOError:
         pass
-    f_out = open(fname,"wb")
-    pck.dump(data, f_out, protocol=2)
-    f_out.close()
+    save_file(fname, data)
 
 def main(args):
     if len(args) != 2:
@@ -52,9 +29,8 @@ def main(args):
     if not os.path.exists(fname):
         print("file does not exist")
         return False
-    data = load(fname)
-    if isinstance(data, str):
-        print(data)
+    data = load_file(fname)
+    if not data:
         return False
     for key, value in data[0].items():
         if key == "SashPosition":
