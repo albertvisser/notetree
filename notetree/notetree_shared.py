@@ -24,34 +24,42 @@ class NoteTreeMixin:
     def get_menudata(self):
         return (
             (_("m_main"), (
-                    (_("m_reload"), self.reread, _("h_reload"), 'Ctrl+L'),
-                    (_("m_save"), self.save, _("h_save"), 'Ctrl+S'),
-                    ("", None, None, None),
-                    (_("m_root"), self.rename, _("h_root"), 'Shift+F2'),
-                    ("", None, None, None),
-                    (_("m_hide"), self.hide_me, _("h_hide"), 'Ctrl+H'),
-                    (_("m_lang"), self.choose_language, _("h_lang"), 'Ctrl+F1'),
-                    ("", None, None, None),
-                    (_("m_exit"), self.close, _("h_exit"), 'Ctrl+Q,Escape'),
+                (_("m_reload"), self.reread, _("h_reload"), 'Ctrl+L'),
+                (_("m_save"), self.save, _("h_save"), 'Ctrl+S'),
+                ("", None, None, None),
+                (_("m_root"), self.rename, _("h_root"), 'Shift+F2'),
+                ('Manage keywords', self.manage_keywords,
+                    'Rename, remove and add tags', 'Shift+F6'),
+                ("", None, None, None),
+                (_("m_hide"), self.hide_me, _("h_hide"), 'Ctrl+H'),
+                (_("m_lang"), self.choose_language, _("h_lang"), 'Ctrl+F1'),
+                ("", None, None, None),
+                (_("m_exit"), self.close, _("h_exit"), 'Ctrl+Q,Escape'),
                 ), ),
             (_("m_note"), (
-                    (_("m_new"), self.new_item, _("h_new"), 'Ctrl+N'),
-                    (_("m_delete"), self.delete_item, _("h_delete"), 'Ctrl+D,Delete'),
-                    (_("m_name"), self.ask_title, _("h_name"), 'F2'),
-                    ("", None, None, None),
-                    (_("m_tags"), self.link_keywords, _("h_tags"), 'F6'),
-                    ("", None, None, None),
-                    (_("m_forward"), self.next_note,_("h_forward"), 'Ctrl+PgDown'),
-                    (_("m_back"), self.prev_note,_("h_back"), 'Ctrl+PgUp'),
+                (_("m_new"), self.new_item, _("h_new"), 'Ctrl+N'),
+                (_("m_delete"), self.delete_item, _("h_delete"), 'Ctrl+D,Delete'),
+                (_("m_name"), self.ask_title, _("h_name"), 'F2'),
+                ("", None, None, None),
+                (_("m_tags"), self.link_keywords, _("h_tags"), 'F6'),
+                ("", None, None, None),
+                (_("m_forward"), self.next_note,_("h_forward"), 'Ctrl+PgDown'),
+                (_("m_back"), self.prev_note,_("h_back"), 'Ctrl+PgUp'),
                 ), ),
-            ( _("m_select"), (
+            ## ( _("m_select"), (
+                ## (_("m_selall"), self.no_selection, _("h_selall"), None),
+                ## (_("m_seltag"), self.keyword_select, _("h_seltag"), None),
+                ## (_("m_seltxt"), self.text_select, _("h_seltxt"), None),
+            ( _("m_view"), (
+                (_("m_revorder"), self.reverse, _("h_revorder"), None),
+                ("", None, None, None),
                 (_("m_selall"), self.no_selection, _("h_selall"), None),
                 (_("m_seltag"), self.keyword_select, _("h_seltag"), None),
                 (_("m_seltxt"), self.text_select, _("h_seltxt"), None),
                 ), ),
             (_("m_help"), (
-                    (_("m_about"), self.info_page, _("h_about"), None),
-                    (_("m_keys"), self.help_page, _("h_keys"), 'F1'),
+                (_("m_about"), self.info_page, _("h_about"), None),
+                (_("m_keys"), self.help_page, _("h_keys"), 'F1'),
                 ), ),
             )
 
@@ -66,7 +74,8 @@ class NoteTreeMixin:
             'Language': 'en',
             "RootTitle": root_title,
             "Keywords": [],
-            "Selection": (0, '')
+            "Selection": (0, ''),
+            "RevOrder": False,
             }
         self.nt_data = collections.OrderedDict()
         ## # wx versie:
@@ -117,6 +126,7 @@ class NoteTreeMixin:
     def link_keywords(self): raise NotImplementedError
     def next_note(self): raise NotImplementedError
     def prev_note(self): raise NotImplementedError
+    def reverse(self): raise NotImplementedError
     def no_selection(self): raise NotImplementedError
     def keyword_select(self): raise NotImplementedError
     def text_select(self): raise NotImplementedError

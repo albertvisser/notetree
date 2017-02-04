@@ -5,16 +5,16 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: NoteTree 2.2\n"
-"POT-Creation-Date: 2014-11-01 20:51+CET\n"
-"PO-Revision-Date: 2014-11-01 21:06+0100\n"
+"POT-Creation-Date: 2017-02-04 15:18+0100\n"
+"PO-Revision-Date: 2017-02-04 16:48+0100\n"
 "Last-Translator: \n"
 "Language-Team: NL <LL@li.org>\n"
-"Language: Python\n"
+"Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.8.7.1\n"
 
 #: ../notetree/notetree_qt.py:28
 msgid "t_nl"
@@ -176,7 +176,7 @@ msgstr "&Selecteren"
 
 #: ../notetree/notetree_qt.py:228 ../notetree/notetree_qt.py:246
 msgid "m_selall"
-msgstr "&Alles"
+msgstr "&Selecteer Alles"
 
 #: ../notetree/notetree_qt.py:228 ../notetree/notetree_qt.py:539
 msgid "h_selall"
@@ -188,7 +188,7 @@ msgstr "Laat notities zien met een bepaald trefwoord"
 
 #: ../notetree/notetree_qt.py:229 ../notetree/notetree_qt.py:246
 msgid "m_seltag"
-msgstr "&Trefwoord"
+msgstr "Selecteer op &Trefwoord"
 
 #: ../notetree/notetree_qt.py:230
 msgid "h_seltxt"
@@ -196,7 +196,7 @@ msgstr "Laat notities zien die een bepaalde tekst bevatten"
 
 #: ../notetree/notetree_qt.py:230 ../notetree/notetree_qt.py:246
 msgid "m_seltxt"
-msgstr "T&ekst"
+msgstr "Selecteer op T&ekst"
 
 #: ../notetree/notetree_qt.py:232
 msgid "m_help"
@@ -282,7 +282,7 @@ msgstr "Kies een trefwoord om te zoeken"
 
 #: ../notetree/notetree_qt.py:559
 msgid "s_seltag"
-msgstr "Toon notities met trefwoord `{}`"
+msgstr "Toon alleen notities met trefwoord `{}`"
 
 #: ../notetree/notetree_qt.py:575
 msgid "i_seltxt"
@@ -290,4 +290,73 @@ msgstr "Geef tekst op om te zoeken"
 
 #: ../notetree/notetree_qt.py:578
 msgid "s_seltxt"
-msgstr "Toon notities met tekst `{}`"
+msgstr "Toon alleen notities met tekst `{}`"
+
+#: ../notetree/notetree_qt.py:
+msgid "m_revorder"
+msgstr "&Nieuwste eerst"
+
+#: ../notetree/notetree_qt.py:
+msgid "h_revorder"
+msgstr "Toon in omgekeerde volgorde van toevoegen"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_tagman"
+msgstr "Manage tags"
+
+#: ../notetree/notetree_qt.py:
+msgid "b_remtag"
+msgstr "Verwijder"
+
+#: ../notetree/notetree_qt.py:
+msgid "b_addtag"
+msgstr "Voeg toe/wijzig"
+
+#: ../notetree/notetree_qt.py:
+msgid "b_done"
+msgstr "Klaar"
+
+#: ../notetree/notetree_qt.py:
+msgid "l_oldval"
+msgstr "Huidige:"
+
+#: ../notetree/notetree_qt.py:
+msgid "l_newval"
+msgstr "Nieuwe waarde:"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_applied"
+msgstr "Wijzigingen worden onmiddellijk doorgevoerd"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_remtag"
+msgstr "Keyword \"{}\" wordt verwijderd - doorgaan?"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_repltag"
+msgstr "Keyword \"{}\" wordt vervangen door \"{}\" "
+
+#: ../notetree/notetree_qt.py:
+msgid "t_repltag2"
+msgstr "Ook vervangen waar deze gebruikt wordt (nee betekent verwijderen)?"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_addtag"
+msgstr "Keyword \"{}\" wordt toegevoegd - doorgaan?"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_newtag"
+msgstr "Geef nieuw trefwoord op"
+
+#: ../notetree/notetree_qt.py:
+msgid "tag_help"
+msgstr ""
+"Ga naar linker lijst - Ctrl+L\n"
+"Tag toevoegen - Ctrl+naar rechts\n"
+"Ga naar rechterlijst - Ctrl+R\n"
+"Tag weghalen - Ctrl+naar links\n"
+"Nieuwe tag toevoegen - Ctrl+N"
+
+#: ../notetree/notetree_qt.py:
+msgid "m_view"
+msgstr "&Weergave"

@@ -275,3 +275,66 @@ msgstr ""
 msgid "s_seltxt"
 msgstr ""
 
+#: ../notetree/notetree_qt.py:
+msgid "m_revorder"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "h_revorder"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "t_tagman"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "b_remtag"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "b_addtag"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "b_done"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "l_oldval"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "l_newval"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "t_applied"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "t_remtag"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "t_repltag"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "t_repltag2"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "t_addtag"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "t_newtag"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "tag_help"
+msgstr ""
+
+#: ../notetree/notetree_qt.py:
+msgid "m_view"
+msgstr ""

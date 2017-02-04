@@ -5,16 +5,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: NoteTree 2.2\n"
-"POT-Creation-Date: 2014-11-01 20:51+CET\n"
-"PO-Revision-Date: 2014-11-01 21:06+0100\n"
+"POT-Creation-Date: 2017-02-04 15:17+0100\n"
+"PO-Revision-Date: 2017-02-04 16:46+0100\n"
 "Last-Translator: \n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: Python\n"
+"Language-Team: \n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.8.7.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../notetree/notetree_qt.py:28
 msgid "t_nl"
@@ -176,7 +177,7 @@ msgstr "&Select"
 
 #: ../notetree/notetree_qt.py:228 ../notetree/notetree_qt.py:246
 msgid "m_selall"
-msgstr "&All"
+msgstr "Select &All"
 
 #: ../notetree/notetree_qt.py:228 ../notetree/notetree_qt.py:539
 msgid "h_selall"
@@ -188,7 +189,7 @@ msgstr "Show notes with a given tag"
 
 #: ../notetree/notetree_qt.py:229 ../notetree/notetree_qt.py:246
 msgid "m_seltag"
-msgstr "&Tag"
+msgstr "Select by &Tag"
 
 #: ../notetree/notetree_qt.py:230
 msgid "h_seltxt"
@@ -196,7 +197,7 @@ msgstr "Show notes with given content"
 
 #: ../notetree/notetree_qt.py:230 ../notetree/notetree_qt.py:246
 msgid "m_seltxt"
-msgstr "&Content"
+msgstr "Select by &Content"
 
 #: ../notetree/notetree_qt.py:232
 msgid "m_help"
@@ -282,7 +283,7 @@ msgstr "Enter tag to search for"
 
 #: ../notetree/notetree_qt.py:559
 msgid "s_seltag"
-msgstr "Show notes with keyword `{}`"
+msgstr "Show only notes with keyword `{}`"
 
 #: ../notetree/notetree_qt.py:575
 msgid "i_seltxt"
@@ -290,4 +291,73 @@ msgstr "Enter text to search for"
 
 #: ../notetree/notetree_qt.py:578
 msgid "s_seltxt"
-msgstr "Show notes containing `{}`"
+msgstr "Show only notes containing `{}`"
+
+#: ../notetree/notetree_qt.py:
+msgid "m_revorder"
+msgstr "&Newest first"
+
+#: ../notetree/notetree_qt.py:
+msgid "h_revorder"
+msgstr "Show notes in reverse order of adding"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_tagman"
+msgstr "Manage tags"
+
+#: ../notetree/notetree_qt.py:
+msgid "b_remtag"
+msgstr "Remove selected"
+
+#: ../notetree/notetree_qt.py:
+msgid "b_addtag"
+msgstr "Add/Update"
+
+#: ../notetree/notetree_qt.py:
+msgid "b_done"
+msgstr "Done"
+
+#: ../notetree/notetree_qt.py:
+msgid "l_oldval"
+msgstr "Current:"
+
+#: ../notetree/notetree_qt.py:
+msgid "l_newval"
+msgstr "New value"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_applied"
+msgstr "Changes are applied immediately"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_remtag"
+msgstr "About to remove keyword \"{}\" - continue?"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_repltag"
+msgstr "About to replace keyword \"{}\" with \"{}\""
+
+#: ../notetree/notetree_qt.py:
+msgid "t_repltag2"
+msgstr "Also replace where used (if not, entries are removed)?"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_addtag"
+msgstr "About to add new keyword \"{}\" - continue?"
+
+#: ../notetree/notetree_qt.py:
+msgid "t_newtag"
+msgstr "Enter new keyword"
+
+#: ../notetree/notetree_qt.py:
+msgid "tag_help"
+msgstr ""
+"Activate left listbox - Ctrl+L\n"
+"Assign tag - Ctrl+right\n"
+"Activate right listbox - Ctrl+R\n"
+"Unassign tag - Ctrl+left\n"
+"Create new tag - Ctrl+N"
+
+#: ../notetree/notetree_qt.py:
+msgid "m_view"
+msgstr "&View"

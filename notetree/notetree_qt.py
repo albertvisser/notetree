@@ -28,6 +28,103 @@ from .notetree_shared import NoteTreeMixin, app_title, root_title, languages
 
 ## root_title = "MyNotes"
 
+class KeywordsManager(wdg.QDialog):
+    """Dialoog voor het wijzigen van trefwoorden
+    """
+    def __init__(self, parent):
+        self.parent = parent
+        super().__init__(parent)
+        self.setWindowTitle('{} - {}'.format(app_title, _("t_tagman")))
+        self.setWindowIcon(self.parent.nt_icon)
+        self.resize(400, 0)
+        self.oldtag = wdg.QComboBox(self, editable=True)
+        self.newtag = wdg.QLineEdit(self)
+        self.newtag.setMinimumHeight(self.oldtag.height())
+        self.refresh_fields()
+        remove_button = wdg.QPushButton(_("b_remtag"), self)
+        remove_button.clicked.connect(self.remove_keyword)
+        add_button = wdg.QPushButton(_('b_addtag'), self)
+        add_button.clicked.connect(self.add_keyword)
+        done_button = wdg.QPushButton(_("b_done"), self)
+        done_button.clicked.connect(self.accept)
+        vbox = wdg.QVBoxLayout()
+        gbox = wdg.QGridLayout()
+        gbox.addWidget(wdg.QLabel(_('l_oldval')), 0, 0)
+        gbox.addWidget(self.oldtag, 0, 1)
+        gbox.addWidget(remove_button, 0, 2)
+        gbox.addWidget(wdg.QLabel(_('l_newval')), 1, 0)
+        gbox.addWidget(self.newtag, 1, 1)
+        gbox.addWidget(add_button, 1, 2)
+        vbox.addLayout(gbox)
+        hbox = wdg.QHBoxLayout()
+        ## hbox.addWidget(wdg.QStaticText('Changes are applied immediately'))
+        hbox.addWidget(wdg.QLabel(_('t_applied')))
+        vbox.addLayout(hbox)
+        hbox = wdg.QHBoxLayout()
+        hbox.addStretch()
+        hbox.addWidget(done_button)
+        hbox.addStretch()
+        vbox.addLayout(hbox)
+        self.setLayout(vbox)
+
+    def refresh_fields(self):
+        self.oldtag.clear()
+        self.oldtag.addItems(self.parent.opts['Keywords'])
+        self.oldtag.clearEditText()
+        self.newtag.clear()
+
+    def update_items(self, oldtext, newtext=''):
+        for ix in range(self.parent.root.childCount()):
+            item = self.parent.root.child(ix)
+            keywords = item.data(1, core.Qt.UserRole)
+            try:
+                ix = keywords.index(oldtext)
+            except ValueError:
+                continue
+            if newtext:
+                keywords[ix] = newtext
+            else:
+                keywords.pop(ix)
+            item.setData(1, core.Qt.UserRole, keywords)
+
+    def remove_keyword(self, *args):
+        oldtext = self.oldtag.currentText()
+        msg = _('t_remtag').format(oldtext)
+        ask = wdg.QMessageBox.question(self, app_title, msg)
+        if ask != wdg.QMessageBox.Yes:
+            return
+        self.parent.opts['Keywords'].remove(oldtext)
+        self.update_items(oldtext)
+        self.refresh_fields()
+
+    def add_keyword(self, *args):
+        oldtext = self.oldtag.currentText()
+        newtext = self.newtag.text()
+        if oldtext:
+            prompter = wdg.QMessageBox()
+            prompter.setText(_('t_repltag').format(oldtext, newtext))
+            prompter.setInformativeText(_('t_repltag2'))
+            prompter.setStandardButtons(wdg.QMessageBox.Yes | wdg.QMessageBox.No |
+                wdg.QMessageBox.Cancel)
+            prompter.setDefaultButton(wdg.QMessageBox.Yes)
+            ## prompter.setEscapeButton(wdg.MessageBox.Cancel)
+            ask = prompter.exec_()
+            if ask == wdg.QMessageBox.Cancel:
+                return
+            ix = self.parent.opts['Keywords'].index(oldtext)
+            self.parent.opts['Keywords'][ix] = newtext
+            if ask == wdg.QMessageBox.Yes:
+                self.update_items(oldtext, newtext)
+            else:
+                self.update_items(oldtext)
+        else:
+            msg = _('t_addtag').format(newtext)
+            ask = wdg.QMessageBox.question(self, app_title, msg)
+            if ask != wdg.QMessageBox.Yes:
+                return
+            self.parent.opts['Keywords'].append(newtext)
+        self.refresh_fields()
+
 class KeywordsDialog(wdg.QDialog):
     """Dialoog voor het koppelen van trefwoorden
     """
@@ -148,20 +245,14 @@ class KeywordsDialog(wdg.QDialog):
     def add_trefw(self, event):
         """nieuwe trefwoorden opgeven en direct in de linkerlijst zetten
         """
-        text, ok = wdg.QInputDialog.getText(self, app_title, "Geef nieuw trefwoord op")
+        text, ok = wdg.QInputDialog.getText(self, app_title, _('t_newtag'))
         if ok:
             self.parent.opts["Keywords"].append(text)
             self.tolist.addItem(text)
 
     def keys_help(self):
         dlg = wdg.QDialog(self)
-        data = [x.split(' - ', 1) for x in (
-            'Activate left listbox - Ctrl+L',
-            'Assign tag - Ctrl+right',
-            'Activate right listbox - Ctrl+R',
-            'Unassign tag - Ctrl+left',
-            'Create new tag - Ctrl+N',
-            )]
+        data = [x.split(' - ', 1) for x in (_('tag_help'))]
         gbox = wdg.QGridLayout()
         line = 0
         for left, right in data:
@@ -235,7 +326,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         self.tray_icon.hide()
 
         menubar = self.menuBar()
-        self.create_menu()
+        ## self.create_menu()
 
         self.splitter = wdg.QSplitter(self)
         self.setCentralWidget(self.splitter)
@@ -263,8 +354,9 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             for label, handler, info, key in data:
                 if label:
                     action = submenu.addAction(label, handler)
-                    if menu_label == _("m_select"):
-                        self.seltypes.append(label)
+                    if menu_label == _("m_view"):
+                        if label != _("m_revorder"):
+                            self.seltypes.append(label)
                         action.setCheckable(True)
                         self.selactions[label] = action
                     if key:
@@ -272,6 +364,10 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
                     action.setStatusTip(info)
                 else:
                     submenu.addSeparator()
+        for action in self.selactions.values():
+            action.setChecked(False)
+        self.selactions[_("m_revorder")].setChecked(self.opts['RevOrder'])
+        self.selactions[self.seltypes[self.opts["Selection"][0]]].setChecked(True)
 
     def changeselection(self, event=None):
         test = self.tree.selectedItems()
@@ -290,6 +386,8 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         if msg:
             wdg.QMessageBox.information(self, app_title, msg)
             return
+        # recreate menu after loading (because of language)
+        self.create_menu()
         self.root = self.tree.takeTopLevelItem(0)
         self.root = wdg.QTreeWidgetItem()
         self.root.setText(0, self.opts["RootTitle"])
@@ -297,7 +395,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         self.activeitem = item_to_activate = self.root
         self.editor.clear()
         self.editor.setEnabled(False)
-        # TODO apply selection while building tree
         item_to_activate = self.build_tree(first_time=True)
         self.resize(*self.opts["ScreenSize"])
         try:
@@ -322,11 +419,12 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         for key, value in self.nt_data.items():
             if key == 0:
                 continue
-            try:                    # TO BE REMOVED
-                tag, text = value   # this code makes it possible
-                keywords = []       # to read existing datafiles
-            except ValueError:      # should become obsolete pretty soon
-                tag, text, keywords = value
+            ## try:                    # TO BE REMOVED
+                ## tag, text = value   # this code makes it possible
+                ## keywords = []       # to read existing datafiles
+            ## except ValueError:      # should become obsolete pretty soon
+                ## tag, text, keywords = value
+            tag, text, keywords = value
             if seltype == 1 and seldata not in keywords:
                 continue
             if seltype == 2 and seldata not in text:
@@ -338,12 +436,15 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             item.setData(0, core.Qt.UserRole, key)
             item.setText(1, text)
             item.setData(1, core.Qt.UserRole, keywords)
-            self.root.addChild(item)
+            if self.opts['RevOrder']:
+                self.root.insertChild(0, item)
+            else:
+                self.root.addChild(item)
             if key == self.opts["ActiveItem"]:
                 item_to_activate = item
-        for action in self.selactions.values():
-            action.setChecked(False)
-        self.selactions[self.seltypes[seltype]].setChecked(True)
+        ## for action in self.selactions.values():
+            ## action.setChecked(False)
+        ## self.selactions[self.seltypes[seltype]].setChecked(True)
         self.tree.expandItem(self.root)
         return item_to_activate
 
@@ -401,7 +502,10 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             item.setData(0, core.Qt.UserRole, text)
             item.setText(1, "")
             item.setData(1, core.Qt.UserRole, [])
-            self.root.addChild(item)
+            if self.opts['RevOrder']:
+                self.root.insertChild(0, item)
+            else:
+                self.root.addChild(item)
             self.nt_data[text] = ""
             self.tree.setCurrentItem(item)
             self.root.setExpanded(True)
@@ -467,8 +571,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         wdg.QMessageBox.information(self, app_title, _("info_text"))
 
     def help_page(self,event=None):
-        ## gui.QMessageBox.information(self, app_title, _("help_text"))
-        ## return
         dlg = wdg.QDialog(self)
         data = [x.split(' - ', 1) for x in _("help_text").split('\n')]
         gbox = wdg.QGridLayout()
@@ -509,6 +611,23 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         ok = dlg.exec_()
         if ok == wdg.QDialog.Accepted:
             self.activeitem.setData(1, core.Qt.UserRole, self.new_keywords)
+
+    def manage_keywords(self, event=None):
+        """Open a dialog where keywords can be renamed, removed or added
+        """
+        old_keywords = self.opts['Keywords']
+        dlg = KeywordsManager(self)
+        ok = dlg.exec_()
+        ## if ok == wdg.QDialog.Accepted:
+            ## if old_keywords != self.opts['Keywords']:
+
+    def reverse(self, *args):
+        """set to "newest first"
+        """
+        self.opts['RevOrder'] = not self.opts['RevOrder']
+        item_to_activate = self.build_tree()
+        self.tree.setCurrentItem(item_to_activate)
+
 
     def no_selection(self, event=None):
         """make sure nothing is selected"""
