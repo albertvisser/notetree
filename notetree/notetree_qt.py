@@ -252,7 +252,7 @@ class KeywordsDialog(wdg.QDialog):
 
     def keys_help(self):
         dlg = wdg.QDialog(self)
-        data = [x.split(' - ', 1) for x in (_('tag_help'))]
+        data = [x.split(' - ', 1) for x in _('tag_help').split('\n')]
         gbox = wdg.QGridLayout()
         line = 0
         for left, right in data:

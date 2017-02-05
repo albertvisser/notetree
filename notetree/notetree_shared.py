@@ -35,7 +35,7 @@ def load_file(filename):
             raise EOFError("{} is geen NoteTree bestand".format(filename))
     return nt_data
 
-def save_file(filename,nt_data):
+def save_file(filename, nt_data):
     with open(filename,"wb") as _out:
         pck.dump(nt_data, _out, protocol=2)
 
@@ -71,7 +71,7 @@ class NoteTreeMixin:
                 ## (_("m_seltag"), self.keyword_select, _("h_seltag"), None),
                 ## (_("m_seltxt"), self.text_select, _("h_seltxt"), None),
             ( _("m_view"), (
-                (_("m_revorder"), self.reverse, _("h_revorder"), None),
+                (_("m_revorder"), self.reverse, _("h_revorder"), 'F9'),
                 ("", None, None, None),
                 (_("m_selall"), self.no_selection, _("h_selall"), None),
                 (_("m_seltag"), self.keyword_select, _("h_seltag"), None),
@@ -124,7 +124,7 @@ class NoteTreeMixin:
     def _save(self):
         self.nt_data[0] = self.opts
         ## self.nt_data = {0: self.opts}
-        save_file(self.project_file)
+        save_file(self.project_file, self.nt_data)
 
     def reread(self): raise NotImplementedError
     def save(self): raise NotImplementedError
