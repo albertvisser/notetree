@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NoteTree 2.2\n"
 "POT-Creation-Date: 2017-02-04 15:18+0100\n"
-"PO-Revision-Date: 2017-02-05 11:03+0100\n"
+"PO-Revision-Date: 2017-02-05 16:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: NL <LL@li.org>\n"
 "Language: nl\n"
@@ -284,7 +284,7 @@ msgstr "Kies een trefwoord om te zoeken"
 
 #: ../notetree/notetree_qt.py:559
 msgid "s_seltag"
-msgstr "Toon alleen notities met trefwoord `{}`"
+msgstr "Toon {} notities met trefwoord `{}`"
 
 #: ../notetree/notetree_qt.py:575
 msgid "i_seltxt"
@@ -292,7 +292,7 @@ msgstr "Geef tekst op om te zoeken"
 
 #: ../notetree/notetree_qt.py:578
 msgid "s_seltxt"
-msgstr "Toon alleen notities met tekst `{}`"
+msgstr "Toon {} notities met tekst `{}`"
 
 #: ../notetree/notetree_qt.py:
 msgid "m_revorder"

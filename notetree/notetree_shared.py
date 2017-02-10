@@ -13,6 +13,19 @@ _('t_nl')
 _('t_en')
 
 root_title = "MyNotes"
+initial_opts = {
+            "Application": "NoteTree",
+            "Version": "",
+            "AskBeforeHide": True,
+            "ActiveItem": 0,
+            "SashPosition": 180,
+            "ScreenSize": (800, 500),
+            'Language': 'en',
+            "RootTitle": '',
+            "Keywords": [],
+            "Selection": (0, ''),
+            "RevOrder": False,
+            }
 
 try:
     import cPickle as pck
@@ -84,19 +97,9 @@ class NoteTreeMixin:
             )
 
     def open(self, version, root_title):
-        self.opts = {
-            "Application": "NoteTree",
-            "Version": version,
-            "AskBeforeHide": True,
-            "ActiveItem": 0,
-            "SashPosition": 180,
-            "ScreenSize": (800, 500),
-            'Language': 'en',
-            "RootTitle": root_title,
-            "Keywords": [],
-            "Selection": (0, ''),
-            "RevOrder": False,
-            }
+        self.opts = initial_opts
+        self.opts['version'] = version
+        self.opts['RootTitle'] = root_title
         self.nt_data = collections.OrderedDict()
         ## if os.path.exists(self.project_file):
             ## with open(self.project_file, "rb") as f_in:
