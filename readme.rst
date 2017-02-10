@@ -19,12 +19,12 @@ multilanguage support.
 
 Lately I kind of revived the app to serve as a standalone version of the `Magiokis
 Denk` web application. For that I extended it with the ability to add keywords to
-the notes and show only notes with a certain keyword.
+the notes and show only notes with or without a certain keyword or text.
 
 Usage
 -----
 
-Call ``nt_start.pyw`` from the top directory to start with a standard file in the
+Call ``nt_start.py`` from the top directory to start with a standard file in the
 working directory, or use a file name as an argument to work with that.
 
 
@@ -32,7 +32,7 @@ Requirements
 ------------
 
 - Python
-- PyQT4 for the current GUI version
+- PyQT5 for the current GUI version
 - wxPython for the older GUI version
 
 Note that the current implementation uses *pickle* for storing the data, I'm in the
