@@ -25,7 +25,7 @@ notetree/
         application icon
 
     notetree.py
-        main starter, GUI toolkit agnostic
+        entry point for starter script (intermediary to keep it GUI toolkit agnostic)
 
     notetree_2to3.py
         utility to convert Py2 pickled data file to Py3 version (because of pickle)

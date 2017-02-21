@@ -271,7 +271,7 @@ class KeywordsDialog(wdg.QDialog):
         super().accept()
 
 class GetTextDialog(wdg.QDialog):
-    def __init__(self, parent, seltype, seltext, labeltext=''):
+    def __init__(self, parent, seltype, seltext, labeltext='', use_case=None):
         self.parent = parent
         super().__init__(parent)
         self.setWindowTitle(app_title)
@@ -293,6 +293,10 @@ class GetTextDialog(wdg.QDialog):
         vbox.addLayout(hbox)
         hbox = wdg.QHBoxLayout()
         hbox.addWidget(self.in_exclude)
+        if self.use_case:
+            hbox.addWidget(self.use_case)
+            if use_case:
+                self.use_case.setChecked(True)
         vbox.addLayout(hbox)
         bbox = wdg.QDialogButtonBox(wdg.QDialogButtonBox.Ok |
             wdg.QDialogButtonBox.Cancel)
@@ -304,13 +308,17 @@ class GetTextDialog(wdg.QDialog):
     def create_inputwin(self, seltext):
         self.inputwin = wdg.QLineEdit(self)
         self.inputwin.setText(seltext)
+        self.use_case = wdg.QCheckBox('case_sensitive', self)
+        self.use_case.setChecked(False)
 
     def accept(self):
         try:
             seltext = self.inputwin.text()
         except AttributeError:
             seltext = self.inputwin.currentText()
-        self.parent.dialog_data = self.in_exclude.isChecked(), seltext
+        self.parent.dialog_data = [self.in_exclude.isChecked(), seltext]
+        if self.use_case:
+            self.parent.dialog_data.append(self.use_case.isChecked())
         super().accept()
 
 class GetItemDialog(GetTextDialog):
@@ -324,6 +332,7 @@ class GetItemDialog(GetTextDialog):
         self.inputwin = wdg.QComboBox(self)
         self.inputwin.addItems(selection_list)
         self.inputwin.setCurrentIndex(selindex)
+        self.use_case = None
 
 class CheckDialog(wdg.QDialog):
     """Dialoog om te melden dat de applicatie verborgen gaat worden
@@ -472,8 +481,11 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         item_to_activate = self.root
         self.activeitem = None
         ## seltype = 0
-        seltype, seldata = self.opts["Selection"]
-        print(seltype, seldata)
+        seltype, seldata = self.opts["Selection"][:2]
+        use_case = None
+        if len(self.opts["Selection"]) > 2:
+            use_case = self.opts["Selection"][2]
+        print(seltype, seldata, use_case)
         for key, value in self.nt_data.items():
             if key == 0:
                 continue
@@ -485,12 +497,24 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             tag, text, keywords = value
             if seltype == 1 and seldata not in keywords:
                 continue
-            if seltype == 2 and seldata not in text:
-                continue
+            if seltype == 2:
+                ok = False
+                if use_case and seldata in text:
+                    ok = True
+                elif not use_case and seldata.upper() in text.upper():
+                    ok = True
+                if not ok:
+                    continue
             if seltype == -1 and seldata in keywords:
                 continue
-            if seltype == -2 and seldata in text:
-                continue
+            if seltype == -2:
+                ok = True
+                if use_case and seldata in text:
+                    ok = False
+                elif not use_case and seldata.upper() in text.upper():
+                    ok = False
+                if not ok:
+                    continue
             item = wdg.QTreeWidgetItem()
             if not item_to_activate: # make sure this is only set to root if selection is empty
                 item_to_activate = item
@@ -708,7 +732,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         """Open a dialog where a keyword can be chosen to select texts that it's
         assigned to
         """
-        seltype, seltext = self.opts['Selection']
+        seltype, seltext = self.opts['Selection'][:2]
         if abs(seltype) != 1:
             seltext = ''
         ## selection_list = self.opts['Keywords']
@@ -735,28 +759,35 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
                     action.setChecked(True)
                 elif text != _("m_revorder"):
                     action.setChecked(False)
+        # bij Cancel menukeuze weer aan/uitzetten
         elif abs(seltype) == 1:
-            self.selactions[_("m_seltag")].setChecked(True) # wordt aan/uitgezet door menukeuze
+            self.selactions[_("m_seltag")].setChecked(True)
+        else:
+            self.selactions[_("m_seltag")].setChecked(False)
 
 
     def text_select(self, event=None):
         """Open a dialog box where text can be entered that the texts to be selected
         contain
         """
-        seltype, seltext = self.opts['Selection']
+        try:
+            seltype, seltext, use_case = self.opts['Selection']
+        except ValueError:
+            seltype, seltext= self.opts['Selection']
+            use_case = None
         if abs(seltype) != 2:
             seltext = ''
         ## text, ok = wdg.QInputDialog.getText(self, app_title,
             ## _("i_seltxt"), wdg.QLineEdit.Normal, seltext)
-        ok = GetTextDialog(self, seltype, seltext, _("i_seltxt")).exec_()
+        ok = GetTextDialog(self, seltype, seltext, _("i_seltxt"), use_case).exec_()
         if ok:
-            exclude, text = self.dialog_data
+            exclude, text, use_case = self.dialog_data
             ## self.opts['Selection'] = (2, text)
             if exclude:
                 seltype, in_ex = -2, "all except"
             else:
                 seltype, in_ex = 2, 'only'
-            self.opts['Selection'] = (seltype, text)
+            self.opts['Selection'] = (seltype, text, use_case)
             self.sb.showMessage(_("s_seltxt").format(in_ex, text))
             item_to_activate = self.build_tree()
             self.tree.setCurrentItem(item_to_activate)
@@ -765,8 +796,11 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
                     action.setChecked(True)
                 elif text != _("m_revorder"):
                     action.setChecked(False)
+        # bij Cancel menukeuze weer aan/uitzetten
         elif abs(seltype) == 2:
-            self.selactions[_("m_seltxt")].setChecked(True) # wordt aan/uitgezet door menukeuze
+            self.selactions[_("m_seltxt")].setChecked(True)
+        else:
+            self.selactions[_("m_seltxt")].setChecked(False)
 
 
 

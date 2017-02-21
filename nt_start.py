@@ -7,5 +7,4 @@ if __name__ == "__main__":
         ini = sys.argv[1]
     else:
         ini = 'MyMan.pck'
-    ## nt_main(ini, toolkit='qt')
-    nt_main(ini, toolkit='qt')
+    nt_main(ini)
