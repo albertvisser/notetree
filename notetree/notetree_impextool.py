@@ -16,7 +16,7 @@ import collections
 import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
-from notetree_shared import load_file, save_file, initial_opts
+from .notetree_shared import load_file, save_file, initial_opts
 mrufile = os.path.join(os.path.dirname(__file__), 'mrudata')
 header_1, header_2 = "[nt_files]", "[extfiles]"
 
@@ -278,7 +278,7 @@ class MainWidget(qtw.QWidget):
         save_mru(self.nt_file.mrulist, self.extfile.mrulist)
         self.close()
 
-if __name__ == '__main__':
+def main():
     app = qtw.QApplication(sys.argv)
     win = MainWidget()
     sys.exit(app.exec_())

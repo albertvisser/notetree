@@ -377,6 +377,7 @@ class CheckDialog(wdg.QDialog):
 class MainWindow(wdg.QMainWindow, NoteTreeMixin):
     def __init__(self, parent=None, title=''):
         super().__init__()
+
         self.nt_icon = gui.QIcon(os.path.join(os.path.dirname(__file__),
             "notetree.ico"))
         self.setWindowIcon(self.nt_icon)
@@ -451,7 +452,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         msg = NoteTreeMixin.open(self, "Qt", root_title)
         if msg:
             wdg.QMessageBox.information(self, app_title, msg)
-            return
+            return msg
         # recreate menu after loading (because of language)
         self.create_menu()
         self.root = self.tree.takeTopLevelItem(0)
@@ -812,6 +813,8 @@ def main(fnaam):
     frame.project_file = fnaam
     mld = frame.open()
     if mld:
-        wdg.QMessageBox.information(frame, "Error", mld)
+        ## wdg.QMessageBox.information(frame, "Error", mld)
+        frame.close()
+        print(mld)
     else:
         sys.exit(app.exec_())

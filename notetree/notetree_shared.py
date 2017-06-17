@@ -117,6 +117,8 @@ class NoteTreeMixin:
             self.nt_data = load_file(self.project_file)
         except EOFError as e:
             return e
+        if not self.nt_data:
+            return 'Bestand niet gevonden'
         options = self.nt_data.get(0, [])
         if "AskBeforeHide" in options:
             for key, val in options.items():
