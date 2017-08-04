@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""\
-voor uitwisseling van Python2 naar Python3
+"""Tooltje voor uitwisseling van Python2 naar Python3
 
 lees een doctree file en sla het op zonder de sashposition vanuit de gui
 """
@@ -12,14 +11,10 @@ usage = """\
 usage: [python] doctree_2to3.py <filename>
 """
 
-def save(fname, data):
-    try:
-        shutil.copyfile(fname, fname + ".qt4")
-    except IOError:
-        pass
-    save_file(f_out, data)
 
 def main(args):
+    """process
+    """
     if len(args) != 2:
         print("wrong number of arguments")
         return False
@@ -30,7 +25,11 @@ def main(args):
     for key, value in data[0].items():
         if key == "SashPosition":
             data[0][key] = 180
-    save(fname, data)
+    try:
+        shutil.copyfile(fname, fname + ".qt4")
+    except IOError:
+        pass
+    save_file(fname, data)
     return True
 
 

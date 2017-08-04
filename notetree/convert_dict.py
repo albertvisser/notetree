@@ -1,13 +1,16 @@
-import sys
-import os.path
-import collections
-from notetree_shared import load_file, save_file
 """convert notetree file from using a plain dict to using an OrderedDict
 
 keys are sorted along the way
 """
+import sys
+import os.path
+import collections
+from notetree_shared import load_file, save_file
+
 
 def convert_ntfile(filename):
+    """do the conversion
+    """
     nt_data = collections.OrderedDict()
 
     data = load_file(filename)

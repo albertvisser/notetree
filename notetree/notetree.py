@@ -1,6 +1,10 @@
-# -*- coding: utf-8 -*-
+"""Startup script for NoteTree
+"""
+
 
 def nt_main(filename, toolkit='qt'):
+    """start a version of the tool depending on the choice of GUI toolkit
+    """
     if toolkit == 'wx':
         from notetree.notetree_wx import main
     elif toolkit == 'qt':

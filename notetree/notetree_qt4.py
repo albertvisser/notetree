@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"NoteTree PyQt versie"
+"NoteTree PyQt4 versie - not actively maintained"
 
 # van een ibm site afgeplukt
 import os

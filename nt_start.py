@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Startup script for NoteTree
+"""
 import sys
 from notetree.notetree import nt_main
 

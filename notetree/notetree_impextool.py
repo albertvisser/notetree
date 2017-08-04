@@ -14,20 +14,24 @@ import os
 import pprint
 import collections
 import PyQt5.QtWidgets as qtw
-import PyQt5.QtGui as gui
-import PyQt5.QtCore as core
+## import PyQt5.QtGui as gui
+## import PyQt5.QtCore as core
 from .notetree_shared import load_file, save_file, initial_opts
 mrufile = os.path.join(os.path.dirname(__file__), 'mrudata')
 header_1, header_2 = "[nt_files]", "[extfiles]"
 
+
 def read_mru():
+    """read mru lists from file
+    """
     file_list_1, file_list_2 = [], []
     try:
         with open(mrufile) as _in:
             in_1 = in_2 = False
             for line in _in:
                 line = line.strip()
-                if not line: continue
+                if not line:
+                    continue
                 if line == header_1:
                     in_1, in_2 = True, False
                 elif line == header_2:
@@ -40,7 +44,10 @@ def read_mru():
         pass
     return file_list_1, file_list_2
 
+
 def save_mru(file_list_1, file_list_2):
+    """write mru listst back to file
+    """
     with open(mrufile, 'w') as _out:
         print(header_1, file=_out)
         for item in file_list_1:
@@ -50,7 +57,10 @@ def save_mru(file_list_1, file_list_2):
         for item in file_list_2:
             print(item, file=_out)
 
+
 def ok_to_overwrite(filename):
+    """ask for confirmation
+    """
     msg = 'File exists - ok to overwrite {}?'.format(filename)
     ok = True
     if os.path.exists(filename):
@@ -58,8 +68,10 @@ def ok_to_overwrite(filename):
         ok = ok == qtw.QMessageBox.Yes
     return ok
 
+
 def dumpdata(nt_file, extfile=""):
-    "dump entire data structure"
+    """dump entire data structure
+    """
     # kijken of het bestand al bestaat gebeurt niet in de file dialog, dus moet het hier gebeuren
     if not nt_file:
         return 'Enter name of file to dump data from'
@@ -69,11 +81,13 @@ def dumpdata(nt_file, extfile=""):
             with open(extfile, "w") as f_out:
                 pprint.pprint(nt_data, stream=f_out)
     else:
-         pprint.pprint(nt_data)
+        pprint.pprint(nt_data)
     return 'Data from {} dumped to {}'.format(nt_file, extfile)
 
+
 def export(nt_file, extfile):
-    "export notes to file"
+    """export notes to file
+    """
     if not nt_file:
         return 'Enter name of file to export data from'
     if not extfile:
@@ -83,23 +97,24 @@ def export(nt_file, extfile):
     if isinstance(nt_data, collections.OrderedDict):
         data = ((x, y) for x, y in nt_data.items() if x != 0)
     else:
-        data = ((x, y) for x in sorted(nt_data.items(), key=lambda v: v[1][0])
-            if x != 0)
+        data = (x for x in sorted(nt_data.items(), key=lambda v: v[1][0])
+                if x[0] != 0)
     if not ok_to_overwrite(extfile):
         return 'Action canceled'
     with open(extfile, 'w') as _o:
         for original_title, value in data:
-            print('key:', original_title, file = _o)
+            print('key:', original_title, file=_o)
             title, text, keywords = value
-            print('title:', title, file = _o)
-            print('text:\n', text, file = _o)
-            print('keywords:', ', '.join([w for w in keywords]), file = _o)
+            print('title:', title, file=_o)
+            print('text:\n', text, file=_o)
+            print('keywords:', ', '.join([w for w in keywords]), file=_o)
             print(file=_o)
     return 'Notes exported from {} to {}'.format(nt_file, extfile)
 
 
 def import_(nt_file, extfile):
-    "import notes from file"
+    """import notes from file
+    """
     if not extfile:
         return 'Enter name of file to export data from'
     if not nt_file:
@@ -119,15 +134,15 @@ def import_(nt_file, extfile):
         oldkey = ''
         in_text = False
         for line in _i:
-            if line.startswith('key:'): # and not in_text:
+            if line.startswith('key:'):  # and not in_text:
                 key = line[4:].strip()
                 print(oldkey, key)
                 if oldkey and key != oldkey:
                     nt_data[oldkey] = (title, "\n".join(text), keywords)
                 oldkey = key
-            elif line.startswith('title:'): #  and not in_text:
+            elif line.startswith('title:'):  # and not in_text:
                 title = line[6:].strip()
-            elif line.startswith('text:'): #  and not in_text:
+            elif line.startswith('text:'):  # and not in_text:
                 in_text = True
                 text = []
             elif line.startswith('keywords:'):
@@ -153,11 +168,10 @@ def import_(nt_file, extfile):
     save_file(nt_file, nt_data)
     return 'Notes imported from {} into {}'.format(extfile, nt_file)
 
-functions = [
-    ('Print entire data structure', dumpdata),
-    ('Export notes to file', export),
-    ('Import notes from file', import_),
-    ]
+functions = [('Print entire data structure', dumpdata),
+             ('Export notes to file', export),
+             ('Import notes from file', import_)]
+
 
 class FileBrowseButton(qtw.QFrame):
     """Combination widget showing a text field and a button
@@ -166,10 +180,11 @@ class FileBrowseButton(qtw.QFrame):
     """
     def __init__(self, parent, caption="", text="", items=None):
         self.parent = parent
-        if items is None: items = []
+        if items is None:
+            items = []
         self.mrulist = items
         super().__init__(parent)
-        self.setFrameStyle(qtw.QFrame.Panel | qtw.QFrame.Raised);
+        self.setFrameStyle(qtw.QFrame.Panel | qtw.QFrame.Raised)
         vbox = qtw.QVBoxLayout()
         box = qtw.QHBoxLayout()
         self.input = qtw.QComboBox(self)
@@ -190,6 +205,8 @@ class FileBrowseButton(qtw.QFrame):
         self.setLayout(vbox)
 
     def browse(self):
+        """callback for button
+        """
         startdir = str(self.input.currentText()) or os.getcwd()
         path = qtw.QFileDialog.getOpenFileName(self, 'Kies een bestand', startdir)
         if path[0]:
@@ -197,7 +214,8 @@ class FileBrowseButton(qtw.QFrame):
 
 
 class MainWidget(qtw.QWidget):
-
+    """Main GUI
+    """
     def __init__(self):
         super().__init__()
         sizer = qtw.QVBoxLayout()
@@ -205,8 +223,8 @@ class MainWidget(qtw.QWidget):
         nt_files, extfiles = read_mru()
         hsizer = qtw.QHBoxLayout()
         browse = FileBrowseButton(self, caption='NoteTree file:',
-            text='',
-            items=nt_files)
+                                  text='',
+                                  items=nt_files)
         hsizer.addWidget(browse)
         ## hsizer.addStretch()
         sizer.addLayout(hsizer)
@@ -214,8 +232,8 @@ class MainWidget(qtw.QWidget):
 
         hsizer = qtw.QHBoxLayout()
         browse = FileBrowseButton(self, caption='External file:',
-            text='',
-            items=extfiles)
+                                  text='',
+                                  items=extfiles)
         hsizer.addWidget(browse)
         ## hsizer.addStretch()
         sizer.addLayout(hsizer)
@@ -252,7 +270,8 @@ class MainWidget(qtw.QWidget):
         self.show()
 
     def go(self):
-        "execute chosen function"
+        """execute chosen function
+        """
         msg = 'No action taken'
         nt_file = self.nt_file.input.currentText()
         if nt_file not in self.nt_file.mrulist:
@@ -275,10 +294,15 @@ class MainWidget(qtw.QWidget):
         qtw.QMessageBox.information(self, '', msg)
 
     def done(self):
+        """close application
+        """
         save_mru(self.nt_file.mrulist, self.extfile.mrulist)
         self.close()
 
+
 def main():
+    """start the utility
+    """
     app = qtw.QApplication(sys.argv)
     win = MainWidget()
     sys.exit(app.exec_())

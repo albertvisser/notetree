@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-# van een ibm site afgeplukt
+"""NoteTree wxPython versie - niet in onderhoud
+
+van een ibm site afgeplukt
+"""
 import os
 import wx
 from datetime import datetime
@@ -151,7 +154,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
             else:
                 self.keydef_to_method[mod, keycode]()
         if event and skip:
-            print 'skipping'
+            ## print 'skipping'
             event.Skip()
 
     def OnEvtText(self,event):
@@ -197,7 +200,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         item_to_return = self.root
         self.activeitem = None
         for key, value in self.nt_data.items():
-            if key <> 0:
+            if key != 0:
                 tag, text = value
                 item = self.tree.AppendItem (self.root, tag)
                 self.tree.SetItemPyData(item, text)

@@ -14,14 +14,20 @@ usage = """\
 usage: [python] doctree_2to3.py <filename>
 """
 
+
 def save(fname, data):
+    """backup and resave the notes file
+    """
     try:
         shutil.copyfile(fname, fname + ".py2")
     except IOError:
         pass
     save_file(fname, data)
 
+
 def main(args):
+    """do the thing
+    """
     if len(args) != 2:
         print("wrong number of arguments")
         return False
