@@ -473,6 +473,8 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         self.activate_item(h)
 
     def closeEvent(self, event=None):
+        """reimplemented callback
+        """
         self.update()
         event.accept()
 
