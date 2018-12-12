@@ -129,6 +129,7 @@ class NoteTreeMixin:
                 self.opts[key] = val
         languages[self.opts["Language"]].install()
         ## print('installing language "{}"'.format(self.opts["Language"]))
+        return ''
 
     def save(self):
         """finalize and write data file

@@ -483,8 +483,8 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         """
         msg = NoteTreeMixin.open(self, "Qt", root_title)
         if msg:
-            wdg.QMessageBox.information(self, app_title, msg)
-            return msg
+            self.showmsg(msg)
+            return
         # recreate menu after loading (because of language)
         self.create_menu()
         self.root = self.tree.takeTopLevelItem(0)
@@ -653,7 +653,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             ky = item.data(0, core.Qt.UserRole)
             del self.nt_data[ky]
         else:
-            wdg.QMessageBox.information(self, app_title, _("no_delete_root"))
+            self.showmsg(_("no_delete_root"))
 
     def ask_title(self):
         """Get/change a title for this note
@@ -670,7 +670,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         if idx < self.root.childCount() - 1:
             self.tree.setCurrentItem(self.root.child(idx + 1))
         else:
-            wdg.QMessageBox.information(self, app_title, _("no_next_item"))
+            self.showmsg(_("no_next_item"))
 
     def prev_note(self):
         """Go to previous
@@ -679,11 +679,10 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         if idx > 0:
             self.tree.setCurrentItem(self.root.child(idx - 1))
         else:
-            wdg.QMessageBox.information(self, app_title, _("no_prev_item"))
+            self.showmsg(_("no_prev_item"))
 
     def check_active(self, message=None):
-        """if there's a suitable "active" item, make sure its text is saved to the tree
-        structure
+        """if there's a suitable "active" item, make sure its text is saved to the tree structure
 
         """
         if self.activeitem and self.activeitem != self.root:
@@ -692,7 +691,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             self.activeitem.setFont(0, font)
             if self.editor.document().isModified:
                 if message:
-                    print(message)
+                    self.showmsg(message)
                 self.activeitem.setText(1, self.editor.toPlainText())
 
     def activate_item(self, item):
@@ -712,9 +711,14 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             self.editor.setEnabled(False)
 
     def info_page(self):
-        wdg.QMessageBox.information(self, app_title, _("info_text"))
+        """show program info
+        """
+        self.showmsg(_("info_text"))
 
     def help_page(self):
+        """show keyboard shortcuts
+        """
+        ## self.showmsg(_("help_text"))
         dlg = wdg.QDialog(self)
         data = [x.split(' - ', 1) for x in _("help_text").split('\n')]
         gbox = wdg.QGridLayout()
@@ -773,7 +777,8 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         self.tree.setCurrentItem(item_to_activate)
 
     def no_selection(self):
-        """make sure nothing is selected"""
+        """make sure nothing is selected
+        """
         self.opts["Selection"] = (0, "")
         self.sb.showMessage(_("h_selall"))
         item_to_activate = self.build_tree()
@@ -785,8 +790,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
                 action.setChecked(False)
 
     def keyword_select(self):
-        """Open a dialog where a keyword can be chosen to select texts that it's
-        assigned to
+        """Open a dialog where a keyword can be chosen to select texts that it's assigned to
         """
         seltype, seltext = self.opts['Selection'][:2]
         if abs(seltype) != 1:
@@ -822,8 +826,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             self.selactions[_("m_seltag")].setChecked(False)
 
     def text_select(self):
-        """Open a dialog box where text can be entered that the texts to be selected
-        contain
+        """Open a dialog box where text can be entered that the texts to be selected contain
         """
         try:
             seltype, seltext, use_case = self.opts['Selection']
@@ -856,6 +859,11 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
             self.selactions[_("m_seltxt")].setChecked(True)
         else:
             self.selactions[_("m_seltxt")].setChecked(False)
+
+    def showmsg(self, message):
+        """show a message with the standard title
+        """
+        wdg.QMessageBox.information(self, app_title, message)
 
 
 def main(fnaam):
