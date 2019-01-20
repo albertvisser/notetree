@@ -8,7 +8,7 @@ import logging
 import gettext
 from datetime import datetime
 import wx
-import wx.adv as wxadv
+import wx.adv
 from .notetree_shared import NoteTreeMixin, app_title, root_title, languages
 
 ## app_title = "NoteTree"
@@ -74,6 +74,27 @@ class CheckDialog(wx.Dialog):
         sizer0.Fit(self)
         sizer0.SetSizeHints(self)
         self.Layout()
+
+
+class TaskbarIcon(wx.adv.TaskBarIcon):
+    "icon in the taskbar"
+    id_revive = wx.NewId()
+    id_close = wx.NewId()
+
+    def __init__(self, parent):
+        super().__init__(wx.adv.TBI_DOCK)
+        # wx.adv.TaskBarIcon.__init__(self)
+        self.SetIcon(parent.nt_icon, _("revive_message"))
+        self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, parent.revive)
+        self.Bind(wx.EVT_MENU, parent.revive, id=self.id_revive)
+        self.Bind(wx.EVT_MENU, parent.close, id=self.id_close)
+
+    def CreatePopupMenu(self):
+        """reimplemented"""
+        menu = wx.Menu()
+        menu.Append(self.id_revive, 'Revive NoteTree')
+        menu.Append(self.id_close, 'Close NoteTree')
+        return menu
 
 
 class GridDialog(wx.Dialog):
@@ -334,10 +355,11 @@ class MainWindow(wx.Frame, NoteTreeMixin):
                 # dlg.Destroy()
         if cancel:
             return
-        self.tbi = wxadv.TaskBarIcon()
-        self.tbi.SetIcon(self.nt_icon, _("revive_message"))
-        self.tbi.Bind(wxadv.EVT_TASKBAR_LEFT_UP, self.revive)
-        self.tbi.Bind(wxadv.EVT_TASKBAR_RIGHT_UP, self.revive)
+        ## self.tbi = wx.adv.TaskBarIcon()
+        self.tbi = TaskbarIcon(self)
+        ## self.tbi.SetIcon(self.nt_icon, _("revive_message"))
+        ## self.tbi.Bind(wx.adv.EVT_TASKBAR_LEFT_UP, self.revive)
+        ## self.tbi.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.revive)
         self.Hide()
 
     def revive(self, event=None):
