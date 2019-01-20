@@ -79,7 +79,6 @@ class CheckDialog(wx.Dialog):
 class TaskbarIcon(wx.adv.TaskBarIcon):
     "icon in the taskbar"
     id_revive = wx.NewId()
-    id_close = wx.NewId()
 
     def __init__(self, parent):
         super().__init__(wx.adv.TBI_DOCK)
@@ -87,13 +86,11 @@ class TaskbarIcon(wx.adv.TaskBarIcon):
         self.SetIcon(parent.nt_icon, _("revive_message"))
         self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, parent.revive)
         self.Bind(wx.EVT_MENU, parent.revive, id=self.id_revive)
-        self.Bind(wx.EVT_MENU, parent.close, id=self.id_close)
 
     def CreatePopupMenu(self):
         """reimplemented"""
         menu = wx.Menu()
         menu.Append(self.id_revive, 'Revive NoteTree')
-        menu.Append(self.id_close, 'Close NoteTree')
         return menu
 
 
@@ -365,7 +362,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def revive(self, event=None):
         """make application visible again
         """
-        print('revive called')
         self.Show()
         self.tbi.Destroy()
 
