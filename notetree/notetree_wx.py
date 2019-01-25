@@ -25,21 +25,333 @@ from .notetree_shared import NoteTreeMixin, app_title, root_title, languages
 class KeywordsManager(wx.Dialog):
     """Dialoog voor het wijzigen van trefwoorden
     """
-    pass
+    def __init__(self, parent):
+        self.parent = parent
+        super().__init__(parent)
+        self.SetTitle('{} - {}'.format(app_title, _("t_tagman")))
+        self.SetIcon(self.parent.nt_icon)
+        self.oldtag = wx.ComboBox(self)
+        self.newtag = wx.TextCtrl(self)
+        # self.newtag.setMinimumHeight(self.oldtag.height())
+        self.refresh_fields()
+        remove_button = wx.Button(self, label=_("b_remtag"))
+        remove_button.Bind(wx.EVT_BUTTON, self.remove_keyword)
+        add_button = wx.Button(self, label=_('b_addtag'))
+        add_button.Bind(wx.EVT_BUTTON, self.add_keyword)
+        done_button = wx.Button(self, label=_("b_done"))
+        self.SetAffirmativeId(done_button.GetId())  # done_button.Bind(wx.EVT_BUTTON, self.accept)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        gbox = wx.FlexGridSizer(cols=3)
+        gbox.Add(wx.StaticText(self, label=_('l_oldval')), 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
+        gbox.Add(self.oldtag, 0, wx.ALL, 5)
+        gbox.Add(remove_button, 0, wx.ALL, 5)
+        gbox.Add(wx.StaticText(self, label=_('l_newval')), 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
+        gbox.Add(self.newtag, 0, wx.ALL, 5)
+        gbox.Add(add_button, 0, wx.ALL, 5)
+        vbox.Add(gbox, wx.ALL, 5)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        ## hbox.addWidget(wxStaticText('Changes are applied immediately'))
+        hbox.Add(wx.StaticText(self, label=_('t_applied')), 0, wx.ALL, 5)
+        vbox.Add(hbox, 0, wx.ALL, 5)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(done_button, 0)
+        vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+        self.SetSizer(vbox)
+        self.SetAutoLayout(True)
+        vbox.Fit(self)
+        vbox.SetSizeHints(self)
+        self.Layout()
+        self.SetSize(400, -1)
+
+    def refresh_fields(self):
+        """initialize items on screen
+        """
+        self.oldtag.Clear()
+        self.oldtag.AppendItems(self.parent.opts['Keywords'])
+        # self.oldtag.clearEditText()
+        self.newtag.Clear()
+
+    def update_items(self, oldtext, newtext=''):
+        """refresh list of associated keywords
+        """
+        for ix in range(self.parent.root.childCount()):
+            item = self.parent.root.child(ix)
+            keywords = []  # item.data(1, core.Qt.UserRole)
+            try:
+                ix = keywords.index(oldtext)
+            except ValueError:
+                continue
+            if newtext:
+                keywords[ix] = newtext
+            else:
+                keywords.pop(ix)
+            # item.setData(1, core.Qt.UserRole, keywords)
+
+    def remove_keyword(self, event):
+        """delete a keyword aftre selecting from the dropdown
+        """
+        oldtext = self.oldtag.GetValue()
+        msg = _('t_remtag').format(oldtext)
+        ask = wx.MessageBox(msg, app_title, wx.YES_NO | wx.ICON_QUESTION, self)
+        if ask != wx.YES:
+            return
+        self.parent.opts['Keywords'].remove(oldtext)
+        self.update_items(oldtext)
+        self.refresh_fields()
+
+    def add_keyword(self, event):
+        """Add a new keyword or change an existing one after selecting from the dropdown
+        """
+        oldtext = self.oldtag.GetValue()
+        newtext = self.newtag.GetValue()
+        if oldtext:
+            with wx.MessageDialog(self, _('t_repltag').format(oldtext, newtext),
+                                  style=wx.YES_NO | wx.CANCEL) as prompter:
+                prompter.SetExtendedMessage(_('t_repltag2'))
+                # prompter.setDefaultButton(wxMessageBox.Yes)
+                ## prompter.setEscapeButton(wdg.MessageBox.Cancel)
+                ask = prompter.ShowModal()
+                if ask == wx.ID_CANCEL:
+                    return
+                ix = self.parent.opts['Keywords'].index(oldtext)
+                self.parent.opts['Keywords'][ix] = newtext
+                if ask == wx.ID_YES:
+                    self.update_items(oldtext, newtext)
+                else:
+                    self.update_items(oldtext)
+        else:
+            msg = _('t_addtag').format(newtext)
+            ask = wx.MessageBox(msg, app_title, wx.YES_NO | wx.ICON_QUESTION, self)
+            if ask != wx.YES:
+                return
+            self.parent.opts['Keywords'].append(newtext)
+        self.refresh_fields()
 
 
 class KeywordsDialog(wx.Dialog):
     """Dialoog voor het koppelen van trefwoorden
     """
-    pass
+    def __init__(self, parent):
+        self.parent = parent
+        super().__init__(parent)
+        self.SetTitle('{} - {}'.format(app_title, _("w_tags")))
+        self.SetIcon(self.parent.nt_icon)
+        # define widgets
+        self.fromlist = wx.ListBox(self, size=(120, 150))
+        # self.fromlist.setSelectionMode(wxAbstractItemView.ExtendedSelection)
+        # self.fromlist.itemDoubleClicked.connect(self.move_right)
+        text = wx.StaticText(self, label=_("t_tags"))
+        fromto_button = wx.Button(self, label=_("b_tag"))
+        fromto_button.Bind(wx.EVT_BUTTON, self.move_right)
+        tofrom_button = wx.Button(self, label=_("b_untag"))
+        tofrom_button.Bind(wx.EVT_BUTTON, self.move_left)
+        addtrefw_button = wx.Button(self, label=_("b_newtag"))
+        addtrefw_button.Bind(wx.EVT_BUTTON, self.add_trefw)
+        help_button = wx.Button(self, label=_("m_keys"))
+        help_button.Bind(wx.EVT_BUTTON, self.keys_help)
+        self.tolist = wx.ListBox(self, size=(120, 150))
+        # self.tolist.setSelectionMode(wxAbstractItemView.ExtendedSelection)
+        # self.tolist.itemDoubleClicked.connect(self.move_left)
+        self.create_actions()
+        # get data from parent
+        all_trefw = self.parent.opts['Keywords']
+        # self.data = self.parent.activeitem
+        curr_trefw = []  # self.data.data(1, core.Qt.UserRole)
+        if curr_trefw:
+            self.tolist.InsertItems(curr_trefw, 0)
+        if all_trefw:
+            self.fromlist.InsertItems([x for x in all_trefw if x not in curr_trefw], 0)
+        # do layout and show
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        vbox2 = wx.BoxSizer(wx.VERTICAL)
+        vbox2.Add(wx.StaticText(self, label=(_("t_left"))))
+        vbox2.Add(self.fromlist)
+        hbox.Add(vbox2)
+        vbox2 = wx.BoxSizer(wx.VERTICAL)
+        vbox2.AddStretchSpacer()
+        vbox2.Add(text)
+        vbox2.Add(fromto_button)
+        vbox2.Add(tofrom_button)
+        vbox2.AddSpacer(10)
+        vbox2.Add(addtrefw_button)
+        vbox2.Add(help_button)
+        vbox2.AddStretchSpacer()
+        hbox.Add(vbox2)
+        vbox2 = wx.BoxSizer(wx.VERTICAL)
+        vbox2.Add(wx.StaticText(self, label=(_("t_right"))))
+        vbox2.Add(self.tolist)
+        hbox.Add(vbox2)
+        vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        # hbox.Add(bbox)
+        vbox.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0,
+                 wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+        vbox.Add(hbox)
+        self.SetSizer(vbox)
+        self.SetAutoLayout(True)
+        vbox.Fit(self)
+        vbox.SetSizeHints(self)
+        self.Layout()
+        self.SetSize(400, 256)
+
+    def create_actions(self):
+        """define what can be done in this screen
+        """
+        return  # do nothing for now
+        self.actionlist = (('a_from', 'Ctrl+L', self.activate_left),
+                           (_('b_tag'), 'Ctrl+Right', self.move_right),
+                           ('a_to', 'Ctrl+R', self.activate_right),
+                           (_('b_untag'), 'Ctrl+Left', self.move_left),
+                           (_('b_newtag'), 'Ctrl+N', self.add_trefw))
+        for name, shortcut, callback in self.actionlist:
+            act = wx.MenuItem(self, '\n'.join(name, shortcut))
+            act.Bind(wx.MENU_ITEM, callback)
+
+    def activate_left(self):
+        """activate "from" list
+        """
+        self._activate(self.fromlist)
+
+    def activate_right(self):
+        """activate "to" list
+        """
+        self._activate(self.tolist)
+
+    def _activate(self, win):
+        """set focus to list
+        """
+        item = win.currentItem()
+        if not item:
+            item = win.item(0)
+        item.setSelected(True)
+        win.setFocus(True)
+
+    def move_right(self, event):
+        """trefwoord selecteren
+        """
+        ## print('move to right')
+        self._moveitem(self.fromlist, self.tolist)
+
+    def move_left(self, event):
+        """trefwoord on-selecteren
+        """
+        ## print('move to left')
+        self._moveitem(self.tolist, self.fromlist)
+
+    def _moveitem(self, from_, to):
+        """trefwoord verplaatsen van de ene lijst naar de andere
+        """
+        return  # do nothing for now
+        selected = from_.selectedItems()
+        print('moving', selected)
+        for item in selected:
+            from_.takeItem(from_.row(item))
+            to.addItem(item)
+
+    def add_trefw(self, event):
+        """nieuwe trefwoorden opgeven en direct in de linkerlijst zetten
+        """
+        with wx.TextEntryDialog(self, caption=app_title, message=_('t_newtag')) as dlg:
+            dlg.Showmodal()
+            if dlg == wx.ID_OK:
+                text = dlg.GetValue()
+                self.parent.opts["Keywords"].append(text)
+                self.tolist.Append(text)
+
+    def keys_help(self, event):
+        """Show possible actions and accelerator keys
+        """
+        with wx.Dialog(self) as dlg:
+            data = [x.split(' - ', 1) for x in _('tag_help').split('\n')]
+            gbox = wx.FlexGridSizer(cols=2, vgap=0, hgap=5)
+            line = 0
+            for left, right in data:
+                gbox.Add(wx.StaticText(dlg, label=left), 0)
+                gbox.Add(wx.StaticText(dlg, label=right), 0)
+                line += 1
+            dlg.SetTitle(app_title + " " + _("t_keys"))  # ' keys'
+            vbox = wx.BoxSizer(wx.VERTICAL)
+            vbox.Add(gbox, 0, wx.ALL, 5)
+            done_button = wx.Button(dlg, label=_("b_done"))
+            dlg.SetAffirmativeId(done_button.GetId())
+            vbox.Add(done_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+            dlg.SetSizer(vbox)
+            dlg.SetAutoLayout(True)
+            vbox.Fit(dlg)
+            vbox.SetSizeHints(dlg)
+            dlg.Layout()
+            dlg.ShowModal()
+
+    def accept(self, event):
+        """geef de geselecteerde trefwoorden aan het hoofdprogramma
+        """
+        return  # do nothing for now
+        self.parent.new_keywords = [self.tolist.item(i).text() for i in range(
+            len(self.tolist))]
+        super().accept()
 
 
 class GetTextDialog(wx.Dialog):
-    pass
+    """Dialog to get search string (with options)
+    """
+    def __init__(self, parent, seltype, seltext, labeltext='', use_case=None):
+        self.parent = parent
+        super().__init__(parent)
+        self.SetTitle(app_title)
+        self.SetIcon(self.parent.nt_icon)
+
+        self.create_inputwin(seltext)
+
+        self.in_exclude = wx.CheckBox(self, label='exclude')
+        self.in_exclude.SetValue(False)
+        if seltype < 0:
+            self.in_exclude.SetValue(True)
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(wx.StaticText(self, label=labeltext), 0, wx.ALL, 5)
+        vbox.Add(hbox, 0, wx.ALL, 5)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.inputwin, 1, wx.ALL, 5)
+        vbox.Add(hbox, 1, wx.ALL, 5)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(self.in_exclude, 0, wx.ALL, 5)
+        if self.use_case:
+            hbox.Add(self.use_case, 0, wx.ALL, 5)
+            if use_case:
+                self.use_case.SetValue(True)
+        vbox.Add(hbox, 0, wx.ALL, 5)
+        vbox.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0,
+                 wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+        self.SetSizer(vbox)
+        self.SetAutoLayout(True)
+        vbox.Fit(self)
+        vbox.SetSizeHints(self)
+        self.Layout()
+
+    def create_inputwin(self, seltext):
+        """define the widgets to use
+        """
+        self.inputwin = wx.TextCtrl(self, value=seltext)
+        self.use_case = wx.CheckBox(self, label='case sensitive')
+        self.use_case.SetValue(False)
 
 
-class GetItemDialog(wx.Dialog):
-    pass
+class GetItemDialog(GetTextDialog):
+    """Dialog to select a keyword from a list
+    """
+    def create_inputwin(self, seltext):
+        """define the widgets to use
+        """
+        selection_list = self.parent.opts['Keywords']
+        try:
+            selindex = selection_list.index(seltext)
+        except ValueError:
+            selindex = -1
+        self.inputwin = wx.ComboBox(self, choices=selection_list)
+        self.inputwin.SetSelection(selindex)
+        self.use_case = None
 
 
 class CheckDialog(wx.Dialog):
@@ -142,7 +454,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
 
         menuBar = wx.MenuBar()
         self.SetMenuBar(menuBar)
-        self.create_menu()
+        # self.create_menu()
 
         self.splitter = wx.SplitterWindow(self, -1)
         self.splitter.SetMinimumPaneSize(1)
@@ -172,14 +484,33 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         menu_bar = self.GetMenuBar()
         menuitems = menu_bar.GetMenus()
         has_items = bool(menuitems)
+        self.selactions = {}
+        self.seltypes = []
         ix = 0
         self.keydef_to_method = {}
         for item, data in self.get_menudata():
             menu_label = item
             submenu = wx.Menu()
             for label, handler, info, keydef in data:
+                if keydef:
+                    defs = keydef.split(',')
+                    primary = defs[0]
+                    keydef = ','.join(defs[1:])
+                else:
+                    primary = None
                 if label != "":
-                    menu_item = wx.MenuItem(submenu, -1, label, info)
+                    label_ = label
+                    if primary:
+                        if primary == 'Ctrl+PgDown':
+                            primary = 'Ctrl+PgDn'
+                        label = '\t'.join((label, primary))
+                    if menu_label == _('m_view'):
+                        if label_ != _('m_revorder'):
+                            self.seltypes.append(label_)
+                        menu_item = wx.MenuItem(submenu, -1, label, info, wx.ITEM_CHECK)
+                        self.selactions[label_] = menu_item
+                    else:
+                        menu_item = wx.MenuItem(submenu, -1, label, info)
                     self.Bind(wx.EVT_MENU, handler, menu_item)
                 else:
                     menu_item = wx.MenuItem(submenu, wx.ID_SEPARATOR)
@@ -214,6 +545,10 @@ class MainWindow(wx.Frame, NoteTreeMixin):
             else:
                 menu_bar.Append(submenu, menu_label)
             ix += 1
+        for item in self.selactions.values():
+            item.Check(False)
+        self.selactions[_('m_revorder')].Check(self.opts['RevOrder'])
+        self.selactions[self.seltypes[abs(self.opts['Selection'][0])]].Check(True)
 
     def on_key(self, event):
         """keypress handler
@@ -272,6 +607,8 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         if msg:
             self.showmsg(msg)
             return
+        # recreate menu after loading (because of language)
+        self.create_menu()
         self.tree.DeleteAllItems()
         self.root = self.tree.AddRoot(os.path.splitext(os.path.basename(self.project_file))[0])
         item_to_activate = self.root
@@ -288,13 +625,22 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def build_tree(self, first_time=False):
         """translate the dictionary read to a tree structure
         """
+        if not first_time:
+            # self.tree_to_dict()
+            self.check_active()  # even zorgen dat de editor inhoud geassocieerd wordt
+            self.tree.DeleteChildren(self.root)
         item_to_return = self.root
         self.activeitem = None
         for key, value in self.nt_data.items():
-            # print(key, value)
+            print(key, value)
             if key != 0:
                 tag, text = value
-                item = self.tree.AppendItem(self.root, tag)
+                if self.opts['RevOrder']:
+                    print('reverse order')
+                    item = self.tree.PrependItem(self.root, tag)
+                else:
+                    print('regular order')
+                    item = self.tree.AppendItem(self.root, tag)
                 self.tree.SetItemData(item, text)
                 if key == self.opts["ActiveItem"]:
                     item_to_return = item
@@ -447,6 +793,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
             self.tree.SetItemBold(item, True)
             self.editor.SetValue(self.tree.GetItemData(item))
             self.editor.Enable(True)
+            self.tree.EnsureVisible(item)
         else:
             self.editor.Clear()
             self.editor.Enable(False)
@@ -487,32 +834,98 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def link_keywords(self, event=None):
         """Open a dialog where keywords can be assigned to the text
         """
-        pass
+        with KeywordsDialog(self) as dlg:
+            dlg.ShowModal()
 
     def manage_keywords(self, event=None):
         """Open a dialog where keywords can be renamed, removed or added
         """
-        pass
+        with KeywordsManager(self) as dlg:
+            dlg.ShowModal()
 
     def reverse(self, event=None):
         """set to "newest first"
         """
-        pass
+        print('in reverse')
+        print('  option is ', self.opts['RevOrder'])
+        self.opts['RevOrder'] = not self.opts['RevOrder']
+        print('  option is now', self.opts['RevOrder'])
+        item_to_activate = self.build_tree()
+        print('tree is rebuilt')
+        # self.tree.setCurrentItem(item_to_activate)
+        self.activate_item(item_to_activate)
 
     def no_selection(self, event=None):
         """make sure nothing is selected
         """
-        pass
+        # return  # do nothing for now
+        self._set_selection((0, ""), _("h_selall"))
 
     def keyword_select(self, event=None):
         """Open a dialog where a keyword can be chosen to select texts that it's assigned to
         """
-        pass
+        # return  # do nothing for now
+        seltype, seltext = self.opts['Selection'][:2]
+        if abs(seltype) != 1:
+            seltext = ''
+        with GetItemDialog(self, seltype, seltext, _("i_seltag")) as dlg:
+            ok = dlg.ShowModal()
+            if ok == wx.ID_OK:
+                exclude = dlg.in_exclude.GetValue()
+                text = dlg.inputwin.GetValue()
+                if exclude:
+                    seltype, in_ex = -1, "all except"
+                else:
+                    seltype, in_ex = 1, 'only'
+                self._set_selection((seltype, text), _("s_seltag").format(in_ex, text))
+            else:
+                self._set_option(1, "m_seltag")
 
     def text_select(self, event=None):
         """Open a dialog box where text can be entered that the texts to be selected contain
         """
-        pass
+        # return  # do nothing for now
+        try:
+            seltype, seltext, use_case = self.opts['Selection']
+        except ValueError:
+            seltype, seltext = self.opts['Selection']
+            use_case = None
+        if abs(seltype) != 2:
+            seltext = ''
+        with GetTextDialog(self, seltype, seltext, _("i_seltxt"), use_case) as dlg:
+            ok = dlg.ShowModal()
+            if ok == wx.ID_OK:
+                exclude = dlg.in_exclude.GetValue()
+                text = dlg.inputwin.GetValue()
+                use_case = dlg.use_case.GetValue()
+                ## self.opts['Selection'] = (2, text)
+                if exclude:
+                    seltype, in_ex = -2, "all except"
+                else:
+                    seltype, in_ex = 2, 'only'
+                self._set_selection((seltype, text, use_case), _("s_seltxt").format(in_ex, text))
+            else:
+                self._set_option(2, "m_seltxt")
+
+    def _set_selection(self, sel, seltext):
+        """selectie aanpassen"""
+        self.opts["Selection"] = sel
+        self.sb.SetStatusText(seltext)
+        item_to_activate = self.build_tree()
+        self.tree.SelectItem(item_to_activate)
+        for text, action in self.selactions.items():
+            if text == seltext:
+                action.Check(True)
+            elif text != _("m_revorder"):
+                action.Check(False)
+
+    def _set_option(self, seltype, name):
+        """bij cancelen selectiedialoog de juiste menukeuze weer aan/uitzetten
+        """
+        if abs(self.opts['Selection'][0]) == seltype:
+            self.selactions[_(name)].Check(True)
+        else:
+            self.selactions[_(name)].Check(False)
 
     def showmsg(self, message):
         wx.MessageBox(message, app_title, wx.OK | wx.ICON_INFORMATION, self)
@@ -522,7 +935,7 @@ def main(fn):
     """application start
     """
     app = wx.App(False)
-    frame = MainWindow(None, -1, " - ".join((app_title, fn)))
+    frame = MainWindow(None, -1, " - ".join((fn, app_title)))
     app.SetTopWindow(frame)
     frame.project_file = fn
     frame.open()
