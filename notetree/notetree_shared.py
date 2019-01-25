@@ -84,10 +84,6 @@ class NoteTreeMixin:
                 ("", None, None, None),
                 (_("m_forward"), self.next_note, _("h_forward"), 'Ctrl+PgDown'),
                 (_("m_back"), self.prev_note, _("h_back"), 'Ctrl+PgUp'), ), ),
-            ## ( _("m_select"), (
-                ## (_("m_selall"), self.no_selection, _("h_selall"), None),
-                ## (_("m_seltag"), self.keyword_select, _("h_seltag"), None),
-                ## (_("m_seltxt"), self.text_select, _("h_seltxt"), None),
             (_("m_view"), (
                 (_("m_revorder"), self.reverse, _("h_revorder"), 'F9'),
                 ("", None, None, None),
