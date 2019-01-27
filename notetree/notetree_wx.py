@@ -4,6 +4,7 @@
 van een ibm site afgeplukt
 """
 import os
+import sys
 import logging
 import gettext
 from datetime import datetime
@@ -137,9 +138,10 @@ class KeywordsDialog(wx.Dialog):
         self.SetTitle('{} - {}'.format(app_title, _("w_tags")))
         self.SetIcon(self.parent.nt_icon)
         # define widgets
-        self.fromlist = wx.ListBox(self, size=(120, 150))
-        # self.fromlist.setSelectionMode(wxAbstractItemView.ExtendedSelection)
-        # self.fromlist.itemDoubleClicked.connect(self.move_right)
+        self.fromlist = wx.ListBox(self, size=(120, 150), style=wx.LB_EXTENDED)
+        # self.fromlist = wx.ListCtrl(self, size=(120, 150), style=wx.LC_REPORT)
+        self.fromlist.Bind(wx.EVT_LISTBOX_DCLICK, self.move_right)
+        # self.fromlist.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.move_right)
         text = wx.StaticText(self, label=_("t_tags"))
         fromto_button = wx.Button(self, label=_("b_tag"))
         fromto_button.Bind(wx.EVT_BUTTON, self.move_right)
@@ -149,18 +151,19 @@ class KeywordsDialog(wx.Dialog):
         addtrefw_button.Bind(wx.EVT_BUTTON, self.add_trefw)
         help_button = wx.Button(self, label=_("m_keys"))
         help_button.Bind(wx.EVT_BUTTON, self.keys_help)
-        self.tolist = wx.ListBox(self, size=(120, 150))
-        # self.tolist.setSelectionMode(wxAbstractItemView.ExtendedSelection)
-        # self.tolist.itemDoubleClicked.connect(self.move_left)
+        self.tolist = wx.ListBox(self, size=(120, 150), style=wx.LB_EXTENDED)
+        # self.tolist = wx.ListCtrl(self, size=(120, 150), style=wx.LC_REPORT)
+        self.tolist.Bind(wx.EVT_LISTBOX_DCLICK, self.move_left)
+        # self.tolist.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.move_left)
         self.create_actions()
         # get data from parent
         all_trefw = self.parent.opts['Keywords']
-        # self.data = self.parent.activeitem
-        curr_trefw = []  # self.data.data(1, core.Qt.UserRole)
+        self.data = self.parent.activeitem
+        curr_trefw = self.parent.tree.GetItemData(self.data)[1]
         if curr_trefw:
-            self.tolist.InsertItems(curr_trefw, 0)
+            [self.tolist.Append(x) for x in curr_trefw]
         if all_trefw:
-            self.fromlist.InsertItems([x for x in all_trefw if x not in curr_trefw], 0)
+            [self.fromlist.Append(x) for x in all_trefw if x not in curr_trefw]
         # do layout and show
         vbox = wx.BoxSizer(wx.VERTICAL)
         hbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -211,50 +214,52 @@ class KeywordsDialog(wx.Dialog):
     def activate_left(self):
         """activate "from" list
         """
+        print('in activate_left')
         self._activate(self.fromlist)
 
     def activate_right(self):
         """activate "to" list
         """
+        print('in activate_right')
         self._activate(self.tolist)
 
     def _activate(self, win):
         """set focus to list
         """
-        item = win.currentItem()
+        item = win.GetSelection()  # currentItem()
         if not item:
-            item = win.item(0)
-        item.setSelected(True)
-        win.setFocus(True)
+            item = 0  # win.item(0)
+        item.setSelection(item)  # ed(True)
+        win.SetFocus()
 
     def move_right(self, event):
         """trefwoord selecteren
         """
-        ## print('move to right')
+        print('move to right')
         self._moveitem(self.fromlist, self.tolist)
 
     def move_left(self, event):
         """trefwoord on-selecteren
         """
-        ## print('move to left')
+        print('move to left')
         self._moveitem(self.tolist, self.fromlist)
 
     def _moveitem(self, from_, to):
         """trefwoord verplaatsen van de ene lijst naar de andere
         """
-        return  # do nothing for now
-        selected = from_.selectedItems()
+        selected = from_.GetSelections()  # selectedItems()
         print('moving', selected)
-        for item in selected:
-            from_.takeItem(from_.row(item))
-            to.addItem(item)
+        selection = [from_.GetString(i) for i in selected]
+        for indx in reversed(selected):
+            from_.Delete(indx)
+        to.Insert(selection, to.GetCount())
 
     def add_trefw(self, event):
         """nieuwe trefwoorden opgeven en direct in de linkerlijst zetten
         """
         with wx.TextEntryDialog(self, caption=app_title, message=_('t_newtag')) as dlg:
-            dlg.Showmodal()
-            if dlg == wx.ID_OK:
+            ok = dlg.ShowModal()
+            if ok == wx.ID_OK:
                 text = dlg.GetValue()
                 self.parent.opts["Keywords"].append(text)
                 self.tolist.Append(text)
@@ -264,18 +269,19 @@ class KeywordsDialog(wx.Dialog):
         """
         with wx.Dialog(self) as dlg:
             data = [x.split(' - ', 1) for x in _('tag_help').split('\n')]
-            gbox = wx.FlexGridSizer(cols=2, vgap=0, hgap=5)
+            gbox = wx.FlexGridSizer(cols=2, vgap=2, hgap=25)
             line = 0
             for left, right in data:
                 gbox.Add(wx.StaticText(dlg, label=left), 0)
                 gbox.Add(wx.StaticText(dlg, label=right), 0)
                 line += 1
-            dlg.SetTitle(app_title + " " + _("t_keys"))  # ' keys'
+            dlg.SetTitle(app_title + " " + _("t_keys"))
             vbox = wx.BoxSizer(wx.VERTICAL)
-            vbox.Add(gbox, 0, wx.ALL, 5)
+            vbox.Add(gbox, 0, wx.ALL, 10)
             done_button = wx.Button(dlg, label=_("b_done"))
             dlg.SetAffirmativeId(done_button.GetId())
             vbox.Add(done_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+            # dlg.SetSize(400, 800)
             dlg.SetSizer(vbox)
             dlg.SetAutoLayout(True)
             vbox.Fit(dlg)
@@ -594,7 +600,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def close(self, event=None):
         """save before shutting down
         """
-        self.save()
+        self.update()
         self.Close()
 
     def open(self):
@@ -631,19 +637,37 @@ class MainWindow(wx.Frame, NoteTreeMixin):
             self.tree.DeleteChildren(self.root)
         item_to_return = self.root
         self.activeitem = None
+        seltype, seldata = self.opts["Selection"][:2]
+        use_case = None
+        if len(self.opts["Selection"]) > 2:
+            use_case = self.opts["Selection"][2]
         for key, value in self.nt_data.items():
-            print(key, value)
-            if key != 0:
+            if key == 0:
+                continue
+            try:
+                tag, text, keywords = value
+            except ValueError:
                 tag, text = value
-                if self.opts['RevOrder']:
-                    print('reverse order')
-                    item = self.tree.PrependItem(self.root, tag)
-                else:
-                    print('regular order')
-                    item = self.tree.AppendItem(self.root, tag)
-                self.tree.SetItemData(item, text)
-                if key == self.opts["ActiveItem"]:
-                    item_to_return = item
+                keywords = []
+            if seltype == 1 and seldata not in keywords:
+                continue
+            if seltype == 2:
+                ok = False
+                if use_case and seldata in text:
+                    ok = True
+                elif not use_case and seldata.upper() in text.upper():
+                    ok = True
+                if not ok:
+                    continue
+            if seltype == -1 and seldata in keywords:
+                continue
+            if self.opts['RevOrder']:
+                item = self.tree.PrependItem(self.root, tag)
+            else:
+                item = self.tree.AppendItem(self.root, tag)
+            self.tree.SetItemData(item, (text, keywords))
+            if key == self.opts["ActiveItem"]:
+                item_to_return = item
         return item_to_return
 
     def reread(self, event=None):
@@ -666,7 +690,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
             ky += 1
             if tag == self.activeitem:
                 self.opts["ActiveItem"] = ky
-            self.nt_data[ky] = (self.tree.GetItemText(tag), self.tree.GetItemData(tag))
+            self.nt_data[ky] = (self.tree.GetItemText(tag), *self.tree.GetItemData(tag))
             tag, cookie = self.tree.GetNextChild(self.root, cookie)
 
     def update(self, event=None):
@@ -783,7 +807,8 @@ class MainWindow(wx.Frame, NoteTreeMixin):
             if self.editor.IsModified:
                 if message:
                     self.showmsg(message)
-                self.tree.SetItemData(self.activeitem, self.editor.GetValue())
+                oldtext, keywords = self.tree.GetItemData(self.activeitem)
+                self.tree.SetItemData(self.activeitem, (self.editor.GetValue(), keywords))
 
     def activate_item(self, item):
         """make the new item "active" and get the text for itfrom the tree structure
@@ -791,7 +816,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         self.activeitem = item
         if item != self.root:
             self.tree.SetItemBold(item, True)
-            self.editor.SetValue(self.tree.GetItemData(item))
+            self.editor.SetValue(self.tree.GetItemData(item)[0])
             self.editor.Enable(True)
             self.tree.EnsureVisible(item)
         else:
@@ -834,8 +859,15 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def link_keywords(self, event=None):
         """Open a dialog where keywords can be assigned to the text
         """
+        text, old_keywords = self.tree.GetItemData(self.activeitem)
+        print(old_keywords)
         with KeywordsDialog(self) as dlg:
-            dlg.ShowModal()
+            ok = dlg.ShowModal()
+            if ok == wx.ID_OK:
+                new_keywords = dlg.tolist.GetItems()
+                print(new_keywords)
+                self.tree.SetItemData(self.activeitem, (text, new_keywords))
+                print(self.tree.GetItemData(self.activeitem))
 
     def manage_keywords(self, event=None):
         """Open a dialog where keywords can be renamed, removed or added
@@ -939,4 +971,5 @@ def main(fn):
     app.SetTopWindow(frame)
     frame.project_file = fn
     frame.open()
+
     app.MainLoop()
