@@ -94,6 +94,9 @@ def export(nt_file, extfile):
         return 'Enter name of file to export data to'
     # kijken of het bestand al bestaat gebeurt niet in de file dialog, dus moet het hier gebeuren
     nt_data = load_file(nt_file)
+    nt_data.pop(0)
+    if not nt_data:
+        return 'Nothing exported, Notes file contains only settings'
     if isinstance(nt_data, collections.OrderedDict):
         data = ((x, y) for x, y in nt_data.items() if x != 0)
     else:
