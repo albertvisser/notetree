@@ -3,6 +3,7 @@
 import gettext
 import os
 import collections
+import shutil
 try:
     import cPickle as pck
 except ImportError:
@@ -131,7 +132,7 @@ class NoteTreeMixin:
         """finalize and write data file
         """
         self.nt_data[0] = self.opts
-        ## self.nt_data = {0: self.opts}
+        shutil.copyfile(self.project_file, self.project_file + '~')
         save_file(self.project_file, self.nt_data)
 
     def reread(self):
