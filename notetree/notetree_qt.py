@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
+"""NoteTree PyQt5 versie
 
-"NoteTree PyQt5 versie"
-
-# van een ibm site afgeplukt
+van een ibm site afgeplukt
+"""
 import os
 import sys
 import logging
@@ -14,19 +13,6 @@ import PyQt5.QtCore as core
 from .notetree_shared import NoteTreeMixin, app_title, root_title, languages
 logging.basicConfig(filename='doctree_qt.log', level=logging.DEBUG,
                     format='%(asctime)s %(message)s')
-
-## app_title = "NoteTree"
-## HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-## locale = os.path.join(HERE, 'locale')
-## gettext.install(app_title, locale)
-## languages = {'nl': gettext.translation(app_title, locale, languages=['nl']),
-    ## 'en': gettext.translation(app_title, locale, languages=['en'])}
-
-## # dynamically built translatable string symbols resolved so that they can be recognized
-## _('t_nl')
-## _('t_en')
-
-## root_title = "MyNotes"
 
 
 class KeywordsManager(wdg.QDialog):
@@ -202,9 +188,9 @@ class KeywordsDialog(wdg.QDialog):
     def create_actions(self):
         """define what can be done in this screen
         """
-        self.actionlist = (('a_from', 'Ctrl+L', self.activate_left),
+        self.actionlist = ((_('a_from'), 'Ctrl+L', self.activate_left),
                            (_('b_tag'), 'Ctrl+Right', self.move_right),
-                           ('a_to', 'Ctrl+R', self.activate_right),
+                           (_('a_to'), 'Ctrl+R', self.activate_right),
                            (_('b_untag'), 'Ctrl+Left', self.move_left),
                            (_('b_newtag'), 'Ctrl+N', self.add_trefw))
         for name, shortcut, callback in self.actionlist:
@@ -701,14 +687,14 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         if not item:
             return
         self.activeitem = item
-        if item != self.root:
+        if item == self.root:
+            self.editor.setEnabled(False)
+        else:
             font = item.font(0)
             font.setBold(True)
             item.setFont(0, font)
             self.editor.setText(item.text(1))
             self.editor.setEnabled(True)
-        else:
-            self.editor.setEnabled(False)
 
     def info_page(self):
         """show program info
