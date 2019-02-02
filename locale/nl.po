@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: NoteTree 2.2\n"
-"POT-Creation-Date: 2017-02-04 15:18+0100\n"
-"PO-Revision-Date: 2017-02-05 16:24+0100\n"
+"POT-Creation-Date: 2019-02-02 15:58+CET\n"
+"PO-Revision-Date: 2019-02-02 16:15+0100\n"
 "Last-Translator: \n"
 "Language-Team: NL <LL@li.org>\n"
 "Language: nl\n"
@@ -14,245 +14,198 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
-"X-Generator: Poedit 1.8.7.1\n"
+"X-Generator: Poedit 2.0.6\n"
 
-#: ../notetree/notetree_qt.py:28
-msgid "t_nl"
-msgstr "Nederlands"
+#: notetree/notetree_qt.py:25 notetree/notetree_wx.py:23
+msgid "t_tagman"
+msgstr "Manage tags"
 
-#: ../notetree/notetree_qt.py:29
-msgid "t_en"
-msgstr "Engels"
+#: notetree/notetree_qt.py:32 notetree/notetree_wx.py:29
+msgid "b_remtag"
+msgstr "Verwijder"
 
-#: ../notetree/notetree_qt.py:39
+#: notetree/notetree_qt.py:34 notetree/notetree_wx.py:31
+msgid "b_addtag"
+msgstr "Voeg toe/wijzig"
+
+#: notetree/notetree_qt.py:36 notetree/notetree_wx.py:33
+#: notetree/notetree_wx.py:275
+msgid "b_done"
+msgstr "Klaar"
+
+#: notetree/notetree_qt.py:40 notetree/notetree_wx.py:37
+msgid "l_oldval"
+msgstr "Huidige:"
+
+#: notetree/notetree_qt.py:43 notetree/notetree_wx.py:40
+msgid "l_newval"
+msgstr "Nieuwe waarde:"
+
+#: notetree/notetree_qt.py:49 notetree/notetree_wx.py:46
+msgid "t_applied"
+msgstr "Wijzigingen worden onmiddellijk doorgevoerd"
+
+#: notetree/notetree_qt.py:86 notetree/notetree_wx.py:86
+msgid "t_remtag"
+msgstr "Keyword \"{}\" wordt verwijderd - doorgaan?"
+
+#: notetree/notetree_qt.py:101 notetree/notetree_wx.py:100
+msgid "t_repltag"
+msgstr "Keyword \"{}\" wordt vervangen door \"{}\" "
+
+#: notetree/notetree_qt.py:102 notetree/notetree_wx.py:102
+msgid "t_repltag2"
+msgstr "Ook vervangen waar deze gebruikt wordt (nee betekent verwijderen)?"
+
+#: notetree/notetree_qt.py:117 notetree/notetree_wx.py:115
+msgid "t_addtag"
+msgstr "Keyword \"{}\" wordt toegevoegd - doorgaan?"
+
+#: notetree/notetree_qt.py:131 notetree/notetree_qt4.py:36
+#: notetree/notetree_wx.py:129
 msgid "w_tags"
 msgstr "trefwoorden toekennen"
 
-#: ../notetree/notetree_qt.py:45
+#: notetree/notetree_qt.py:138 notetree/notetree_qt4.py:42
+#: notetree/notetree_wx.py:134
 msgid "t_tags"
 msgstr "trefwoord(en):"
 
-#: ../notetree/notetree_qt.py:46
+#: notetree/notetree_qt.py:139 notetree/notetree_qt.py:193
+#: notetree/notetree_qt4.py:43 notetree/notetree_wx.py:135
+#: notetree/notetree_wx.py:192
 msgid "b_tag"
 msgstr "&Selecteer"
 
-#: ../notetree/notetree_qt.py:48
+#: notetree/notetree_qt.py:141 notetree/notetree_qt.py:195
+#: notetree/notetree_qt4.py:45 notetree/notetree_wx.py:137
+#: notetree/notetree_wx.py:194
 msgid "b_untag"
 msgstr "&Deselecteer"
 
-#: ../notetree/notetree_qt.py:50
+#: notetree/notetree_qt.py:143 notetree/notetree_qt.py:196
+#: notetree/notetree_qt4.py:47 notetree/notetree_wx.py:139
+#: notetree/notetree_wx.py:195
 msgid "b_newtag"
 msgstr "&Nieuw"
 
-#: ../notetree/notetree_qt.py:68
+#: notetree/notetree_qt.py:145 notetree/notetree_shared.py:96
+#: notetree/notetree_wx.py:141
+msgid "m_keys"
+msgstr "&Sneltoetsen"
+
+#: notetree/notetree_qt.py:164 notetree/notetree_qt4.py:65
+#: notetree/notetree_wx.py:158
 msgid "t_left"
 msgstr "Beschikbaar:"
 
-#: ../notetree/notetree_qt.py:81
+#: notetree/notetree_qt.py:178 notetree/notetree_qt4.py:78
+#: notetree/notetree_wx.py:172
 msgid "t_right"
 msgstr "Toegekend:"
 
-#: ../notetree/notetree_qt.py:134
+#: notetree/notetree_qt.py:192 notetree/notetree_wx.py:191
+msgid "a_from"
+msgstr "Activeer linkerlijst"
+
+#: notetree/notetree_qt.py:194 notetree/notetree_wx.py:193
+msgid "a_to"
+msgstr "Activeer rechterlijst"
+
+#: notetree/notetree_qt.py:246 notetree/notetree_wx.py:254
+msgid "t_newtag"
+msgstr "Geef nieuw trefwoord op"
+
+#: notetree/notetree_qt.py:255 notetree/notetree_wx.py:265
+msgid "tag_help"
+msgstr ""
+"Ga naar linker lijst - Ctrl+L\n"
+"Tag toevoegen - Ctrl+naar rechts\n"
+"Ga naar rechterlijst - Ctrl+R\n"
+"Tag weghalen - Ctrl+naar links\n"
+"Nieuwe tag toevoegen - Ctrl+N"
+
+#: notetree/notetree_qt.py:262 notetree/notetree_qt.py:717
+#: notetree/notetree_qt4.py:453 notetree/notetree_wx.py:272
+#: notetree/notetree_wx.py:841
+msgid "t_keys"
+msgstr "sneltoetsen"
+
+#: notetree/notetree_qt.py:357 notetree/notetree_qt4.py:131
+#: notetree/notetree_wx.py:368
 msgid "sleep_message"
 msgstr ""
 "NoteTree gaat nu slapen in de System tray\n"
 "Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken"
 
-#: ../notetree/notetree_qt.py:135
+#: notetree/notetree_qt.py:358 notetree/notetree_qt4.py:132
+#: notetree/notetree_wx.py:370
 msgid "hide_message"
 msgstr "Deze melding niet meer laten zien"
 
-#: ../notetree/notetree_qt.py:176 ../notetree/notetree_qt.py:407
+#: notetree/notetree_qt.py:401 notetree/notetree_qt.py:604
+#: notetree/notetree_qt4.py:173 notetree/notetree_qt4.py:360
+#: notetree/notetree_wx.py:398
 msgid "revive_message"
 msgstr "Klik hier om NoteTree te activeren"
 
-#: ../notetree/notetree_qt.py:206
-msgid "m_main"
-msgstr "&Main"
+#: notetree/notetree_qt.py:435 notetree/notetree_shared.py:88
+#: notetree/notetree_wx.py:507
+msgid "m_view"
+msgstr "&Weergave"
 
-#: ../notetree/notetree_qt.py:207
-msgid "h_reload"
-msgstr "Notities bestand opnieuw lezen"
+#: notetree/notetree_qt.py:436 notetree/notetree_qt.py:447
+#: notetree/notetree_qt.py:776 notetree/notetree_qt.py:807
+#: notetree/notetree_qt.py:842 notetree/notetree_shared.py:89
+#: notetree/notetree_wx.py:508 notetree/notetree_wx.py:550
+#: notetree/notetree_wx.py:966
+msgid "m_revorder"
+msgstr "&Nieuwste eerst"
 
-#: ../notetree/notetree_qt.py:207
-msgid "m_reload"
-msgstr "&Laden"
-
-#: ../notetree/notetree_qt.py:208
-msgid "h_save"
-msgstr "Notities bestand opslaan"
-
-#: ../notetree/notetree_qt.py:208
-msgid "m_save"
-msgstr "Op&slaan "
-
-#: ../notetree/notetree_qt.py:210
-msgid "h_root"
-msgstr "Hoofditem hernoemen"
-
-#: ../notetree/notetree_qt.py:210
-msgid "m_root"
-msgstr "&Titel hoofditem"
-
-#: ../notetree/notetree_qt.py:212
-msgid "h_hide"
-msgstr "Verbergen in system tray"
-
-#: ../notetree/notetree_qt.py:212
-msgid "m_hide"
-msgstr "&Verberg "
-
-#: ../notetree/notetree_qt.py:213
-msgid "h_lang"
-msgstr "Wijzig de taal van het programma"
-
-#: ../notetree/notetree_qt.py:213
-msgid "m_lang"
-msgstr "T&aal"
-
-#: ../notetree/notetree_qt.py:215
-msgid "h_exit"
-msgstr "Programma afsluiten"
-
-#: ../notetree/notetree_qt.py:215
-msgid "m_exit"
-msgstr "e&Xit"
-
-#: ../notetree/notetree_qt.py:217
-msgid "m_note"
-msgstr "&Notitie"
-
-#: ../notetree/notetree_qt.py:218
-msgid "h_new"
-msgstr "Notitie toevoegen"
-
-#: ../notetree/notetree_qt.py:218
-msgid "m_new"
-msgstr "&Nieuw "
-
-#: ../notetree/notetree_qt.py:219
-msgid "h_delete"
-msgstr "Notitie verwijderen"
-
-#: ../notetree/notetree_qt.py:219
-msgid "m_delete"
-msgstr "Verwij&der"
-
-#: ../notetree/notetree_qt.py:220
-msgid "h_name"
-msgstr "Huidige notitie hernoemen"
-
-#: ../notetree/notetree_qt.py:220
-msgid "m_name"
-msgstr "Notitie &titel"
-
-#: ../notetree/notetree_qt.py:222
-msgid "h_tags"
-msgstr "Ken trefwoord(en) toe aan deze notitie"
-
-#: ../notetree/notetree_qt.py:222
-msgid "m_tags"
-msgstr "&Trefwoorden"
-
-#: ../notetree/notetree_qt.py:224
-msgid "h_forward"
-msgstr "Bekijk volgende notitie"
-
-#: ../notetree/notetree_qt.py:224
-msgid "m_forward"
-msgstr "&Verder"
-
-#: ../notetree/notetree_qt.py:225
-msgid "h_back"
-msgstr "Bekijk vorige notitie"
-
-#: ../notetree/notetree_qt.py:225
-msgid "m_back"
-msgstr "&Terug"
-
-#: ../notetree/notetree_qt.py:227
-msgid "m_select"
-msgstr "&Selecteren"
-
-#: ../notetree/notetree_qt.py:228 ../notetree/notetree_qt.py:246
-msgid "m_selall"
-msgstr "&Selecteer Alles"
-
-#: ../notetree/notetree_qt.py:228 ../notetree/notetree_qt.py:539
-msgid "h_selall"
-msgstr "Laat alle notities zien"
-
-#: ../notetree/notetree_qt.py:229
-msgid "h_seltag"
-msgstr "Laat notities zien met een bepaald trefwoord"
-
-#: ../notetree/notetree_qt.py:229 ../notetree/notetree_qt.py:246
-msgid "m_seltag"
-msgstr "Selecteer op &Trefwoord"
-
-#: ../notetree/notetree_qt.py:230
-msgid "h_seltxt"
-msgstr "Laat notities zien die een bepaalde tekst bevatten"
-
-#: ../notetree/notetree_qt.py:230 ../notetree/notetree_qt.py:246
-msgid "m_seltxt"
-msgstr "Selecteer op T&ekst"
-
-#: ../notetree/notetree_qt.py:232
-msgid "m_help"
-msgstr "&Help"
-
-#: ../notetree/notetree_qt.py:233
-msgid "h_about"
-msgstr "Meer over deze applicatie"
-
-#: ../notetree/notetree_qt.py:233
-msgid "m_about"
-msgstr "&Over"
-
-#: ../notetree/notetree_qt.py:234
-msgid "h_keys"
-msgstr "Handige toetscombinaties"
-
-#: ../notetree/notetree_qt.py:234
-msgid "m_keys"
-msgstr "&Sneltoetsen"
-
-#: ../notetree/notetree_qt.py:368
+#: notetree/notetree_qt.py:557 notetree/notetree_qt4.py:321
+#: notetree/notetree_wx.py:674
 msgid "ask_reload"
 msgstr "OK om ini file opnieuw te laden (wijzigingen gaan verloren)?"
 
-#: ../notetree/notetree_qt.py:394
+#: notetree/notetree_qt.py:585 notetree/notetree_qt4.py:346
+#: notetree/notetree_wx.py:707
 msgid "t_root"
 msgstr "Geef nieuwe titel voor het hoofditem:"
 
-#: ../notetree/notetree_qt.py:421
+#: notetree/notetree_qt.py:615 notetree/notetree_qt4.py:370
+#: notetree/notetree_wx.py:743
 msgid "t_new"
 msgstr "Geef een titel op voor het nieuwe item:"
 
-#: ../notetree/notetree_qt.py:446
+#: notetree/notetree_qt.py:643 notetree/notetree_qt4.py:393
+#: notetree/notetree_wx.py:771
 msgid "no_delete_root"
 msgstr "Hoofditem kan niet verwijderd worden"
 
-#: ../notetree/notetree_qt.py:449
+#: notetree/notetree_qt.py:648 notetree/notetree_qt4.py:396
+#: notetree/notetree_wx.py:776
 msgid "t_name"
 msgstr "Geef nieuwe titel voor het huidige item:"
 
-#: ../notetree/notetree_qt.py:459
+#: notetree/notetree_qt.py:660 notetree/notetree_qt4.py:406
+#: notetree/notetree_wx.py:789
 msgid "no_next_item"
 msgstr "Er is geen volgende"
 
-#: ../notetree/notetree_qt.py:466
+#: notetree/notetree_qt.py:669 notetree/notetree_qt4.py:413
+#: notetree/notetree_wx.py:798
 msgid "no_prev_item"
 msgstr "Er is geen vorige"
 
-#: ../notetree/notetree_qt.py:493
+#: notetree/notetree_qt.py:703 notetree/notetree_qt4.py:440
+#: notetree/notetree_wx.py:836
 msgid "info_text"
 msgstr ""
 "NoteTree door Albert Visser\n"
 "Electronisch notitieblokje"
 
-#: ../notetree/notetree_qt.py:499
+#: notetree/notetree_qt.py:710 notetree/notetree_qt4.py:446
+#: notetree/notetree_wx.py:416
 msgid "help_text"
 msgstr ""
 "Ctrl-N                   - nieuwe notitie\n"
@@ -270,95 +223,192 @@ msgstr ""
 "Shift-F6 - trefwoorden beheren\n"
 "F9 - volgorde omdraaien"
 
-#: ../notetree/notetree_qt.py:506
-msgid "t_keys"
-msgstr "sneltoetsen"
-
-#: ../notetree/notetree_qt.py:517
+#: notetree/notetree_qt.py:728 notetree/notetree_qt4.py:464
+#: notetree/notetree_wx.py:848
 msgid "t_lang"
 msgstr "Kies een taal"
 
-#: ../notetree/notetree_qt.py:556
+#: notetree/notetree_qt.py:770 notetree/notetree_qt4.py:489
+#: notetree/notetree_shared.py:91 notetree/notetree_wx.py:901
+msgid "h_selall"
+msgstr "Laat alle notities zien"
+
+#: notetree/notetree_qt.py:774 notetree/notetree_qt4.py:211
+#: notetree/notetree_shared.py:91
+msgid "m_selall"
+msgstr "&Selecteer Alles"
+
+#: notetree/notetree_qt.py:792 notetree/notetree_qt4.py:506
+#: notetree/notetree_wx.py:910
 msgid "i_seltag"
 msgstr "Kies een trefwoord om te zoeken"
 
-#: ../notetree/notetree_qt.py:559
+#: notetree/notetree_qt.py:801 notetree/notetree_qt4.py:509
+#: notetree/notetree_wx.py:919
 msgid "s_seltag"
 msgstr "Toon {} notities met trefwoord `{}`"
 
-#: ../notetree/notetree_qt.py:575
+#: notetree/notetree_qt.py:805 notetree/notetree_qt.py:811
+#: notetree/notetree_qt.py:813 notetree/notetree_qt4.py:211
+#: notetree/notetree_shared.py:92
+msgid "m_seltag"
+msgstr "Selecteer op &Trefwoord"
+
+#: notetree/notetree_qt.py:827 notetree/notetree_qt4.py:521
+#: notetree/notetree_wx.py:934
 msgid "i_seltxt"
 msgstr "Geef tekst op om te zoeken"
 
-#: ../notetree/notetree_qt.py:578
+#: notetree/notetree_qt.py:836 notetree/notetree_qt4.py:524
+#: notetree/notetree_wx.py:945
 msgid "s_seltxt"
 msgstr "Toon {} notities met tekst `{}`"
 
-#: ../notetree/notetree_qt.py:
-msgid "m_revorder"
-msgstr "&Nieuwste eerst"
+#: notetree/notetree_qt.py:840 notetree/notetree_qt.py:846
+#: notetree/notetree_qt.py:848 notetree/notetree_qt4.py:211
+#: notetree/notetree_shared.py:93
+msgid "m_seltxt"
+msgstr "Selecteer op T&ekst"
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_shared.py:19
+msgid "t_nl"
+msgstr "Nederlands"
+
+#: notetree/notetree_shared.py:20
+msgid "t_en"
+msgstr "Engels"
+
+#: notetree/notetree_shared.py:67
+msgid "m_main"
+msgstr "&Main"
+
+#: notetree/notetree_shared.py:68
+msgid "h_reload"
+msgstr "Notities bestand opnieuw lezen"
+
+#: notetree/notetree_shared.py:68
+msgid "m_reload"
+msgstr "&Laden"
+
+#: notetree/notetree_shared.py:69
+msgid "h_save"
+msgstr "Notities bestand opslaan"
+
+#: notetree/notetree_shared.py:69
+msgid "m_save"
+msgstr "Op&slaan "
+
+#: notetree/notetree_shared.py:71
+msgid "h_root"
+msgstr "Hoofditem hernoemen"
+
+#: notetree/notetree_shared.py:71
+msgid "m_root"
+msgstr "&Titel hoofditem"
+
+#: notetree/notetree_shared.py:75
+msgid "h_hide"
+msgstr "Verbergen in system tray"
+
+#: notetree/notetree_shared.py:75
+msgid "m_hide"
+msgstr "&Verberg "
+
+#: notetree/notetree_shared.py:76
+msgid "h_lang"
+msgstr "Wijzig de taal van het programma"
+
+#: notetree/notetree_shared.py:76
+msgid "m_lang"
+msgstr "T&aal"
+
+#: notetree/notetree_shared.py:78
+msgid "h_exit"
+msgstr "Programma afsluiten"
+
+#: notetree/notetree_shared.py:78
+msgid "m_exit"
+msgstr "e&Xit"
+
+#: notetree/notetree_shared.py:79
+msgid "m_note"
+msgstr "&Notitie"
+
+#: notetree/notetree_shared.py:80
+msgid "h_new"
+msgstr "Notitie toevoegen"
+
+#: notetree/notetree_shared.py:80
+msgid "m_new"
+msgstr "&Nieuw "
+
+#: notetree/notetree_shared.py:81
+msgid "h_delete"
+msgstr "Notitie verwijderen"
+
+#: notetree/notetree_shared.py:81
+msgid "m_delete"
+msgstr "Verwij&der"
+
+#: notetree/notetree_shared.py:82
+msgid "h_name"
+msgstr "Huidige notitie hernoemen"
+
+#: notetree/notetree_shared.py:82
+msgid "m_name"
+msgstr "Notitie &titel"
+
+#: notetree/notetree_shared.py:84
+msgid "h_tags"
+msgstr "Ken trefwoord(en) toe aan deze notitie"
+
+#: notetree/notetree_shared.py:84
+msgid "m_tags"
+msgstr "&Trefwoorden"
+
+#: notetree/notetree_shared.py:86
+msgid "h_forward"
+msgstr "Bekijk volgende notitie"
+
+#: notetree/notetree_shared.py:86
+msgid "m_forward"
+msgstr "&Verder"
+
+#: notetree/notetree_shared.py:87
+msgid "h_back"
+msgstr "Bekijk vorige notitie"
+
+#: notetree/notetree_shared.py:87
+msgid "m_back"
+msgstr "&Terug"
+
+#: notetree/notetree_shared.py:89
 msgid "h_revorder"
 msgstr "Toon in omgekeerde volgorde van toevoegen"
 
-#: ../notetree/notetree_qt.py:
-msgid "t_tagman"
-msgstr "Manage tags"
+#: notetree/notetree_shared.py:92
+msgid "h_seltag"
+msgstr "Laat notities zien met een bepaald trefwoord"
 
-#: ../notetree/notetree_qt.py:
-msgid "b_remtag"
-msgstr "Verwijder"
+#: notetree/notetree_shared.py:93
+msgid "h_seltxt"
+msgstr "Laat notities zien die een bepaalde tekst bevatten"
 
-#: ../notetree/notetree_qt.py:
-msgid "b_addtag"
-msgstr "Voeg toe/wijzig"
+#: notetree/notetree_shared.py:94
+msgid "m_help"
+msgstr "&Help"
 
-#: ../notetree/notetree_qt.py:
-msgid "b_done"
-msgstr "Klaar"
+#: notetree/notetree_shared.py:95
+msgid "h_about"
+msgstr "Meer over deze applicatie"
 
-#: ../notetree/notetree_qt.py:
-msgid "l_oldval"
-msgstr "Huidige:"
+#: notetree/notetree_shared.py:95
+msgid "m_about"
+msgstr "&Over"
 
-#: ../notetree/notetree_qt.py:
-msgid "l_newval"
-msgstr "Nieuwe waarde:"
+#: notetree/notetree_shared.py:96
+msgid "h_keys"
+msgstr "Handige toetscombinaties"
 
-#: ../notetree/notetree_qt.py:
-msgid "t_applied"
-msgstr "Wijzigingen worden onmiddellijk doorgevoerd"
-
-#: ../notetree/notetree_qt.py:
-msgid "t_remtag"
-msgstr "Keyword \"{}\" wordt verwijderd - doorgaan?"
-
-#: ../notetree/notetree_qt.py:
-msgid "t_repltag"
-msgstr "Keyword \"{}\" wordt vervangen door \"{}\" "
-
-#: ../notetree/notetree_qt.py:
-msgid "t_repltag2"
-msgstr "Ook vervangen waar deze gebruikt wordt (nee betekent verwijderen)?"
-
-#: ../notetree/notetree_qt.py:
-msgid "t_addtag"
-msgstr "Keyword \"{}\" wordt toegevoegd - doorgaan?"
-
-#: ../notetree/notetree_qt.py:
-msgid "t_newtag"
-msgstr "Geef nieuw trefwoord op"
-
-#: ../notetree/notetree_qt.py:
-msgid "tag_help"
-msgstr ""
-"Ga naar linker lijst - Ctrl+L\n"
-"Tag toevoegen - Ctrl+naar rechts\n"
-"Ga naar rechterlijst - Ctrl+R\n"
-"Tag weghalen - Ctrl+naar links\n"
-"Nieuwe tag toevoegen - Ctrl+N"
-
-#: ../notetree/notetree_qt.py:
-msgid "m_view"
-msgstr "&Weergave"
+#~ msgid "m_select"
+#~ msgstr "&Selecteren"

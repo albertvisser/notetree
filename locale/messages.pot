@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-11-01 20:51+CET\n"
+"POT-Creation-Date: 2019-02-02 15:58+CET\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,326 +15,374 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: ../notetree/notetree_qt.py:28
-msgid "t_nl"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:29
-msgid "t_en"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:39
-msgid "w_tags"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:45
-msgid "t_tags"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:46
-msgid "b_tag"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:48
-msgid "b_untag"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:50
-msgid "b_newtag"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:68
-msgid "t_left"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:81
-msgid "t_right"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:134
-msgid "sleep_message"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:135
-msgid "hide_message"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:176 ../notetree/notetree_qt.py:407
-msgid "revive_message"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:206
-msgid "m_main"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:207
-msgid "h_reload"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:207
-msgid "m_reload"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:208
-msgid "h_save"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:208
-msgid "m_save"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:210
-msgid "h_root"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:210
-msgid "m_root"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:212
-msgid "h_hide"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:212
-msgid "m_hide"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:213
-msgid "h_lang"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:213
-msgid "m_lang"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:215
-msgid "h_exit"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:215
-msgid "m_exit"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:217
-msgid "m_note"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:218
-msgid "h_new"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:218
-msgid "m_new"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:219
-msgid "h_delete"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:219
-msgid "m_delete"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:220
-msgid "h_name"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:220
-msgid "m_name"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:222
-msgid "h_tags"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:222
-msgid "m_tags"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:224
-msgid "h_forward"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:224
-msgid "m_forward"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:225
-msgid "h_back"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:225
-msgid "m_back"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:227
-msgid "m_select"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:228 ../notetree/notetree_qt.py:246
-msgid "m_selall"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:228 ../notetree/notetree_qt.py:539
-msgid "h_selall"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:229
-msgid "h_seltag"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:229 ../notetree/notetree_qt.py:246
-msgid "m_seltag"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:230
-msgid "h_seltxt"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:230 ../notetree/notetree_qt.py:246
-msgid "m_seltxt"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:232
-msgid "m_help"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:233
-msgid "h_about"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:233
-msgid "m_about"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:234
-msgid "h_keys"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:234
-msgid "m_keys"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:368
-msgid "ask_reload"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:394
-msgid "t_root"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:421
-msgid "t_new"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:446
-msgid "no_delete_root"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:449
-msgid "t_name"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:459
-msgid "no_next_item"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:466
-msgid "no_prev_item"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:493
-msgid "info_text"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:499
-msgid "help_text"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:506
-msgid "t_keys"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:517
-msgid "t_lang"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:556
-msgid "i_seltag"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:559
-msgid "s_seltag"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:575
-msgid "i_seltxt"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:578
-msgid "s_seltxt"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:
-msgid "m_revorder"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:
-msgid "h_revorder"
-msgstr ""
-
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:25 notetree/notetree_wx.py:23
 msgid "t_tagman"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:32 notetree/notetree_wx.py:29
 msgid "b_remtag"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:34 notetree/notetree_wx.py:31
 msgid "b_addtag"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:36 notetree/notetree_wx.py:33
+#: notetree/notetree_wx.py:275
 msgid "b_done"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:40 notetree/notetree_wx.py:37
 msgid "l_oldval"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:43 notetree/notetree_wx.py:40
 msgid "l_newval"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:49 notetree/notetree_wx.py:46
 msgid "t_applied"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:86 notetree/notetree_wx.py:86
 msgid "t_remtag"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:101 notetree/notetree_wx.py:100
 msgid "t_repltag"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:102 notetree/notetree_wx.py:102
 msgid "t_repltag2"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:117 notetree/notetree_wx.py:115
 msgid "t_addtag"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:131 notetree/notetree_qt4.py:36
+#: notetree/notetree_wx.py:129
+msgid "w_tags"
+msgstr ""
+
+#: notetree/notetree_qt.py:138 notetree/notetree_qt4.py:42
+#: notetree/notetree_wx.py:134
+msgid "t_tags"
+msgstr ""
+
+#: notetree/notetree_qt.py:139 notetree/notetree_qt.py:193
+#: notetree/notetree_qt4.py:43 notetree/notetree_wx.py:135
+#: notetree/notetree_wx.py:192
+msgid "b_tag"
+msgstr ""
+
+#: notetree/notetree_qt.py:141 notetree/notetree_qt.py:195
+#: notetree/notetree_qt4.py:45 notetree/notetree_wx.py:137
+#: notetree/notetree_wx.py:194
+msgid "b_untag"
+msgstr ""
+
+#: notetree/notetree_qt.py:143 notetree/notetree_qt.py:196
+#: notetree/notetree_qt4.py:47 notetree/notetree_wx.py:139
+#: notetree/notetree_wx.py:195
+msgid "b_newtag"
+msgstr ""
+
+#: notetree/notetree_qt.py:145 notetree/notetree_shared.py:96
+#: notetree/notetree_wx.py:141
+msgid "m_keys"
+msgstr ""
+
+#: notetree/notetree_qt.py:164 notetree/notetree_qt4.py:65
+#: notetree/notetree_wx.py:158
+msgid "t_left"
+msgstr ""
+
+#: notetree/notetree_qt.py:178 notetree/notetree_qt4.py:78
+#: notetree/notetree_wx.py:172
+msgid "t_right"
+msgstr ""
+
+#: notetree/notetree_qt.py:192 notetree/notetree_wx.py:191
+msgid "a_from"
+msgstr ""
+
+#: notetree/notetree_qt.py:194 notetree/notetree_wx.py:193
+msgid "a_to"
+msgstr ""
+
+#: notetree/notetree_qt.py:246 notetree/notetree_wx.py:254
 msgid "t_newtag"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:255 notetree/notetree_wx.py:265
 msgid "tag_help"
 msgstr ""
 
-#: ../notetree/notetree_qt.py:
+#: notetree/notetree_qt.py:262 notetree/notetree_qt.py:717
+#: notetree/notetree_qt4.py:453 notetree/notetree_wx.py:272
+#: notetree/notetree_wx.py:841
+msgid "t_keys"
+msgstr ""
+
+#: notetree/notetree_qt.py:357 notetree/notetree_qt4.py:131
+#: notetree/notetree_wx.py:368
+msgid "sleep_message"
+msgstr ""
+
+#: notetree/notetree_qt.py:358 notetree/notetree_qt4.py:132
+#: notetree/notetree_wx.py:370
+msgid "hide_message"
+msgstr ""
+
+#: notetree/notetree_qt.py:401 notetree/notetree_qt.py:604
+#: notetree/notetree_qt4.py:173 notetree/notetree_qt4.py:360
+#: notetree/notetree_wx.py:398
+msgid "revive_message"
+msgstr ""
+
+#: notetree/notetree_qt.py:435 notetree/notetree_shared.py:88
+#: notetree/notetree_wx.py:507
 msgid "m_view"
 msgstr ""
+
+#: notetree/notetree_qt.py:436 notetree/notetree_qt.py:447
+#: notetree/notetree_qt.py:776 notetree/notetree_qt.py:807
+#: notetree/notetree_qt.py:842 notetree/notetree_shared.py:89
+#: notetree/notetree_wx.py:508 notetree/notetree_wx.py:550
+#: notetree/notetree_wx.py:966
+msgid "m_revorder"
+msgstr ""
+
+#: notetree/notetree_qt.py:557 notetree/notetree_qt4.py:321
+#: notetree/notetree_wx.py:674
+msgid "ask_reload"
+msgstr ""
+
+#: notetree/notetree_qt.py:585 notetree/notetree_qt4.py:346
+#: notetree/notetree_wx.py:707
+msgid "t_root"
+msgstr ""
+
+#: notetree/notetree_qt.py:615 notetree/notetree_qt4.py:370
+#: notetree/notetree_wx.py:743
+msgid "t_new"
+msgstr ""
+
+#: notetree/notetree_qt.py:643 notetree/notetree_qt4.py:393
+#: notetree/notetree_wx.py:771
+msgid "no_delete_root"
+msgstr ""
+
+#: notetree/notetree_qt.py:648 notetree/notetree_qt4.py:396
+#: notetree/notetree_wx.py:776
+msgid "t_name"
+msgstr ""
+
+#: notetree/notetree_qt.py:660 notetree/notetree_qt4.py:406
+#: notetree/notetree_wx.py:789
+msgid "no_next_item"
+msgstr ""
+
+#: notetree/notetree_qt.py:669 notetree/notetree_qt4.py:413
+#: notetree/notetree_wx.py:798
+msgid "no_prev_item"
+msgstr ""
+
+#: notetree/notetree_qt.py:703 notetree/notetree_qt4.py:440
+#: notetree/notetree_wx.py:836
+msgid "info_text"
+msgstr ""
+
+#: notetree/notetree_qt.py:710 notetree/notetree_qt4.py:446
+#: notetree/notetree_wx.py:416
+msgid "help_text"
+msgstr ""
+
+#: notetree/notetree_qt.py:728 notetree/notetree_qt4.py:464
+#: notetree/notetree_wx.py:848
+msgid "t_lang"
+msgstr ""
+
+#: notetree/notetree_qt.py:770 notetree/notetree_qt4.py:489
+#: notetree/notetree_shared.py:91 notetree/notetree_wx.py:901
+msgid "h_selall"
+msgstr ""
+
+#: notetree/notetree_qt.py:774 notetree/notetree_qt4.py:211
+#: notetree/notetree_shared.py:91
+msgid "m_selall"
+msgstr ""
+
+#: notetree/notetree_qt.py:792 notetree/notetree_qt4.py:506
+#: notetree/notetree_wx.py:910
+msgid "i_seltag"
+msgstr ""
+
+#: notetree/notetree_qt.py:801 notetree/notetree_qt4.py:509
+#: notetree/notetree_wx.py:919
+msgid "s_seltag"
+msgstr ""
+
+#: notetree/notetree_qt.py:805 notetree/notetree_qt.py:811
+#: notetree/notetree_qt.py:813 notetree/notetree_qt4.py:211
+#: notetree/notetree_shared.py:92
+msgid "m_seltag"
+msgstr ""
+
+#: notetree/notetree_qt.py:827 notetree/notetree_qt4.py:521
+#: notetree/notetree_wx.py:934
+msgid "i_seltxt"
+msgstr ""
+
+#: notetree/notetree_qt.py:836 notetree/notetree_qt4.py:524
+#: notetree/notetree_wx.py:945
+msgid "s_seltxt"
+msgstr ""
+
+#: notetree/notetree_qt.py:840 notetree/notetree_qt.py:846
+#: notetree/notetree_qt.py:848 notetree/notetree_qt4.py:211
+#: notetree/notetree_shared.py:93
+msgid "m_seltxt"
+msgstr ""
+
+#: notetree/notetree_shared.py:19
+msgid "t_nl"
+msgstr ""
+
+#: notetree/notetree_shared.py:20
+msgid "t_en"
+msgstr ""
+
+#: notetree/notetree_shared.py:67
+msgid "m_main"
+msgstr ""
+
+#: notetree/notetree_shared.py:68
+msgid "h_reload"
+msgstr ""
+
+#: notetree/notetree_shared.py:68
+msgid "m_reload"
+msgstr ""
+
+#: notetree/notetree_shared.py:69
+msgid "h_save"
+msgstr ""
+
+#: notetree/notetree_shared.py:69
+msgid "m_save"
+msgstr ""
+
+#: notetree/notetree_shared.py:71
+msgid "h_root"
+msgstr ""
+
+#: notetree/notetree_shared.py:71
+msgid "m_root"
+msgstr ""
+
+#: notetree/notetree_shared.py:75
+msgid "h_hide"
+msgstr ""
+
+#: notetree/notetree_shared.py:75
+msgid "m_hide"
+msgstr ""
+
+#: notetree/notetree_shared.py:76
+msgid "h_lang"
+msgstr ""
+
+#: notetree/notetree_shared.py:76
+msgid "m_lang"
+msgstr ""
+
+#: notetree/notetree_shared.py:78
+msgid "h_exit"
+msgstr ""
+
+#: notetree/notetree_shared.py:78
+msgid "m_exit"
+msgstr ""
+
+#: notetree/notetree_shared.py:79
+msgid "m_note"
+msgstr ""
+
+#: notetree/notetree_shared.py:80
+msgid "h_new"
+msgstr ""
+
+#: notetree/notetree_shared.py:80
+msgid "m_new"
+msgstr ""
+
+#: notetree/notetree_shared.py:81
+msgid "h_delete"
+msgstr ""
+
+#: notetree/notetree_shared.py:81
+msgid "m_delete"
+msgstr ""
+
+#: notetree/notetree_shared.py:82
+msgid "h_name"
+msgstr ""
+
+#: notetree/notetree_shared.py:82
+msgid "m_name"
+msgstr ""
+
+#: notetree/notetree_shared.py:84
+msgid "h_tags"
+msgstr ""
+
+#: notetree/notetree_shared.py:84
+msgid "m_tags"
+msgstr ""
+
+#: notetree/notetree_shared.py:86
+msgid "h_forward"
+msgstr ""
+
+#: notetree/notetree_shared.py:86
+msgid "m_forward"
+msgstr ""
+
+#: notetree/notetree_shared.py:87
+msgid "h_back"
+msgstr ""
+
+#: notetree/notetree_shared.py:87
+msgid "m_back"
+msgstr ""
+
+#: notetree/notetree_shared.py:89
+msgid "h_revorder"
+msgstr ""
+
+#: notetree/notetree_shared.py:92
+msgid "h_seltag"
+msgstr ""
+
+#: notetree/notetree_shared.py:93
+msgid "h_seltxt"
+msgstr ""
+
+#: notetree/notetree_shared.py:94
+msgid "m_help"
+msgstr ""
+
+#: notetree/notetree_shared.py:95
+msgid "h_about"
+msgstr ""
+
+#: notetree/notetree_shared.py:95
+msgid "m_about"
+msgstr ""
+
+#: notetree/notetree_shared.py:96
+msgid "h_keys"
+msgstr ""
+
