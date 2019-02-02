@@ -40,7 +40,7 @@ def load_file(filename):
     geeft geen resultaat als bestand niet bestaat
     """
     if not os.path.exists(filename):
-        return
+        return {}
     with open(filename, "rb") as f_in:
         nt_data = pck.load(f_in)
         options = nt_data.get(0, [])

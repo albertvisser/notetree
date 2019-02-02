@@ -141,6 +141,7 @@ def import_(nt_file, extfile):
                 key = line[4:].strip()
                 print(oldkey, key)
                 if oldkey and key != oldkey:
+                    # TODO: title, text en keywords zijn hier nog niet gedefinieerd
                     nt_data[oldkey] = (title, "\n".join(text), keywords)
                 oldkey = key
             elif line.startswith('title:'):  # and not in_text:
@@ -170,6 +171,7 @@ def import_(nt_file, extfile):
     # of in de gui de mogelijkheid "remove unused keywords"
     save_file(nt_file, nt_data)
     return 'Notes imported from {} into {}'.format(extfile, nt_file)
+
 
 functions = [('Print entire data structure', dumpdata),
              ('Export notes to file', export),

@@ -24,5 +24,6 @@ def convert_ntfile(filename):
 
     save_file('-new'.join(os.path.splitext(filename)), nt_data)
 
+
 if __name__ == '__main__':
     convert_ntfile(sys.argv[1])
