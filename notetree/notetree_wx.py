@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-"""NoteTree wxPython versie - niet in onderhoud
+"""NoteTree wxPython versie
 
 van een ibm site afgeplukt
 """
@@ -11,16 +10,8 @@ from datetime import datetime
 import wx
 import wx.adv
 from .notetree_shared import NoteTreeMixin, app_title, root_title, languages
-
-## app_title = "NoteTree"
-## HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-## locale = os.path.join(HERE, 'locale')
-## print locale
-## gettext.install(app_title, locale)
-## languages = {'nl': gettext.translation(app_title, locale, languages=['nl']),
-    ## 'en': gettext.translation(app_title, locale, languages=['en'])}
-
-## root_title = "MyNotes"
+logging.basicConfig(filename='doctree_wx.log', level=logging.DEBUG,
+                    format='%(asctime)s %(message)s')
 
 
 class KeywordsManager(wx.Dialog):
@@ -77,7 +68,7 @@ class KeywordsManager(wx.Dialog):
         """
         for ix in range(self.parent.root.childCount()):
             item = self.parent.root.child(ix)
-            keywords = []  # item.data(1, core.Qt.UserRole)
+            key, text, keywords = self.parent.tree.GetData()  # item.data(1, core.Qt.UserRole)
             try:
                 ix = keywords.index(oldtext)
             except ValueError:
@@ -86,7 +77,7 @@ class KeywordsManager(wx.Dialog):
                 keywords[ix] = newtext
             else:
                 keywords.pop(ix)
-            # item.setData(1, core.Qt.UserRole, keywords)
+            self.parent.tree.SetData(key, text, keywords)  # item.setData(1, core.Qt.UserRole, keywords)
 
     def remove_keyword(self, event):
         """delete a keyword aftre selecting from the dropdown
@@ -139,9 +130,7 @@ class KeywordsDialog(wx.Dialog):
         self.SetIcon(self.parent.nt_icon)
         # define widgets
         self.fromlist = wx.ListBox(self, size=(120, 150), style=wx.LB_EXTENDED)
-        # self.fromlist = wx.ListCtrl(self, size=(120, 150), style=wx.LC_REPORT)
         self.fromlist.Bind(wx.EVT_LISTBOX_DCLICK, self.move_right)
-        # self.fromlist.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.move_right)
         text = wx.StaticText(self, label=_("t_tags"))
         fromto_button = wx.Button(self, label=_("b_tag"))
         fromto_button.Bind(wx.EVT_BUTTON, self.move_right)
@@ -152,14 +141,12 @@ class KeywordsDialog(wx.Dialog):
         help_button = wx.Button(self, label=_("m_keys"))
         help_button.Bind(wx.EVT_BUTTON, self.keys_help)
         self.tolist = wx.ListBox(self, size=(120, 150), style=wx.LB_EXTENDED)
-        # self.tolist = wx.ListCtrl(self, size=(120, 150), style=wx.LC_REPORT)
         self.tolist.Bind(wx.EVT_LISTBOX_DCLICK, self.move_left)
-        # self.tolist.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.move_left)
         self.create_actions()
         # get data from parent
         all_trefw = self.parent.opts['Keywords']
         self.data = self.parent.activeitem
-        curr_trefw = self.parent.tree.GetItemData(self.data)[1]
+        curr_trefw = self.parent.tree.GetItemData(self.data)[2]
         if curr_trefw:
             [self.tolist.Append(x) for x in curr_trefw]
         if all_trefw:
@@ -187,7 +174,6 @@ class KeywordsDialog(wx.Dialog):
         hbox.Add(vbox2)
         vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        # hbox.Add(bbox)
         vbox.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0,
                  wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
         vbox.Add(hbox)
@@ -201,23 +187,33 @@ class KeywordsDialog(wx.Dialog):
     def create_actions(self):
         """define what can be done in this screen
         """
-        return  # do nothing for now
-        self.actionlist = (('a_from', 'Ctrl+L', self.activate_left),
+        accel_list = []
+        self.actionlist = ((_('a_from'), 'Ctrl+L', self.activate_left),
                            (_('b_tag'), 'Ctrl+Right', self.move_right),
-                           ('a_to', 'Ctrl+R', self.activate_right),
+                           (_('a_to'), 'Ctrl+R', self.activate_right),
                            (_('b_untag'), 'Ctrl+Left', self.move_left),
                            (_('b_newtag'), 'Ctrl+N', self.add_trefw))
         for name, shortcut, callback in self.actionlist:
-            act = wx.MenuItem(self, '\n'.join(name, shortcut))
-            act.Bind(wx.MENU_ITEM, callback)
+            act = wx.MenuItem(id=wx.NewId(), text=name)
+            print(act.GetId())
+            self.Bind(wx.EVT_MENU, callback, act)
+            accel = wx.AcceleratorEntry(cmd=act.GetId())
+            ok = accel.FromString(shortcut)
+            if ok:
+                accel_list.append(accel)
+        for item in accel_list:
+            print(item.GetCommand(), item.GetKeyCode(), item.GetMenuItem())
+        accel_table = wx.AcceleratorTable(accel_list)
+        print(accel_table.IsOk())
+        self.SetAcceleratorTable(accel_table)
 
-    def activate_left(self):
+    def activate_left(self, event):
         """activate "from" list
         """
         print('in activate_left')
         self._activate(self.fromlist)
 
-    def activate_right(self):
+    def activate_right(self, event):
         """activate "to" list
         """
         print('in activate_right')
@@ -226,10 +222,17 @@ class KeywordsDialog(wx.Dialog):
     def _activate(self, win):
         """set focus to list
         """
-        item = win.GetSelection()  # currentItem()
+        item = win.GetSelections()  # currentItem()
         if not item:
-            item = 0  # win.item(0)
-        item.setSelection(item)  # ed(True)
+            item = [0]  # win.item(0)
+        try:
+            win.SetSelection(item[0])  # ed(True)
+        except wx._core.wxAssertionError:
+            if win == self.fromlist:
+                self.activate_right()
+            else:
+                self.activate_left()
+            return
         win.SetFocus()
 
     def move_right(self, event):
@@ -249,10 +252,11 @@ class KeywordsDialog(wx.Dialog):
         """
         selected = from_.GetSelections()  # selectedItems()
         print('moving', selected)
-        selection = [from_.GetString(i) for i in selected]
-        for indx in reversed(selected):
-            from_.Delete(indx)
-        to.Insert(selection, to.GetCount())
+        if selected:
+            selection = [from_.GetString(i) for i in selected]
+            for indx in reversed(selected):
+                from_.Delete(indx)
+                to.Insert(selection, to.GetCount())
 
     def add_trefw(self, event):
         """nieuwe trefwoorden opgeven en direct in de linkerlijst zetten
@@ -289,13 +293,6 @@ class KeywordsDialog(wx.Dialog):
             dlg.Layout()
             dlg.ShowModal()
 
-    def accept(self, event):
-        """geef de geselecteerde trefwoorden aan het hoofdprogramma
-        """
-        return  # do nothing for now
-        self.parent.new_keywords = [self.tolist.item(i).text() for i in range(
-            len(self.tolist))]
-        super().accept()
 
 
 class GetTextDialog(wx.Dialog):
@@ -592,6 +589,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def OnSelChanged(self, event=None):
         """reimplemented event handler
         """
+        print('in on_sel_changed')
         ## test = event.GetItem()
         self.check_active()
         self.activate_item(event.GetItem())
@@ -600,6 +598,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def close(self, event=None):
         """save before shutting down
         """
+        print('in close method')
         self.update()
         self.Close()
 
@@ -637,6 +636,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
             self.tree.DeleteChildren(self.root)
         item_to_return = self.root
         self.activeitem = None
+        print('in build_tree: selection option is', self.opts["Selection"])
         seltype, seldata = self.opts["Selection"][:2]
         use_case = None
         if len(self.opts["Selection"]) > 2:
@@ -649,6 +649,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
             except ValueError:
                 tag, text = value
                 keywords = []
+            print(tag, text, keywords)
             if seltype == 1 and seldata not in keywords:
                 continue
             if seltype == 2:
@@ -665,7 +666,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
                 item = self.tree.PrependItem(self.root, tag)
             else:
                 item = self.tree.AppendItem(self.root, tag)
-            self.tree.SetItemData(item, (text, keywords))
+            self.tree.SetItemData(item, (key, text, keywords))
             if key == self.opts["ActiveItem"]:
                 item_to_return = item
         return item_to_return
@@ -682,20 +683,22 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def tree_to_dict(self):
         """translate the entire tree structure to a dictionary suitable for saving
         """
+        print('in tree_to_dict method')
         self.check_active()  # even zorgen dat de editor inhoud geassocieerd wordt
-        self.nt_data = {}    # don't forget to remove this when we apply selections
-        ky = 0
         tag, cookie = self.tree.GetFirstChild(self.root)
         while tag.IsOk():
-            ky += 1
+            # self.nt_data[ky] = (self.tree.GetItemText(tag), *self.tree.GetItemData(tag))
+            tag_text = self.tree.GetItemText(tag)
+            key, text, keywords = self.tree.GetItemData(tag)
+            self.nt_data[key] = tag_text, text, keywords
             if tag == self.activeitem:
-                self.opts["ActiveItem"] = ky
-            self.nt_data[ky] = (self.tree.GetItemText(tag), *self.tree.GetItemData(tag))
+                self.opts["ActiveItem"] = key
             tag, cookie = self.tree.GetNextChild(self.root, cookie)
 
     def update(self, event=None):
         """resave the notes to a file
         """
+        print('in update method')
         self.tree_to_dict()   # check for changed values in tree not in dict
         self.opts["ScreenSize"] = self.GetSize()
         self.opts["SashPosition"] = self.splitter.GetSashPosition()
@@ -744,8 +747,8 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         if dlg.ShowModal() == wx.ID_OK:
             text = dlg.GetValue()
             item = self.tree.AppendItem(self.root, text)
-            self.tree.SetItemData(item, "")
-            # maybe set data to a tuple of (dict key, editor text, list of keywords)
+            self.tree.SetItemData(item, (text, "", []))
+            self.nt_data[text] = ""
             self.tree.SelectItem(item)
             self.tree.Expand(self.root)
             self.editor.Clear()
@@ -802,26 +805,33 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         structure
 
         """
+        print('in check_active: active item is', self.activeitem)
         if self.activeitem and self.activeitem != self.root:
+            print("  so let's look at the editor state")
             self.tree.SetItemBold(self.activeitem, False)
             if self.editor.IsModified:
+                print("  editor contents were modified, so need to be remembered")
                 if message:
                     self.showmsg(message)
-                oldtext, keywords = self.tree.GetItemData(self.activeitem)
-                self.tree.SetItemData(self.activeitem, (self.editor.GetValue(), keywords))
+                key, oldtext, keywords = self.tree.GetItemData(self.activeitem)
+                self.tree.SetItemData(self.activeitem, (key, self.editor.GetValue(), keywords))
 
     def activate_item(self, item):
         """make the new item "active" and get the text for itfrom the tree structure
         """
+        print('in activate_item; item is', self.tree.GetItemText(item))
         self.activeitem = item
-        if item != self.root:
-            self.tree.SetItemBold(item, True)
-            self.editor.SetValue(self.tree.GetItemData(item)[0])
-            self.editor.Enable(True)
-            self.tree.EnsureVisible(item)
-        else:
+        if item == self.root:
             self.editor.Clear()
             self.editor.Enable(False)
+        else:
+            self.tree.SetItemBold(item, True)
+            test = self.tree.GetItemData(item)
+            print(test)
+            if test:
+                self.editor.SetValue(test[1])
+            self.editor.Enable(True)
+            self.tree.EnsureVisible(item)
 
     def info_page(self, event=None):
         """show program info
@@ -859,14 +869,14 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def link_keywords(self, event=None):
         """Open a dialog where keywords can be assigned to the text
         """
-        text, old_keywords = self.tree.GetItemData(self.activeitem)
+        key, text, old_keywords = self.tree.GetItemData(self.activeitem)
         print(old_keywords)
         with KeywordsDialog(self) as dlg:
             ok = dlg.ShowModal()
             if ok == wx.ID_OK:
                 new_keywords = dlg.tolist.GetItems()
                 print(new_keywords)
-                self.tree.SetItemData(self.activeitem, (text, new_keywords))
+                self.tree.SetItemData(self.activeitem, (key, text, new_keywords))
                 print(self.tree.GetItemData(self.activeitem))
 
     def manage_keywords(self, event=None):
@@ -941,25 +951,39 @@ class MainWindow(wx.Frame, NoteTreeMixin):
 
     def _set_selection(self, sel, seltext):
         """selectie aanpassen"""
+        print('in set selection with', sel, seltext)
         self.opts["Selection"] = sel
         self.sb.SetStatusText(seltext)
         item_to_activate = self.build_tree()
+        self.editor.Clear()
+        print('  editor should be cleared now')
         self.tree.SelectItem(item_to_activate)
+        # self,editor.SetValue(self,tree.item_to_activate)
+        # TODO: show the right text in the editor - use self.activateitem?
+        print(self.selactions)
         for text, action in self.selactions.items():
-            if text == seltext:
+            print('  set menu action for', text, end=' ')
+            if text == self.seltypes[abs(sel[0])]:  # seltext:
+                print('to true')
                 action.Check(True)
             elif text != _("m_revorder"):
+                print('to false')
                 action.Check(False)
 
     def _set_option(self, seltype, name):
         """bij cancelen selectiedialoog de juiste menukeuze weer aan/uitzetten
         """
+        print('in set option with', seltype, name)
+        print('  selection option is', self.opts['Selection'])
         if abs(self.opts['Selection'][0]) == seltype:
+            print('  setting menu action to true')
             self.selactions[_(name)].Check(True)
         else:
+            print('  setting menu action to false')
             self.selactions[_(name)].Check(False)
 
     def showmsg(self, message):
+        """show a message in a standard box with a standard title"""
         wx.MessageBox(message, app_title, wx.OK | wx.ICON_INFORMATION, self)
 
 
