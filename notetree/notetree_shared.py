@@ -32,9 +32,9 @@ initial_opts = {"Application": "NoteTree",
                 "Selection": (0, ''),
                 "RevOrder": False}
 
+
 # wrappers rond pickle ivm aanroep vanuit conversie utilities
-
-
+#
 def load_file(filename):
     """raise EOFError als file niet gelezen kan worden
     geeft geen resultaat als bestand niet bestaat
@@ -57,6 +57,8 @@ def save_file(filename, nt_data):
         pck.dump(nt_data, _out, protocol=2)
 
 
+# Mixin voor de GUI
+#
 class NoteTreeMixin:
     """general methods
     """
@@ -99,7 +101,7 @@ class NoteTreeMixin:
         """initialize and read data file
         """
         self.opts = initial_opts
-        self.opts['version'] = version
+        self.opts['Version'] = version
         self.opts['RootTitle'] = root_title
         self.nt_data = collections.OrderedDict()
         ## if os.path.exists(self.project_file):
