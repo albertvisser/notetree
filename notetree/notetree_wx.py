@@ -60,24 +60,27 @@ class KeywordsManager(wx.Dialog):
         """
         self.oldtag.Clear()
         self.oldtag.AppendItems(self.parent.opts['Keywords'])
-        # self.oldtag.clearEditText()
+        self.oldtag.SetValue('')  # self.oldtag.clearEditText()
         self.newtag.Clear()
 
     def update_items(self, oldtext, newtext=''):
         """refresh list of associated keywords
         """
-        for ix in range(self.parent.root.childCount()):
-            item = self.parent.root.child(ix)
-            key, text, keywords = self.parent.tree.GetData()  # item.data(1, core.Qt.UserRole)
+        tag, cookie = self.parent.tree.GetFirstChild(self.parent.root)
+        while tag.IsOk():
+            key, text, keywords = self.parent.tree.GetItemData(tag)
             try:
                 ix = keywords.index(oldtext)
+                has_keyword = True
             except ValueError:
-                continue
-            if newtext:
-                keywords[ix] = newtext
-            else:
-                keywords.pop(ix)
-            self.parent.tree.SetData(key, text, keywords)  # item.setData(1, core.Qt.UserRole, keywords)
+                has_keyword = False
+            if has_keyword:
+                if newtext:
+                    keywords[ix] = newtext
+                else:
+                    keywords.pop(ix)
+                self.parent.tree.SetItemData(tag, (key, text, keywords))
+            tag, cookie = self.parent.tree.GetNextChild(self.parent.root, cookie)
 
     def remove_keyword(self, event):
         """delete a keyword aftre selecting from the dropdown
@@ -88,6 +91,7 @@ class KeywordsManager(wx.Dialog):
         if ask != wx.YES:
             return
         self.parent.opts['Keywords'].remove(oldtext)
+        print('in remove_keyword', self.parent.opts['Keywords'])
         self.update_items(oldtext)
         self.refresh_fields()
 
@@ -107,6 +111,7 @@ class KeywordsManager(wx.Dialog):
                     return
                 ix = self.parent.opts['Keywords'].index(oldtext)
                 self.parent.opts['Keywords'][ix] = newtext
+                print('in add_keyword', self.parent.opts['Keywords'])
                 if ask == wx.ID_YES:
                     self.update_items(oldtext, newtext)
                 else:
@@ -195,28 +200,22 @@ class KeywordsDialog(wx.Dialog):
                            (_('b_newtag'), 'Ctrl+N', self.add_trefw))
         for name, shortcut, callback in self.actionlist:
             act = wx.MenuItem(id=wx.NewId(), text=name)
-            print(act.GetId())
             self.Bind(wx.EVT_MENU, callback, act)
             accel = wx.AcceleratorEntry(cmd=act.GetId())
             ok = accel.FromString(shortcut)
             if ok:
                 accel_list.append(accel)
-        for item in accel_list:
-            print(item.GetCommand(), item.GetKeyCode(), item.GetMenuItem())
         accel_table = wx.AcceleratorTable(accel_list)
-        print(accel_table.IsOk())
         self.SetAcceleratorTable(accel_table)
 
     def activate_left(self, event):
         """activate "from" list
         """
-        print('in activate_left')
         self._activate(self.fromlist)
 
     def activate_right(self, event):
         """activate "to" list
         """
-        print('in activate_right')
         self._activate(self.tolist)
 
     def _activate(self, win):
@@ -238,20 +237,17 @@ class KeywordsDialog(wx.Dialog):
     def move_right(self, event):
         """trefwoord selecteren
         """
-        print('move to right')
         self._moveitem(self.fromlist, self.tolist)
 
     def move_left(self, event):
         """trefwoord on-selecteren
         """
-        print('move to left')
         self._moveitem(self.tolist, self.fromlist)
 
     def _moveitem(self, from_, to):
         """trefwoord verplaatsen van de ene lijst naar de andere
         """
         selected = from_.GetSelections()  # selectedItems()
-        print('moving', selected)
         if selected:
             selection = [from_.GetString(i) for i in selected]
             for indx in reversed(selected):
@@ -292,7 +288,6 @@ class KeywordsDialog(wx.Dialog):
             vbox.SetSizeHints(dlg)
             dlg.Layout()
             dlg.ShowModal()
-
 
 
 class GetTextDialog(wx.Dialog):
@@ -413,7 +408,6 @@ class GridDialog(wx.Dialog):
     """dialog showing texts in a grid layout
     """
     def __init__(self, parent, title):
-        # print('set up dialog')
         super().__init__(parent, title=title, size=(-1, 320), style=wx.DEFAULT_DIALOG_STYLE)
         # pnl = wx.Panel(self)
         lines = [x.split(' - ', 1) for x in _("help_text").split('\n')]
@@ -467,17 +461,17 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         self.activeitem = self.root
         self.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelChanging, self.tree)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
-        self.tree.Bind(wx.EVT_KEY_DOWN, self.on_key)
+#        self.tree.Bind(wx.EVT_KEY_DOWN, self.on_key)
 
         self.editor = wx.TextCtrl(self.splitter, -1, style=wx.TE_MULTILINE)
         self.editor.Enable(0)
         self.editor.Bind(wx.EVT_TEXT, self.OnEvtText)
-        self.editor.Bind(wx.EVT_KEY_DOWN, self.on_key)
+#        self.editor.Bind(wx.EVT_KEY_DOWN, self.on_key)
 
         self.splitter.SplitVertically(self.tree, self.editor)
         self.splitter.SetSashPosition(180, True)
-        self.splitter.Bind(wx.EVT_KEY_DOWN, self.on_key)
-        self.Bind(wx.EVT_KEY_DOWN, self.on_key)
+#        self.splitter.Bind(wx.EVT_KEY_DOWN, self.on_key)
+#        self.Bind(wx.EVT_KEY_DOWN, self.on_key)
 
         self.Show(True)
 
@@ -490,17 +484,19 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         self.selactions = {}
         self.seltypes = []
         ix = 0
-        self.keydef_to_method = {}
+        # self.keydef_to_method = {}
+        accel_list = []
         for item, data in self.get_menudata():
             menu_label = item
             submenu = wx.Menu()
             for label, handler, info, keydef in data:
                 if keydef:
-                    defs = keydef.split(',')
-                    primary = defs[0]
-                    keydef = ','.join(defs[1:])
+                    test = keydef.split(',')
+                    primary = test[0]
+                    keydef = test[1:]
                 else:
                     primary = None
+                    keydef = []
                 if label != "":
                     label_ = label
                     if primary:
@@ -518,30 +514,13 @@ class MainWindow(wx.Frame, NoteTreeMixin):
                 else:
                     menu_item = wx.MenuItem(submenu, wx.ID_SEPARATOR)
                 submenu.Append(menu_item)
-                if keydef:
-                    for key in keydef.split(','):
-                        mod = ''
-                        if '+' in key:
-                            mod, key = key.split('+')
-                        if key == 'F1':
-                            key = wx.WXK_F1
-                        elif key == 'F2':
-                            key = wx.WXK_F2
-                        elif key == 'F6':
-                            key = wx.WXK_F6
-                        elif key == 'F9':
-                            key = wx.WXK_F9
-                        elif key == 'Escape':
-                            key = wx.WXK_ESCAPE
-                        elif key == 'Delete':
-                            key = wx.WXK_DELETE
-                        elif key == 'PgDown':
-                            key = wx.WXK_PAGEDOWN
-                        elif key == 'PgUp':
-                            key = wx.WXK_PAGEUP
-                        else:
-                            key = ord(key)
-                        self.keydef_to_method[(mod, key)] = handler
+                for key in keydef:  # define extra keydefs via accelerator table
+                    menu_item = wx.MenuItem(id=wx.NewId(), text=label)
+                    self.Bind(wx.EVT_MENU, handler, menu_item)
+                    accel = wx.AcceleratorEntry(cmd=menu_item.GetId())
+                    if accel.FromString(key):
+                        accel_list.append(accel)
+                self.SetAcceleratorTable(wx.AcceleratorTable(accel_list))
             if has_items:
                 menu_bar.Replace(ix, submenu, menu_label)
                 menuitems[ix][0].Destroy()
@@ -589,8 +568,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def OnSelChanged(self, event=None):
         """reimplemented event handler
         """
-        print('in on_sel_changed')
-        ## test = event.GetItem()
         self.check_active()
         self.activate_item(event.GetItem())
         event.Skip()
@@ -598,7 +575,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def close(self, event=None):
         """save before shutting down
         """
-        print('in close method')
         self.update()
         self.Close()
 
@@ -636,7 +612,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
             self.tree.DeleteChildren(self.root)
         item_to_return = self.root
         self.activeitem = None
-        print('in build_tree: selection option is', self.opts["Selection"])
         seltype, seldata = self.opts["Selection"][:2]
         use_case = None
         if len(self.opts["Selection"]) > 2:
@@ -649,7 +624,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
             except ValueError:
                 tag, text = value
                 keywords = []
-            print(tag, text, keywords)
             if seltype == 1 and seldata not in keywords:
                 continue
             if seltype == 2:
@@ -683,7 +657,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def tree_to_dict(self):
         """translate the entire tree structure to a dictionary suitable for saving
         """
-        print('in tree_to_dict method')
         self.check_active()  # even zorgen dat de editor inhoud geassocieerd wordt
         tag, cookie = self.tree.GetFirstChild(self.root)
         while tag.IsOk():
@@ -698,7 +671,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def update(self, event=None):
         """resave the notes to a file
         """
-        print('in update method')
         self.tree_to_dict()   # check for changed values in tree not in dict
         self.opts["ScreenSize"] = self.GetSize()
         self.opts["SashPosition"] = self.splitter.GetSashPosition()
@@ -760,6 +732,9 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def delete_item(self, event=None):
         """remove item from tree
         """
+        # TODO: delete werkt nu zo dat ook in de editor het item zelf verwijderd wordt
+        # is er een manier om hier aan de event kenmerken af te leiden wat de keycombo is
+        # en het venster waarin we momenteel zitten?
         item = self.tree.GetSelection()
         if item != self.root:
             prev = self.tree.GetPrevSibling(item)
@@ -805,12 +780,9 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         structure
 
         """
-        print('in check_active: active item is', self.activeitem)
         if self.activeitem and self.activeitem != self.root:
-            print("  so let's look at the editor state")
             self.tree.SetItemBold(self.activeitem, False)
             if self.editor.IsModified:
-                print("  editor contents were modified, so need to be remembered")
                 if message:
                     self.showmsg(message)
                 key, oldtext, keywords = self.tree.GetItemData(self.activeitem)
@@ -819,7 +791,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def activate_item(self, item):
         """make the new item "active" and get the text for itfrom the tree structure
         """
-        print('in activate_item; item is', self.tree.GetItemText(item))
         self.activeitem = item
         if item == self.root:
             self.editor.Clear()
@@ -827,7 +798,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         else:
             self.tree.SetItemBold(item, True)
             test = self.tree.GetItemData(item)
-            print(test)
             if test:
                 self.editor.SetValue(test[1])
             self.editor.Enable(True)
@@ -862,7 +832,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
                         code = data[idx][0]
                         self.opts["Language"] = code
                         languages[code].install()
-                        print('now using language "{}"'.format(code))
                         self.create_menu()
                         break
 
@@ -870,14 +839,11 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         """Open a dialog where keywords can be assigned to the text
         """
         key, text, old_keywords = self.tree.GetItemData(self.activeitem)
-        print(old_keywords)
         with KeywordsDialog(self) as dlg:
             ok = dlg.ShowModal()
             if ok == wx.ID_OK:
                 new_keywords = dlg.tolist.GetItems()
-                print(new_keywords)
                 self.tree.SetItemData(self.activeitem, (key, text, new_keywords))
-                print(self.tree.GetItemData(self.activeitem))
 
     def manage_keywords(self, event=None):
         """Open a dialog where keywords can be renamed, removed or added
