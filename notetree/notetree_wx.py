@@ -519,7 +519,10 @@ class MainWindow(wx.Frame, NoteTreeMixin):
                     self.Bind(wx.EVT_MENU, handler, menu_item)
                     accel = wx.AcceleratorEntry(cmd=menu_item.GetId())
                     if accel.FromString(key):
-                        accel_list.append(accel)
+                        if key == 'Delete':
+                            self.tree.SetAcceleratorTable(wx.AcceleratorTable([accel]))
+                        else:
+                            accel_list.append(accel)
                 self.SetAcceleratorTable(wx.AcceleratorTable(accel_list))
             if has_items:
                 menu_bar.Replace(ix, submenu, menu_label)
@@ -732,9 +735,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def delete_item(self, event=None):
         """remove item from tree
         """
-        # TODO: delete werkt nu zo dat ook in de editor het item zelf verwijderd wordt
-        # is er een manier om hier aan de event kenmerken af te leiden wat de keycombo is
-        # en het venster waarin we momenteel zitten?
         item = self.tree.GetSelection()
         if item != self.root:
             prev = self.tree.GetPrevSibling(item)
