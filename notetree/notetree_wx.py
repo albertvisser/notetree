@@ -565,8 +565,9 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def OnSelChanging(self, event=None):
         """reimplemented event handler
         """
-        if event.GetItem() == self.root:
-            event.Veto()
+        # if event.GetItem() == self.root:
+        #     print('in OnSelChanging: event vetoed - but is this necessary?')
+        #     event.Veto()
 
     def OnSelChanged(self, event=None):
         """reimplemented event handler
@@ -619,6 +620,7 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         use_case = None
         if len(self.opts["Selection"]) > 2:
             use_case = self.opts["Selection"][2]
+        first_item = None
         for key, value in self.nt_data.items():
             if key == 0:
                 continue
@@ -629,7 +631,9 @@ class MainWindow(wx.Frame, NoteTreeMixin):
                 keywords = []
             if seltype == 1 and seldata not in keywords:
                 continue
-            if seltype == 2:
+            elif seltype == -1 and seldata in keywords:
+                continue
+            elif seltype == 2:
                 ok = False
                 if use_case and seldata in text:
                     ok = True
@@ -637,15 +641,25 @@ class MainWindow(wx.Frame, NoteTreeMixin):
                     ok = True
                 if not ok:
                     continue
-            if seltype == -1 and seldata in keywords:
-                continue
+            elif seltype == -2:
+                ok = False
+                if use_case and seldata not in text:
+                    ok = True
+                elif not use_case and seldata.upper() not in text.upper():
+                    ok = True
+                if not ok:
+                    continue
             if self.opts['RevOrder']:
                 item = self.tree.PrependItem(self.root, tag)
             else:
                 item = self.tree.AppendItem(self.root, tag)
             self.tree.SetItemData(item, (key, text, keywords))
+            if not first_item:
+                first_item = item
             if key == self.opts["ActiveItem"]:
                 item_to_return = item
+        if seltype != 0 and first_item is not None:
+            item_to_return = first_item
         return item_to_return
 
     def reread(self, event=None):
@@ -663,7 +677,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
         self.check_active()  # even zorgen dat de editor inhoud geassocieerd wordt
         tag, cookie = self.tree.GetFirstChild(self.root)
         while tag.IsOk():
-            # self.nt_data[ky] = (self.tree.GetItemText(tag), *self.tree.GetItemData(tag))
             tag_text = self.tree.GetItemText(tag)
             key, text, keywords = self.tree.GetItemData(tag)
             self.nt_data[key] = tag_text, text, keywords
@@ -778,7 +791,6 @@ class MainWindow(wx.Frame, NoteTreeMixin):
     def check_active(self, message=None):
         """if there's a suitable "active" item, make sure its text is saved to the tree
         structure
-
         """
         if self.activeitem and self.activeitem != self.root:
             self.tree.SetItemBold(self.activeitem, False)
@@ -789,19 +801,19 @@ class MainWindow(wx.Frame, NoteTreeMixin):
                 self.tree.SetItemData(self.activeitem, (key, self.editor.GetValue(), keywords))
 
     def activate_item(self, item):
-        """make the new item "active" and get the text for itfrom the tree structure
+        """make the new item "active" and get the text for it from the tree structure
         """
+        self.tree.SetItemBold(item, True)
         self.activeitem = item
         if item == self.root:
             self.editor.Clear()
             self.editor.Enable(False)
         else:
-            self.tree.SetItemBold(item, True)
             test = self.tree.GetItemData(item)
             if test:
                 self.editor.SetValue(test[1])
             self.editor.Enable(True)
-            self.tree.EnsureVisible(item)
+        self.tree.EnsureVisible(item)
 
     def info_page(self, event=None):
         """show program info
@@ -917,35 +929,23 @@ class MainWindow(wx.Frame, NoteTreeMixin):
 
     def _set_selection(self, sel, seltext):
         """selectie aanpassen"""
-        print('in set selection with', sel, seltext)
         self.opts["Selection"] = sel
         self.sb.SetStatusText(seltext)
         item_to_activate = self.build_tree()
         self.editor.Clear()
-        print('  editor should be cleared now')
         self.tree.SelectItem(item_to_activate)
-        # self,editor.SetValue(self,tree.item_to_activate)
-        # TODO: show the right text in the editor - use self.activateitem?
-        print(self.selactions)
         for text, action in self.selactions.items():
-            print('  set menu action for', text, end=' ')
             if text == self.seltypes[abs(sel[0])]:  # seltext:
-                print('to true')
                 action.Check(True)
             elif text != _("m_revorder"):
-                print('to false')
                 action.Check(False)
 
     def _set_option(self, seltype, name):
         """bij cancelen selectiedialoog de juiste menukeuze weer aan/uitzetten
         """
-        print('in set option with', seltype, name)
-        print('  selection option is', self.opts['Selection'])
         if abs(self.opts['Selection'][0]) == seltype:
-            print('  setting menu action to true')
             self.selactions[_(name)].Check(True)
         else:
-            print('  setting menu action to false')
             self.selactions[_(name)].Check(False)
 
     def showmsg(self, message):
