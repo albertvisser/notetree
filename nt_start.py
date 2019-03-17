@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Startup script for NoteTree
 """
-import sys
-from notetree.notetree import nt_main
+import argparse
+from notetree.main import NoteTree
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        ini = sys.argv[1]
-    else:
-        ini = 'MyMan.pck'
-    nt_main(ini)
+    parser = argparse.ArgumentParser(description="Simple Tree Notebook")
+    parser.add_argument("fname", help="Notebook file to use",
+                        default="MyNotes.pck")
+    args = parser.parse_args()
+    NoteTree(args.fname)

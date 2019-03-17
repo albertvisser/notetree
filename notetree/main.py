@@ -1,0 +1,155 @@
+"""NoteTree GUI-independent stuff
+"""
+import gettext
+import os
+import collections
+import shutil
+
+try:
+    import cPickle as pck
+except ImportError:
+    import pickle as pck
+
+import notetree.gui as gui
+
+app_title = "NoteTree"
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+locale = os.path.join(HERE, 'locale')
+gettext.install(app_title, locale)
+languages = {'nl': gettext.translation(app_title, locale, languages=['nl']),
+             'en': gettext.translation(app_title, locale, languages=['en'])}
+# dynamically built translatable string symbols resolved so that they can be recognized
+_('t_nl')
+_('t_en')
+
+root_title = "MyNotes"
+initial_opts = {"Application": "NoteTree",
+                "Version": "",
+                "AskBeforeHide": True,
+                "ActiveItem": 0,
+                "SashPosition": 180,
+                "ScreenSize": (800, 500),
+                'Language': 'en',
+                "RootTitle": '',
+                "Keywords": [],
+                "Selection": (0, ''),
+                "RevOrder": False}
+
+
+# wrappers rond pickle ivm aanroep vanuit conversie utilities
+#
+def load_file(filename):
+    """raise EOFError als file niet gelezen kan worden
+    geeft geen resultaat als bestand niet bestaat
+    """
+    if not os.path.exists(filename):
+        return {}
+    with open(filename, "rb") as f_in:
+        nt_data = pck.load(f_in)
+        options = nt_data.get(0, [])
+        test = options.get("Application", None)
+        if test and test != "NoteTree":
+            raise EOFError("{} is geen NoteTree bestand".format(filename))
+    return nt_data
+
+
+def save_file(filename, nt_data):
+    """plain save/dump; backup should be done by the calling program (or not)
+    """
+    with open(filename, "wb") as _out:
+        pck.dump(nt_data, _out, protocol=2)
+
+
+# Main screen
+#
+class NoteTree:
+    """general methods
+    """
+    def __init__(self, filename):
+        self.app_title = app_title
+        self.root_title = root_title
+        self.languages = languages
+        self.project_file = filename
+        self.gui = gui.MainWindow(self)
+        mld = self.gui.open()
+        if mld:
+            ## wdg.QMessageBox.information(frame, "Error", mld)
+            self.gui.close()
+            print(mld)
+        else:
+            self.gui.start()
+
+    def get_menudata(self):
+        """define of menu options and callbacks
+        """
+        return (
+            (_("m_main"), (
+                (_("m_reload"), self.gui.reread, _("h_reload"), 'Ctrl+L'),
+                (_("m_save"), self.gui.update, _("h_save"), 'Ctrl+S'),
+                ("", None, None, None),
+                (_("m_root"), self.gui.rename, _("h_root"), 'Shift+F2'),
+                ('Manage keywords', self.gui.manage_keywords,
+                 'Rename, remove and add tags', 'Shift+F6'),
+                ("", None, None, None),
+                (_("m_hide"), self.gui.hide_me, _("h_hide"), 'Ctrl+H'),
+                (_("m_lang"), self.gui.choose_language, _("h_lang"), 'Ctrl+F1'),
+                ("", None, None, None),
+                (_("m_exit"), self.gui.close, _("h_exit"), 'Ctrl+Q,Escape'), ), ),
+            (_("m_note"), (
+                (_("m_new"), self.gui.new_item, _("h_new"), 'Ctrl+N'),
+                (_("m_delete"), self.gui.delete_item, _("h_delete"), 'Ctrl+D,Delete'),
+                (_("m_name"), self.gui.ask_title, _("h_name"), 'F2'),
+                ("", None, None, None),
+                (_("m_tags"), self.gui.link_keywords, _("h_tags"), 'F6'),
+                ("", None, None, None),
+                (_("m_forward"), self.gui.next_note, _("h_forward"), 'Ctrl+PgDown'),
+                (_("m_back"), self.gui.prev_note, _("h_back"), 'Ctrl+PgUp'), ), ),
+            (_("m_view"), (
+                (_("m_revorder"), self.gui.reverse, _("h_revorder"), 'F9'),
+                ("", None, None, None),
+                (_("m_selall"), self.gui.no_selection, _("h_selall"), None),
+                (_("m_seltag"), self.gui.keyword_select, _("h_seltag"), None),
+                (_("m_seltxt"), self.gui.text_select, _("h_seltxt"), None), ), ),
+            (_("m_help"), (
+                (_("m_about"), self.gui.info_page, _("h_about"), None),
+                (_("m_keys"), self.gui.help_page, _("h_keys"), 'F1'), ), ), )
+
+    def open(self, version):
+        """initialize and read data file
+        """
+        self.opts = initial_opts
+        self.opts['Version'] = version
+        self.opts['RootTitle'] = self.root_title
+        self.nt_data = collections.OrderedDict()
+        ## if os.path.exists(self.project_file):
+            ## with open(self.project_file, "rb") as f_in:
+                ## try:
+                    ## self.nt_data = pck.load(f_in)
+                ## except EOFError:
+                    ## return "Geen NoteTree bestand"
+                ## else:
+                    ## options = self.nt_data.get(0, [])
+                    ## test = options.get("Application", None)
+                    ## if test and test != "NoteTree":
+                        ## return "{} is geen correct NoteTree bestand".format(
+                            ## self.project_file)
+        try:
+            self.nt_data = load_file(self.project_file)
+        except EOFError as e:
+            return e
+        if not self.nt_data:
+            return 'Bestand niet gevonden'
+        options = self.nt_data.get(0, [])
+        if "AskBeforeHide" in options:
+            for key, val in options.items():
+                self.opts[key] = val
+        languages[self.opts["Language"]].install()
+        return ''
+
+    def save(self):
+        """finalize and write data file
+        """
+        self.nt_data[0] = self.opts
+        shutil.copyfile(self.project_file, self.project_file + '~')
+        save_file(self.project_file, self.nt_data)
+
