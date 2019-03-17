@@ -85,7 +85,7 @@ def dumpdata(nt_file, extfile=""):
     return 'Data from {} dumped to {}'.format(nt_file, extfile)
 
 
-def export(nt_file, extfile):
+def export(nt_file, extfile, sort_notes):
     """export notes to file
     """
     if not nt_file:
@@ -97,25 +97,28 @@ def export(nt_file, extfile):
     nt_data.pop(0)
     if not nt_data:
         return 'Nothing exported, Notes file contains only settings'
-    if isinstance(nt_data, collections.OrderedDict):
+    if isinstance(nt_data, collections.OrderedDict) or not sort_notes:
         data = ((x, y) for x, y in nt_data.items() if x != 0)
     else:
         data = (x for x in sorted(nt_data.items(), key=lambda v: v[1][0])
-                if x[0] != 0)
+                if x[0] != 0 and x[1])
     if not ok_to_overwrite(extfile):
         return 'Action canceled'
     with open(extfile, 'w') as _o:
         for original_title, value in data:
             print('key:', original_title, file=_o)
-            title, text, keywords = value
-            print('title:', title, file=_o)
-            print('text:\n', text, file=_o)
-            print('keywords:', ', '.join([w for w in keywords]), file=_o)
+            try:
+                title, text, keywords = value
+                print('title:', title, file=_o)
+                print('text:\n', text, file=_o)
+                print('keywords:', ', '.join([w for w in keywords]), file=_o)
+            except ValueError:
+                print('value:', value, file=_o)
             print(file=_o)
     return 'Notes exported from {} to {}'.format(nt_file, extfile)
 
 
-def import_(nt_file, extfile):
+def import_(nt_file, extfile, remove_unused):
     """import notes from file
     """
     if not extfile:
@@ -166,16 +169,17 @@ def import_(nt_file, extfile):
         ## nt_data[0]['Keywords'] = all_keywords
     print('existing keywords:', nt_data[0]['Keywords'])
     print('new keywords:', all_keywords)
-    nt_data[0]['Keywords'] = [x for x in all_keywords.union(nt_data[0]['Keywords'])]
-    # beter is: alle aanwezige keywords + evt. nieuwe
-    # of in de gui de mogelijkheid "remove unused keywords"
+    if remove_unused:
+        nt_data[0]['Keywords'] = [x for x in all_keywords]
+    else:
+        nt_data[0]['Keywords'] = [x for x in all_keywords.union(nt_data[0]['Keywords'])]
     save_file(nt_file, nt_data)
     return 'Notes imported from {} into {}'.format(extfile, nt_file)
 
 
-functions = [('Print entire data structure', dumpdata),
-             ('Export notes to file', export),
-             ('Import notes from file', import_)]
+functions = [('Print entire data structure', dumpdata, ''),
+             ('Export notes to file', export, 'Sorted'),
+             ('Import notes from file', import_, 'Remove unused keywords')]
 
 
 class FileBrowseButton(qtw.QFrame):
@@ -252,10 +256,19 @@ class MainWidget(qtw.QWidget):
         hsizer.addLayout(vsizer)
         vsizer = qtw.QVBoxLayout()
         self.radiofuncs = []
-        for text, func in functions:
+        for text, func, cb_text in functions:
             rb = qtw.QRadioButton(text)
-            self.radiofuncs.append((rb, func))
-            vsizer.addWidget(rb)
+            if cb_text:
+                hsizer2 = qtw.QHBoxLayout()
+                hsizer2.addWidget(rb)
+                cb = qtw.QCheckBox(cb_text)
+                cb.setChecked(True)
+                hsizer2.addWidget(cb)
+                vsizer.addLayout(hsizer2)
+            else:
+                vsizer.addWidget(rb)
+                cb = None
+            self.radiofuncs.append((rb, func, cb))
         hsizer.addLayout(vsizer)
         hsizer.addStretch()
         sizer.addLayout(hsizer)
@@ -292,9 +305,12 @@ class MainWidget(qtw.QWidget):
                 self.extfile.mrulist = self.extfile.mrulist[1:]
             self.extfile.input.clear()
             self.extfile.input.addItems(self.extfile.mrulist)
-        for rb, func in self.radiofuncs:
+        for rb, func, cb in self.radiofuncs:
             if rb.isChecked():
-                msg = func(nt_file, extfile)
+                if cb:
+                    msg = func(nt_file, extfile, cb.isChecked())
+                else:
+                    msg = func(nt_file, extfile)
                 break
         qtw.QMessageBox.information(self, '', msg)
 
