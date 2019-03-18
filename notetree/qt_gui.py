@@ -233,7 +233,6 @@ class KeywordsDialog(wdg.QDialog):
         """trefwoord verplaatsen van de ene lijst naar de andere
         """
         selected = from_.selectedItems()
-        print('moving', selected)
         for item in selected:
             from_.takeItem(from_.row(item))
             to.addItem(item)
@@ -741,7 +740,7 @@ class MainWindow(wdg.QMainWindow):
                 if lang == text:
                     code = data[idx][0]
                     self.base.opts["Language"] = code
-                    self.parent.base.languages[code].install()
+                    self.base.languages[code].install()
                     self.create_menu()
                     break
 
