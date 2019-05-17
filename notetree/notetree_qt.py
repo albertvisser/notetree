@@ -221,20 +221,17 @@ class KeywordsDialog(wdg.QDialog):
     def move_right(self):
         """trefwoord selecteren
         """
-        ## print('move to right')
         self._moveitem(self.fromlist, self.tolist)
 
     def move_left(self):
         """trefwoord on-selecteren
         """
-        ## print('move to left')
         self._moveitem(self.tolist, self.fromlist)
 
     def _moveitem(self, from_, to):
         """trefwoord verplaatsen van de ene lijst naar de andere
         """
         selected = from_.selectedItems()
-        print('moving', selected)
         for item in selected:
             from_.takeItem(from_.row(item))
             to.addItem(item)
@@ -444,7 +441,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         for action in self.selactions.values():
             action.setChecked(False)
         self.selactions[_("m_revorder")].setChecked(self.opts['RevOrder'])
-        ## print(self.opts["Selection"])
         self.selactions[self.seltypes[abs(self.opts["Selection"][0])]].setChecked(
             True)
 
@@ -485,7 +481,7 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         try:
             self.splitter.restoreState(self.opts['SashPosition'])
         except TypeError:
-            pass
+            wdg.QMessageBox.information(self, app_title, 'Ignoring incompatible sash position')
         self.root.setExpanded(True)
         self.tree.setCurrentItem(item_to_activate)
         self.tree.setFocus()
@@ -506,7 +502,6 @@ class MainWindow(wdg.QMainWindow, NoteTreeMixin):
         use_case = None
         if len(self.opts["Selection"]) > 2:
             use_case = self.opts["Selection"][2]
-        ## print(seltype, seldata, use_case)
         for key, value in self.nt_data.items():
             if key == 0:
                 continue

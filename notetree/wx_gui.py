@@ -614,7 +614,10 @@ class MainWindow(wx.Frame):
         item_to_activate = self.build_tree(first_time=True)
         self.tree.SetItemText(self.root, self.base.opts["RootTitle"])
         self.SetSize(self.base.opts["ScreenSize"])
-        self.splitter.SetSashPosition(self.base.opts["SashPosition"], True)
+        try:
+            self.splitter.SetSashPosition(self.base.opts["SashPosition"], True)
+        except TypeError:
+            self.showmsg('Ignoring incompatible sashposition')
         self.tree.Expand(self.root)
         self.tree.SelectItem(item_to_activate)
         self.tree.SetFocus()

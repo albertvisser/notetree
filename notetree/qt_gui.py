@@ -493,7 +493,7 @@ class MainWindow(wdg.QMainWindow):
         try:
             self.splitter.restoreState(self.base.opts['SashPosition'])
         except TypeError:
-            pass
+            self.showmsg'Ignoring incompatible sash position')
         self.root.setExpanded(True)
         self.tree.setCurrentItem(item_to_activate)
         self.tree.setFocus()
@@ -516,6 +516,7 @@ class MainWindow(wdg.QMainWindow):
             use_case = self.base.opts["Selection"][2]
         ## print(seltype, seldata, use_case)
         for key, value in self.base.nt_data.items():
+            print(key, value)
             if key == 0:
                 continue
             tag, text, keywords = value
