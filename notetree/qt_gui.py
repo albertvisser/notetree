@@ -390,6 +390,7 @@ class MainWindow(wdg.QMainWindow):
         self.app = wdg.QApplication(sys.argv)
         fnaam = self.base.project_file
         self.build_screen(title=" - ".join((fnaam, root.app_title)))
+        self.activeitem = None
         self.show()
 
     def start(self):
@@ -469,7 +470,8 @@ class MainWindow(wdg.QMainWindow):
     def closeEvent(self, event=None):
         """reimplemented callback
         """
-        self.update()
+        if self.activeitem:
+            self.update()
         event.accept()
 
     def open(self):
@@ -493,7 +495,7 @@ class MainWindow(wdg.QMainWindow):
         try:
             self.splitter.restoreState(self.base.opts['SashPosition'])
         except TypeError:
-            self.showmsg'Ignoring incompatible sash position')
+            self.showmsg('Ignoring incompatible sash position')
         self.root.setExpanded(True)
         self.tree.setCurrentItem(item_to_activate)
         self.tree.setFocus()
