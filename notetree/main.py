@@ -43,12 +43,14 @@ def load_file(filename):
     geeft geen resultaat als bestand niet bestaat
     """
     if not os.path.exists(filename):
+        print(filename, 'does not exist, load_file returns empty string')
         return {}
     with open(filename, "rb") as f_in:
         nt_data = pck.load(f_in)
         options = nt_data.get(0, [])
         test = options.get("Application", None)
         if test and test != "NoteTree":
+            # simuleer foutgaan bij pck.load als het geen pickle bestand is
             raise EOFError("{} is geen NoteTree bestand".format(filename))
     return nt_data
 
@@ -71,11 +73,14 @@ class NoteTree:
         self.languages = languages
         self.project_file = filename
         self.gui = gui.MainWindow(self)
-        mld = self.gui.open()
-        if mld:
-            ## wdg.QMessageBox.information(frame, "Error", mld)
+        title = " - ".join((self.project_file, self.app_title))
+        iconame = os.path.join(os.path.dirname(__file__), "notetree.ico")
+        self.gui.build_screen(title=title, iconame=iconame)
+        nok = self.gui.open()
+        print('after main.open, nok is', nok)
+        if nok:
+            # self.gui.showmsg(mld)
             self.gui.close()
-            print(mld)
         else:
             self.gui.start()
 
@@ -117,28 +122,25 @@ class NoteTree:
     def open(self, version):
         """initialize and read data file
         """
+        print('in Mainframe.open, version is', version)
         self.opts = initial_opts
         self.opts['Version'] = version
         self.opts['RootTitle'] = self.root_title
         self.nt_data = collections.OrderedDict()
-        ## if os.path.exists(self.project_file):
-            ## with open(self.project_file, "rb") as f_in:
-                ## try:
-                    ## self.nt_data = pck.load(f_in)
-                ## except EOFError:
-                    ## return "Geen NoteTree bestand"
-                ## else:
-                    ## options = self.nt_data.get(0, [])
-                    ## test = options.get("Application", None)
-                    ## if test and test != "NoteTree":
-                        ## return "{} is geen correct NoteTree bestand".format(
-                            ## self.project_file)
         try:
             self.nt_data = load_file(self.project_file)
         except EOFError as e:
+            self.gui.showmsg(str(e))
             return e
+        print('after load_file, nt_data is', self.nt_data)
         if not self.nt_data:
-            return 'Bestand niet gevonden'
+            # return 'Bestand niet gevonden'
+            ok = self.gui.ask_question(self, 'Bestand {} niet gevonden, aanmaken?'.format(
+                self.project_file))
+            if not ok:
+                print('dont save')
+                self.project_file = ''
+                return 'Bestand niet gevonden'
         options = self.nt_data.get(0, [])
         if "AskBeforeHide" in options:
             for key, val in options.items():
@@ -149,7 +151,12 @@ class NoteTree:
     def save(self):
         """finalize and write data file
         """
+        if not self.project_file:
+            return
         self.nt_data[0] = self.opts
-        shutil.copyfile(self.project_file, self.project_file + '~')
+        try:
+            shutil.copyfile(self.project_file, self.project_file + '~')
+        except FileNotFoundError:
+            pass
         save_file(self.project_file, self.nt_data)
 

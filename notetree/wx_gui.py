@@ -4,13 +4,10 @@ van een ibm site afgeplukt
 """
 import os
 import sys
-import logging
 import gettext
 from datetime import datetime
 import wx
 import wx.adv
-logging.basicConfig(filename='doctree_wx.log', level=logging.DEBUG,
-                    format='%(asctime)s %(message)s')
 
 
 class KeywordsManager(wx.Dialog):
@@ -444,19 +441,18 @@ class MainWindow(wx.Frame):
     def __init__(self, root):
         self.base = root
         self.app = wx.App(False)
-        fnaam = self.base.project_file
-        self.build_screen(title=" - ".join((fnaam, root.app_title)))
-        self.app.SetTopWindow(self)
 
     def start(self):
+        "start the GUI"
         self.app.MainLoop()
 
-    def build_screen(self, parent=None, title=''):
-        wx.Frame.__init__(self, parent, title=title, size=(800, 500),
-                          style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
-        self.nt_icon = wx.Icon(os.path.join(os.path.dirname(__file__), "notetree.ico"),
-                               wx.BITMAP_TYPE_ICO)
-        self.SetIcon(self.nt_icon)
+    def build_screen(self, parent=None, title='', iconame=''):
+        "setup screen"
+        super().__init__(parent, title=title, size=(800, 500),
+                         style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
+        if iconame:
+            self.nt_icon = wx.Icon(iconame, wx.BITMAP_TYPE_ICO)
+            self.SetIcon(self.nt_icon)
         self.sb = self.CreateStatusBar()
 
         # tray icon wordt pas opgezet in de hide() methode
@@ -486,6 +482,7 @@ class MainWindow(wx.Frame):
 #        self.Bind(wx.EVT_KEY_DOWN, self.on_key)
 
         self.Show(True)
+        self.app.SetTopWindow(self)
 
     def create_menu(self):
         """Build the application menu
@@ -591,36 +588,36 @@ class MainWindow(wx.Frame):
         """save before shutting down
         """
         # TODO check of gewijzigd
+        print('in wxgui.close')
         self.update()
         self.Close()
+        print('end of wxgui.close')
 
     def open(self):
         """read a file from disk and turn it into a tree structure
         """
         msg = self.base.open("Wx")
-        self.tree.SetFocus()
-        if self.base.nt_data == {}:
-            return
-        if msg:
-            self.showmsg(msg)
-            return
-        # recreate menu after loading (because of language)
-        self.create_menu()
-        self.tree.DeleteAllItems()
-        self.root = self.tree.AddRoot(os.path.splitext(os.path.basename(self.base.project_file))[0])
-        item_to_activate = self.root
-        self.editor.Clear()
-        self.editor.Enable(False)
-        item_to_activate = self.build_tree(first_time=True)
-        self.tree.SetItemText(self.root, self.base.opts["RootTitle"])
-        self.SetSize(self.base.opts["ScreenSize"])
-        try:
-            self.splitter.SetSashPosition(self.base.opts["SashPosition"], True)
-        except TypeError:
-            self.showmsg('Ignoring incompatible sashposition')
-        self.tree.Expand(self.root)
-        self.tree.SelectItem(item_to_activate)
-        self.tree.SetFocus()
+        if not msg:
+            self.tree.SetFocus()
+            # recreate menu after loading (because of language)
+            print('creating menu')
+            self.create_menu()
+            self.tree.DeleteAllItems()
+            self.root = self.tree.AddRoot(os.path.splitext(os.path.basename(self.base.project_file))[0])
+            item_to_activate = self.root
+            self.editor.Clear()
+            self.editor.Enable(False)
+            item_to_activate = self.build_tree(first_time=True)
+            self.tree.SetItemText(self.root, self.base.opts["RootTitle"])
+            self.SetSize(self.base.opts["ScreenSize"])
+            try:
+                self.splitter.SetSashPosition(self.base.opts["SashPosition"], True)
+            except TypeError:
+                self.showmsg('Ignoring incompatible sashposition')
+            self.tree.Expand(self.root)
+            self.tree.SelectItem(item_to_activate)
+            self.tree.SetFocus()
+        return msg
 
     def build_tree(self, first_time=False):
         """translate the dictionary read to a tree structure
@@ -702,6 +699,7 @@ class MainWindow(wx.Frame):
     def update(self, event=None):
         """resave the notes to a file
         """
+        print('in wxgui.update')
         self.tree_to_dict()   # check for changed values in tree not in dict
         self.base.opts["ScreenSize"] = self.GetSize()
         self.base.opts["SashPosition"] = self.splitter.GetSashPosition()
@@ -973,7 +971,7 @@ class MainWindow(wx.Frame):
         """show a message in a standard box with a standard title"""
         wx.MessageBox(message, self.base.app_title, wx.OK | wx.ICON_INFORMATION, self)
 
-
-def main(fn):
-    """application start
-    """
+    def ask_question(self, parent, question):
+        """ask a question in a standard box with a standard title"""
+        answer = wx.MessageBox(question, self.base.app_title, wx.YES_NO | wx.ICON_QUESTION, self)
+        return answer == wx.YES

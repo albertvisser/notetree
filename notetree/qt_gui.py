@@ -4,14 +4,11 @@ van een ibm site afgeplukt
 """
 import os
 import sys
-import logging
 import gettext
 from datetime import datetime
 import PyQt5.QtWidgets as wdg
 import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
-logging.basicConfig(filename='doctree_qt.log', level=logging.DEBUG,
-                    format='%(asctime)s %(message)s')
 
 
 class KeywordsManager(wdg.QDialog):
@@ -388,21 +385,20 @@ class MainWindow(wdg.QMainWindow):
     def __init__(self, root):
         self.base = root
         self.app = wdg.QApplication(sys.argv)
-        fnaam = self.base.project_file
-        self.build_screen(title=" - ".join((fnaam, root.app_title)))
         self.activeitem = None
-        self.show()
 
     def start(self):
+        "start the GUI"
         sys.exit(self.app.exec_())
 
-    def build_screen(self, title=''):
+    def build_screen(self, title, iconame):
+        "setup screen"
         super().__init__()
 
-        self.nt_icon = gui.QIcon(os.path.join(os.path.dirname(__file__), "notetree.ico"))
+        self.setWindowTitle(title)
+        self.nt_icon = gui.QIcon(iconame)
         self.setWindowIcon(self.nt_icon)
         self.resize(800, 500)
-        self.setWindowTitle(title)
         self.sb = self.statusBar()
 
         self.tray_icon = wdg.QSystemTrayIcon(self.nt_icon, self)
@@ -426,6 +422,7 @@ class MainWindow(wdg.QMainWindow):
         self.editor = wdg.QTextEdit(self)
         self.editor.setEnabled(False)
         self.splitter.addWidget(self.editor)
+        self.show()
 
     def create_menu(self):
         """build the application menu
@@ -478,27 +475,26 @@ class MainWindow(wdg.QMainWindow):
         """read a file from disk and turn it into a tree structure
         """
         msg = self.base.open("Qt")
-        if msg:
-            self.showmsg(msg)
-            return
-        # recreate menu after loading (because of language)
-        self.create_menu()
-        self.root = self.tree.takeTopLevelItem(0)
-        self.root = wdg.QTreeWidgetItem()
-        self.root.setText(0, self.base.opts["RootTitle"])
-        self.tree.addTopLevelItem(self.root)
-        self.activeitem = item_to_activate = self.root
-        self.editor.clear()
-        self.editor.setEnabled(False)
-        item_to_activate = self.build_tree(first_time=True)
-        self.resize(*self.base.opts["ScreenSize"])
-        try:
-            self.splitter.restoreState(self.base.opts['SashPosition'])
-        except TypeError:
-            self.showmsg('Ignoring incompatible sash position')
-        self.root.setExpanded(True)
-        self.tree.setCurrentItem(item_to_activate)
-        self.tree.setFocus()
+        if not msg:
+            # recreate menu after loading (because of language)
+            self.create_menu()
+            self.root = self.tree.takeTopLevelItem(0)
+            self.root = wdg.QTreeWidgetItem()
+            self.root.setText(0, self.base.opts["RootTitle"])
+            self.tree.addTopLevelItem(self.root)
+            self.activeitem = item_to_activate = self.root
+            self.editor.clear()
+            self.editor.setEnabled(False)
+            item_to_activate = self.build_tree(first_time=True)
+            self.resize(*self.base.opts["ScreenSize"])
+            try:
+                self.splitter.restoreState(self.base.opts['SashPosition'])
+            except TypeError:
+                self.showmsg('Ignoring incompatible sash position')
+            self.root.setExpanded(True)
+            self.tree.setCurrentItem(item_to_activate)
+            self.tree.setFocus()
+        return msg
 
     def build_tree(self, first_time=False):
         """translate the dictionary read to a tree structure
@@ -862,7 +858,7 @@ class MainWindow(wdg.QMainWindow):
         """
         wdg.QMessageBox.information(self, self.base.app_title, message)
 
-
-def main(fnaam):
-    """application start
-    """
+    def ask_question(self, parent, question):
+        """ask a question in a standard box with a standard title"""
+        answer = wdg.QMessageBox.question(self, self.base.app_title, question)
+        return answer == wdg.QMessageBox.Yes
