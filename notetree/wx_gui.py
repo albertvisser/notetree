@@ -403,6 +403,51 @@ class TaskbarIcon(wx.adv.TaskBarIcon):
         return menu
 
 
+class OptionsDialog(wx.Dialog):
+    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
+    """
+    def __init__(self, parent):
+        self.parent = parent
+        sett2text = {'AskBeforeHide':
+                        'Notify that the application will be hidden in the system tray',
+                     'NotifyOnLoad': 'Notify that the data has been reloaded',
+                     'NotifyOnSave': 'Notify that the data has been saved' }
+        super().__init__(parent, title='A Propos Settings')
+        pnl = self  # wx.Panel(self, -1)
+        sizer0 = wx.BoxSizer(wx.VERTICAL)
+        sizer1 = wx.FlexGridSizer(cols=2)
+        self.controls = []
+        for key, value in self.parent.base.opts.items():
+            if key not in sett2text:
+                continue
+            sizer1.Add(wx.StaticText(pnl, -1, sett2text[key]), 1, wx.ALL, 5)
+            chk = wx.CheckBox(self, -1, '')
+            chk.SetValue(value)
+            sizer1.Add(chk, 1, wx.ALL, 5)
+            self.controls.append((key, chk))
+        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
+        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        btn = wx.Button(pnl, id=wx.ID_APPLY)
+        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
+        self.SetAffirmativeId(wx.ID_APPLY)
+        btn = wx.Button(pnl, id=wx.ID_CLOSE)
+        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
+        self.SetEscapeId(wx.ID_CLOSE)
+        # sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
+        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
+        pnl.SetSizer(sizer0)
+        pnl.SetAutoLayout(True)
+        sizer0.Fit(pnl)
+        sizer0.SetSizeHints(pnl)
+        pnl.Layout()
+
+    def accept(self):
+        """overridden event handler
+        """
+        for keyvalue, control in self.controls:
+            self.parent.base.opts[keyvalue] = control.isChecked()
+
+
 class GridDialog(wx.Dialog):
     """dialog showing texts in a grid layout
     """
@@ -975,3 +1020,10 @@ class MainWindow(wx.Frame):
         """ask a question in a standard box with a standard title"""
         answer = wx.MessageBox(question, self.base.app_title, wx.YES_NO | wx.ICON_QUESTION, self)
         return answer == wx.YES
+
+    def set_options(self, event=None):
+        "manage options for messages"
+        with OptionsDialog(self) as dlg:
+            ok = dlg.ShowModal()
+            if ok == wx.ID_OK:
+                dlg.accept()

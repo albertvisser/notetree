@@ -75,7 +75,7 @@ class KeywordsManager(wdg.QDialog):
             item.setData(1, core.Qt.UserRole, keywords)
 
     def remove_keyword(self):
-        """delete a keyword aftre selecting from the dropdown
+        """delete a keyword after selecting from the dropdown
         """
         oldtext = self.oldtag.currentText()
         msg = _('t_remtag').format(oldtext)
@@ -377,6 +377,55 @@ class CheckDialog(wdg.QDialog):
         if self.check.isChecked():
             self.parent.base.opts["AskBeforeHide"] = False
         super().done(0)
+
+
+class OptionsDialog(wdg.QDialog):
+    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
+    """
+    def __init__(self, parent):
+        self.parent = parent
+        sett2text = {'AskBeforeHide':
+                        'Notify that the application will be hidden in the system tray',
+                     'NotifyOnLoad': 'Notify that the data has been reloaded',
+                     'NotifyOnSave': 'Notify that the data has been saved' }
+        super().__init__(parent)
+        self.setWindowTitle('NoteTree Settings')
+        vbox = wdg.QVBoxLayout()
+        self.controls = []
+
+        gbox = wdg.QGridLayout()
+        col = 0
+        for key, value in self.parent.base.opts.items():
+            if key not in sett2text:
+                continue
+            col += 1
+            lbl = wdg.QLabel(sett2text[key], self)
+            gbox.addWidget(lbl, col, 0)
+            chk = wdg.QCheckBox('', self)
+            chk.setChecked(value)
+            gbox.addWidget(chk, col, 1)
+            self.controls.append((key, chk))
+        vbox.addLayout(gbox)
+
+        hbox = wdg.QHBoxLayout()
+        hbox.addStretch(1)
+        ok_button = wdg.QPushButton("&Apply", self)
+        ok_button.clicked.connect(self.accept)
+        hbox.addWidget(ok_button)
+        cancel_button = wdg.QPushButton("&Close", self)
+        cancel_button.clicked.connect(self.reject)
+        hbox.addWidget(cancel_button)
+        hbox.addStretch(1)
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
+
+    def accept(self):
+        """overridden event handler
+        """
+        for keyvalue, control in self.controls:
+            self.parent.base.opts[keyvalue] = control.isChecked()
+        super().accept()
 
 
 class MainWindow(wdg.QMainWindow):
@@ -862,3 +911,8 @@ class MainWindow(wdg.QMainWindow):
         """ask a question in a standard box with a standard title"""
         answer = wdg.QMessageBox.question(self, self.base.app_title, question)
         return answer == wdg.QMessageBox.Yes
+
+    def set_options(self):
+        "manage options for messages"
+        dlg = OptionsDialog(self)
+        dlg.exec_()

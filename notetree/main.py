@@ -98,6 +98,7 @@ class NoteTree:
                 ("", None, None, None),
                 (_("m_hide"), self.gui.hide_me, _("h_hide"), 'Ctrl+H'),
                 (_("m_lang"), self.gui.choose_language, _("h_lang"), 'Ctrl+F1'),
+                ('Messages', self.gui.set_options, 'Set options for messages', 'Ctrl+M'),
                 ("", None, None, None),
                 (_("m_exit"), self.gui.close, _("h_exit"), 'Ctrl+Q,Escape'), ), ),
             (_("m_note"), (
@@ -159,4 +160,3 @@ class NoteTree:
         except FileNotFoundError:
             pass
         save_file(self.project_file, self.nt_data)
-
