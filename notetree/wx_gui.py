@@ -87,7 +87,6 @@ class KeywordsManager(wx.Dialog):
         if ask != wx.YES:
             return
         self.parent.base.opts['Keywords'].remove(oldtext)
-        print('in remove_keyword', self.parent.base.opts['Keywords'])
         self.update_items(oldtext)
         self.refresh_fields()
 
@@ -107,7 +106,6 @@ class KeywordsManager(wx.Dialog):
                     return
                 ix = self.parent.base.opts['Keywords'].index(oldtext)
                 self.parent.base.opts['Keywords'][ix] = newtext
-                print('in add_keyword', self.parent.base.opts['Keywords'])
                 if ask == wx.ID_YES:
                     self.update_items(oldtext, newtext)
                 else:
@@ -293,8 +291,6 @@ class GetTextDialog(wx.Dialog):
     def __init__(self, parent, seltype, seltext, labeltext='', use_case=None):
         self.parent = parent
         super().__init__(parent)
-        print(self.parent)
-        print(self.parent.base)
         self.SetTitle(self.parent.base.app_title)
         self.SetIcon(self.parent.nt_icon)
 
@@ -408,11 +404,10 @@ class OptionsDialog(wx.Dialog):
     """
     def __init__(self, parent):
         self.parent = parent
-        sett2text = {'AskBeforeHide':
-                        'Notify that the application will be hidden in the system tray',
-                     'NotifyOnLoad': 'Notify that the data has been reloaded',
-                     'NotifyOnSave': 'Notify that the data has been saved' }
-        super().__init__(parent, title='A Propos Settings')
+        sett2text = {'AskBeforeHide': _('t_hide'),
+                     'NotifyOnLoad': _('t_load'),
+                     'NotifyOnSave': _('t_save') }
+        super().__init__(parent, title=_('t_sett'))
         pnl = self  # wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer1 = wx.FlexGridSizer(cols=2)
@@ -427,10 +422,10 @@ class OptionsDialog(wx.Dialog):
             self.controls.append((key, chk))
         sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        btn = wx.Button(pnl, id=wx.ID_APPLY)
+        btn = wx.Button(pnl, id=wx.ID_APPLY, caption=_('b_apply'))
         sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
         self.SetAffirmativeId(wx.ID_APPLY)
-        btn = wx.Button(pnl, id=wx.ID_CLOSE)
+        btn = wx.Button(pnl, id=wx.ID_CLOSE, caption=_('b_close'))
         sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
         self.SetEscapeId(wx.ID_CLOSE)
         # sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
@@ -587,28 +582,11 @@ class MainWindow(wx.Frame):
             else:
                 menu_bar.Append(submenu, menu_label)
             ix += 1
-        for item in accel_list:
-            print('command:', item.Command, 'flags:', item.Flags, 'keycode:', item.KeyCode,
-                    'menuitem:', item.MenuItem)
         self.SetAcceleratorTable(wx.AcceleratorTable(accel_list))
         for item in self.selactions.values():
             item.Check(False)
         self.selactions[_('m_revorder')].Check(self.base.opts['RevOrder'])
         self.selactions[self.seltypes[abs(self.base.opts['Selection'][0])]].Check(True)
-
-#    def on_key(self, event):
-#        """keypress handler
-#        """
-#        skip = True
-#        keycode = event.GetKeyCode()
-#        win = event.GetEventObject()
-#        test = event.GetModifiers()
-#        if keycode == wx.WXK_DELETE and test == wx.MOD_NONE:
-#            self.delete_item()
-#            skip = False
-#        if event and skip:
-#            ## print 'skipping'
-#            event.Skip()
 
     def OnEvtText(self, event):
         """reimplemented event handler
@@ -633,10 +611,8 @@ class MainWindow(wx.Frame):
         """save before shutting down
         """
         # TODO check of gewijzigd
-        print('in wxgui.close')
         self.update()
         self.Close()
-        print('end of wxgui.close')
 
     def open(self):
         """read a file from disk and turn it into a tree structure
@@ -645,7 +621,6 @@ class MainWindow(wx.Frame):
         if not msg:
             self.tree.SetFocus()
             # recreate menu after loading (because of language)
-            print('creating menu')
             self.create_menu()
             self.tree.DeleteAllItems()
             self.root = self.tree.AddRoot(os.path.splitext(os.path.basename(self.base.project_file))[0])
@@ -658,7 +633,7 @@ class MainWindow(wx.Frame):
             try:
                 self.splitter.SetSashPosition(self.base.opts["SashPosition"], True)
             except TypeError:
-                self.showmsg('Ignoring incompatible sashposition')
+                self.showmsg(_('m_ignore'))
             self.tree.Expand(self.root)
             self.tree.SelectItem(item_to_activate)
             self.tree.SetFocus()
@@ -744,7 +719,6 @@ class MainWindow(wx.Frame):
     def update(self, event=None):
         """resave the notes to a file
         """
-        print('in wxgui.update')
         self.tree_to_dict()   # check for changed values in tree not in dict
         self.base.opts["ScreenSize"] = self.GetSize()
         self.base.opts["SashPosition"] = self.splitter.GetSashPosition()
@@ -930,13 +904,8 @@ class MainWindow(wx.Frame):
     def reverse(self, event=None):
         """set to "newest first"
         """
-        print('in reverse')
-        print('  option is ', self.base.opts['RevOrder'])
         self.base.opts['RevOrder'] = not self.base.opts['RevOrder']
-        print('  option is now', self.base.opts['RevOrder'])
         item_to_activate = self.build_tree()
-        print('tree is rebuilt')
-        # self.tree.setCurrentItem(item_to_activate)
         self.activate_item(item_to_activate)
 
     def no_selection(self, event=None):

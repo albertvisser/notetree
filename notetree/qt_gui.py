@@ -217,13 +217,11 @@ class KeywordsDialog(wdg.QDialog):
     def move_right(self):
         """trefwoord selecteren
         """
-        ## print('move to right')
         self._moveitem(self.fromlist, self.tolist)
 
     def move_left(self):
         """trefwoord on-selecteren
         """
-        ## print('move to left')
         self._moveitem(self.tolist, self.fromlist)
 
     def _moveitem(self, from_, to):
@@ -384,12 +382,11 @@ class OptionsDialog(wdg.QDialog):
     """
     def __init__(self, parent):
         self.parent = parent
-        sett2text = {'AskBeforeHide':
-                        'Notify that the application will be hidden in the system tray',
-                     'NotifyOnLoad': 'Notify that the data has been reloaded',
-                     'NotifyOnSave': 'Notify that the data has been saved' }
+        sett2text = {'AskBeforeHide': _('t_hide'),
+                     'NotifyOnLoad': _('t_load'),
+                     'NotifyOnSave': _('t_save') }
         super().__init__(parent)
-        self.setWindowTitle('NoteTree Settings')
+        self.setWindowTitle(_('t_sett'))
         vbox = wdg.QVBoxLayout()
         self.controls = []
 
@@ -409,10 +406,10 @@ class OptionsDialog(wdg.QDialog):
 
         hbox = wdg.QHBoxLayout()
         hbox.addStretch(1)
-        ok_button = wdg.QPushButton("&Apply", self)
+        ok_button = wdg.QPushButton(_("b_apply"), self)
         ok_button.clicked.connect(self.accept)
         hbox.addWidget(ok_button)
-        cancel_button = wdg.QPushButton("&Close", self)
+        cancel_button = wdg.QPushButton(_("b_close"), self)
         cancel_button.clicked.connect(self.reject)
         hbox.addWidget(cancel_button)
         hbox.addStretch(1)
@@ -499,7 +496,6 @@ class MainWindow(wdg.QMainWindow):
         for action in self.selactions.values():
             action.setChecked(False)
         self.selactions[_("m_revorder")].setChecked(self.base.opts['RevOrder'])
-        ## print(self.base.opts["Selection"])
         self.selactions[self.seltypes[abs(self.base.opts["Selection"][0])]].setChecked(
             True)
 
@@ -539,7 +535,7 @@ class MainWindow(wdg.QMainWindow):
             try:
                 self.splitter.restoreState(self.base.opts['SashPosition'])
             except TypeError:
-                self.showmsg('Ignoring incompatible sash position')
+                self.showmsg(_('m_ignore'))
             self.root.setExpanded(True)
             self.tree.setCurrentItem(item_to_activate)
             self.tree.setFocus()
@@ -561,9 +557,7 @@ class MainWindow(wdg.QMainWindow):
         use_case = None
         if len(self.base.opts["Selection"]) > 2:
             use_case = self.base.opts["Selection"][2]
-        ## print(seltype, seldata, use_case)
         for key, value in self.base.nt_data.items():
-            print(key, value)
             if key == 0:
                 continue
             tag, text, keywords = value

@@ -43,7 +43,6 @@ def load_file(filename):
     geeft geen resultaat als bestand niet bestaat
     """
     if not os.path.exists(filename):
-        print(filename, 'does not exist, load_file returns empty string')
         return {}
     with open(filename, "rb") as f_in:
         nt_data = pck.load(f_in)
@@ -51,7 +50,7 @@ def load_file(filename):
         test = options.get("Application", None)
         if test and test != "NoteTree":
             # simuleer foutgaan bij pck.load als het geen pickle bestand is
-            raise EOFError("{} is geen NoteTree bestand".format(filename))
+            raise EOFError(_("no_nt_file").format(filename))
     return nt_data
 
 
@@ -77,7 +76,6 @@ class NoteTree:
         iconame = os.path.join(os.path.dirname(__file__), "notetree.ico")
         self.gui.build_screen(title=title, iconame=iconame)
         nok = self.gui.open()
-        print('after main.open, nok is', nok)
         if nok:
             # self.gui.showmsg(mld)
             self.gui.close()
@@ -93,12 +91,11 @@ class NoteTree:
                 (_("m_save"), self.gui.update, _("h_save"), 'Ctrl+S'),
                 ("", None, None, None),
                 (_("m_root"), self.gui.rename, _("h_root"), 'Shift+F2'),
-                ('Manage keywords', self.gui.manage_keywords,
-                 'Rename, remove and add tags', 'Shift+F6'),
+                (_('m_tagman'), self.gui.manage_keywords, _('h_tagman'), 'Shift+F6'),
                 ("", None, None, None),
                 (_("m_hide"), self.gui.hide_me, _("h_hide"), 'Ctrl+H'),
                 (_("m_lang"), self.gui.choose_language, _("h_lang"), 'Ctrl+F1'),
-                ('Messages', self.gui.set_options, 'Set options for messages', 'Ctrl+M'),
+                (_('m_opts'), self.gui.set_options, _('h_opts'), 'Ctrl+M'),
                 ("", None, None, None),
                 (_("m_exit"), self.gui.close, _("h_exit"), 'Ctrl+Q,Escape'), ), ),
             (_("m_note"), (
@@ -123,7 +120,6 @@ class NoteTree:
     def open(self, version):
         """initialize and read data file
         """
-        print('in Mainframe.open, version is', version)
         self.opts = initial_opts
         self.opts['Version'] = version
         self.opts['RootTitle'] = self.root_title
@@ -133,15 +129,12 @@ class NoteTree:
         except EOFError as e:
             self.gui.showmsg(str(e))
             return e
-        print('after load_file, nt_data is', self.nt_data)
         if not self.nt_data:
             # return 'Bestand niet gevonden'
-            ok = self.gui.ask_question(self, 'Bestand {} niet gevonden, aanmaken?'.format(
-                self.project_file))
+            ok = self.gui.ask_question(self, _('ask_create').format(self.project_file))
             if not ok:
-                print('dont save')
                 self.project_file = ''
-                return 'Bestand niet gevonden'
+                return _('404_message')
         options = self.nt_data.get(0, [])
         if "AskBeforeHide" in options:
             for key, val in options.items():
