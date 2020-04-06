@@ -24,7 +24,7 @@ the notes and show only notes with or without a certain keyword or text.
 Usage
 -----
 
-Call ``nt_start.py`` from the top directory to start with a standard file in the
+Call ``start.py`` from the top directory to start with a standard file in the
 working directory, or use a file name as an argument to work with that.
 
 
@@ -32,8 +32,7 @@ Requirements
 ------------
 
 - Python
-- PyQT5 for the current GUI version
-- wxPython for the older GUI version
+- PyQT5 / wxPython (Pnoenix) for the GUI part
 
 Note that the current implementation uses *pickle* for storing the data, I'm in the
 process of changing that to something safer.
