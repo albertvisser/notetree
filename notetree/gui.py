@@ -1,4 +1,7 @@
-"""defines which gui toolkit to use
+"""import gui classes
 """
-# from notetree.wx_gui import MainWindow
-from notetree.qt_gui import MainWindow
+from .toolkit import toolkit
+if toolkit == 'qt':
+    from .wx_gui import MainWindow
+elif toolkit == 'wx':
+    from .qt_gui import MainWindow

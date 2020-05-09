@@ -8,3 +8,6 @@ logs/
 *.swp
 *.swo
 *.pck*
+
+# on-demand
+toolkit.py
