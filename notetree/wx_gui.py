@@ -631,7 +631,7 @@ class MainWindow(wx.Frame):
             self.tree.SetItemText(self.root, self.base.opts["RootTitle"])
             self.SetSize(self.base.opts["ScreenSize"])
             try:
-                self.splitter.SetSashPosition(self.base.opts["SashPosition"], True)
+                self.splitter.SetSashPosition(self.base.opts["SashPosition"][0], True)
             except TypeError:
                 self.showmsg(_('m_ignore'))
             self.tree.Expand(self.root)
@@ -720,8 +720,9 @@ class MainWindow(wx.Frame):
         """resave the notes to a file
         """
         self.tree_to_dict()   # check for changed values in tree not in dict
-        self.base.opts["ScreenSize"] = self.GetSize()
-        self.base.opts["SashPosition"] = self.splitter.GetSashPosition()
+        screensize = self.GetSize()
+        self.base.opts["ScreenSize"] = (screensize.GetWidth(), screensize.GetHeight())
+        self.base.opts["SashPosition"] = (self.splitter.GetSashPosition(),)
         self.base.save()
 
     def rename(self, event=None):

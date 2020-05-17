@@ -43,8 +43,6 @@ def load_file(filename):
             noteid, created, title, text = line
             if noteid == 0:
                 nt_data[0] = json.loads(text)
-            elif noteid == 1:
-                nt_data[0][title] = text
             else:
                 nt_data[created] = [title, text, []]
                 docdict[noteid] = created
@@ -73,13 +71,9 @@ def save_file(filename, nt_data):
         count = 0
         settings = nt_data.pop(0)
         keywords = [x for x in settings.pop('Keywords')]
-        sashposition = settings.pop('SashPosition')
-        # de rest van de settings serializen naar een json string in plaats van apart opslaan
-        # en deze in de eerste note entry opslaan
         cur.execute(insert_note, (0, '', '', json.dumps(settings)))
-        cur.execute(insert_note, (1, '', 'SashPosition', sashposition))
         tagdict = collections.defaultdict(list)
-        count = 1
+        count = 0
         for created, value in nt_data.items():
             title, text, tags = value
             count += 1

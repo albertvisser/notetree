@@ -532,8 +532,13 @@ class MainWindow(wdg.QMainWindow):
             self.editor.setEnabled(False)
             item_to_activate = self.build_tree(first_time=True)
             self.resize(*self.base.opts["ScreenSize"])
+            if len(self.base.opts['SashPosition']) == 1:
+                # calculate width for rightmost panel
+                sizes = list(self.base.opts['SashPosition'])
+                sizes.append(self.base.opts["ScreenSize"][0] - sizes[0])
+                self.base.opts['SashPosition'] = tuple(sizes)
             try:
-                self.splitter.restoreState(self.base.opts['SashPosition'])
+                self.splitter.setSizes(self.base.opts['SashPosition'])
             except TypeError:
                 self.showmsg(_('m_ignore'))
             self.root.setExpanded(True)
@@ -624,7 +629,7 @@ class MainWindow(wdg.QMainWindow):
         """
         self.tree_to_dict()  # check for changed values in tree not in dict
         self.base.opts["ScreenSize"] = self.width(), self.height()  # tuple(self.size())
-        self.base.opts["SashPosition"] = self.splitter.saveState()
+        self.base.opts["SashPosition"] = self.splitter.sizes()
         self.base.opts["ActiveItem"] = self.activeitem.data(0, core.Qt.UserRole)
         self.base.save()
 
