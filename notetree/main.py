@@ -98,8 +98,7 @@ class NoteTree:
         try:
             self.nt_data = dml.load_file(self.project_file)
         except EOFError as e:
-            print(e, _(e).format(self.project_file))
-            self.gui.showmsg(str(e))
+            self.gui.showmsg(_(str(e)).format(self.project_file))
             return e
         if not self.nt_data:
             # return 'Bestand niet gevonden'

@@ -15,7 +15,7 @@ def load_file(filename):
         nt_data = json.load(f_in)
     options = nt_data.pop('0')
     test = options.get("Application", None)
-    if test and test != "NoteTree":
+    if not test or test != "NoteTree":
         raise EOFError("no_nt_file")
     ordered = collections.OrderedDict()
     ordered[0] = options

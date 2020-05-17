@@ -44,7 +44,7 @@ def load_file(filename):
             if noteid == 0:
                 options = json.loads(text)
                 test = options.get("Application", None)
-                if test and test != "NoteTree":
+                if not test or test != "NoteTree":
                     raise EOFError("no_nt_file")
             else:
                 nt_data[created] = [title, text, []]
