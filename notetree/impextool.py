@@ -82,6 +82,7 @@ def dumpdata(nt_file, extfile=""):
                 pprint.pprint(nt_data, stream=f_out)
     else:
         pprint.pprint(nt_data)
+        extfile = 'stdout'
     return 'Data from {} dumped to {}'.format(nt_file, extfile)
 
 
