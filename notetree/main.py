@@ -5,8 +5,7 @@ import os.path
 import collections
 import shutil
 
-# from notetree.pickle_dml import load_file, save_file
-from notetree.sql_dml import load_file, save_file
+import notetree.dml as dml
 import notetree.gui as gui
 
 app_title = "NoteTree"
@@ -97,7 +96,7 @@ class NoteTree:
         self.opts['RootTitle'] = self.root_title
         self.nt_data = collections.OrderedDict()
         try:
-            self.nt_data = load_file(self.project_file)
+            self.nt_data = dml.load_file(self.project_file)
         except EOFError as e:
             self.gui.showmsg(str(e))
             return e
@@ -124,4 +123,4 @@ class NoteTree:
             shutil.copyfile(self.project_file, self.project_file + '~')
         except FileNotFoundError:
             pass
-        save_file(self.project_file, self.nt_data)
+        dml.save_file(self.project_file, self.nt_data)

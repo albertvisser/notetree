@@ -1,6 +1,6 @@
 """import gui classes
 """
-from .toolkit import toolkit
+from .settings import toolkit
 if toolkit == 'qt':
     from .qt_gui import MainWindow
 elif toolkit == 'wx':
