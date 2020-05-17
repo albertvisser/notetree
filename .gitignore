@@ -10,4 +10,4 @@ logs/
 *.pck*
 
 # on-demand
-toolkit.py
+settings.py
