@@ -1,15 +1,12 @@
 """NoteTree GUI-independent stuff
 """
 import gettext
-import os
+import os.path
 import collections
 import shutil
 
-try:
-    import cPickle as pck
-except ImportError:
-    import pickle as pck
-
+# from notetree.pickle_dml import load_file, save_file
+from notetree.sql_dml import load_file, save_file
 import notetree.gui as gui
 
 app_title = "NoteTree"
@@ -34,31 +31,6 @@ initial_opts = {"Application": "NoteTree",
                 "Keywords": [],
                 "Selection": (0, ''),
                 "RevOrder": False}
-
-
-# wrappers rond pickle ivm aanroep vanuit conversie utilities
-#
-def load_file(filename):
-    """raise EOFError als file niet gelezen kan worden
-    geeft geen resultaat als bestand niet bestaat
-    """
-    if not os.path.exists(filename):
-        return {}
-    with open(filename, "rb") as f_in:
-        nt_data = pck.load(f_in)
-        options = nt_data.get(0, [])
-        test = options.get("Application", None)
-        if test and test != "NoteTree":
-            # simuleer foutgaan bij pck.load als het geen pickle bestand is
-            raise EOFError(_("no_nt_file").format(filename))
-    return nt_data
-
-
-def save_file(filename, nt_data):
-    """plain save/dump; backup should be done by the calling program (or not)
-    """
-    with open(filename, "wb") as _out:
-        pck.dump(nt_data, _out, protocol=2)
 
 
 # Main screen
