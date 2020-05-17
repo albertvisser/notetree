@@ -42,23 +42,25 @@ def load_file(filename):
         for line in cur:
             noteid, created, title, text = line
             if noteid == 0:
-                nt_data[0] = json.loads(text)
+                options = json.loads(text)
+                test = options.get("Application", None)
+                if test and test != "NoteTree":
+                    raise EOFError("no_nt_file")
             else:
                 nt_data[created] = [title, text, []]
                 docdict[noteid] = created
         cur.execute(read_tags)
         tagdict = {x: y for (x, y) in cur}
-        nt_data[0]['Keywords'] = list(tagdict.values())
+        options['Keywords'] = list(tagdict.values())
         cur.execute(read_links)
         for line in cur:
             doc_id, tag_id = line
             nt_data[docdict[doc_id]][2].append(tagdict[tag_id])
-        settings = nt_data.pop(0)
-        ordered = collections.OrderedDict()
-        ordered[0] = settings
-        for key in sorted(nt_data.keys(),
-                          key=lambda x: datetime.datetime.strptime(x, "%d-%m-%Y %H:%M:%S")):
-            ordered[key] = nt_data[key]
+    ordered = collections.OrderedDict()
+    ordered[0] = options
+    for key in sorted(nt_data.keys(),
+                      key=lambda x: datetime.datetime.strptime(x, "%d-%m-%Y %H:%M:%S")):
+        ordered[key] = nt_data[key]
     return ordered
 
 

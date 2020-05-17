@@ -19,7 +19,7 @@ def load_file(filename):
         test = options.get("Application", None)
         if test and test != "NoteTree":
             # simuleer foutgaan bij pck.load als het geen pickle bestand is
-            raise EOFError(_("no_nt_file").format(filename))
+            raise EOFError("no_nt_file")
     return nt_data
 
 
