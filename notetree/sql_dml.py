@@ -71,12 +71,14 @@ def save_file(filename, nt_data):
         cur = db.cursor()
         cur.executescript(init_db)
         count = 0
-        settings = nt_data.pop(0)
-        keywords = [x for x in settings.pop('Keywords')]
-        cur.execute(insert_note, (0, '', '', json.dumps(settings)))
         tagdict = collections.defaultdict(list)
         count = 0
         for created, value in nt_data.items():
+            if created == 0:
+                settings = nt_data[0]
+                keywords = [x for x in settings.pop('Keywords')]
+                cur.execute(insert_note, (0, '', '', json.dumps(settings)))
+                continue
             title, text, tags = value
             count += 1
             cur.execute(insert_note, (count, created, title, text))
