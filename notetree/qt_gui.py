@@ -5,10 +5,11 @@ van een ibm site afgeplukt
 import os
 import sys
 import gettext
-from datetime import datetime
 import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
 
 class MainWindow(qtw.QMainWindow):
@@ -114,7 +115,7 @@ class MainWindow(qtw.QMainWindow):
     def create_root(self, title):
         self.root = self.tree.takeTopLevelItem(0)
         self.root = qtw.QTreeWidgetItem()
-        self.root.setText(0, title)
+        self.root.setText(0, title)  # self.base.opts['RootTitle']
         self.tree.addTopLevelItem(self.root)
         self.activeitem = self.root
         return self.root
@@ -153,14 +154,14 @@ class MainWindow(qtw.QMainWindow):
     def select_item(self, item):
         self.tree.setCurrentItem(item)
 
-    def get_selected_item(self, item):
+    def get_selected_item(self):
         return self.tree.currentItem()
 
-    def remove_item_from_tree(self):
+    def remove_item_from_tree(self, item):
         self.root.removeChild(item)
         return item
 
-    def get_key_from_item(item):
+    def get_key_from_item(self, item):
         return item.data(0, core.Qt.UserRole)
 
     def set_focus_to_tree(self):
@@ -169,7 +170,7 @@ class MainWindow(qtw.QMainWindow):
     def set_focus_to_editor(self):
         self.editor.setFocus()
 
-    def add_item_to_tree(key, tag, text, keywords):    # , revorder):
+    def add_item_to_tree(self, key, tag, text, keywords):    # , revorder):
         item = qtw.QTreeWidgetItem()
         item.setText(0, tag)
         item.setData(0, core.Qt.UserRole, key)
@@ -233,7 +234,7 @@ class MainWindow(qtw.QMainWindow):
         return self.root.indexOfChild(item)
 
     def get_itemcount(self):
-        if idx < self.root.childCount() - 1:
+        return self.root.childCount()
 
     def get_item_at_pos(self, pos):
         return self.root.child(pos)
@@ -244,13 +245,13 @@ class MainWindow(qtw.QMainWindow):
     def set_item_keywords(self, item, keyword_list):
         item.setData(1, core.Qt.UserRole, keyword_list)
 
-    def show_statusbar_message(text):
+    def show_statusbar_message(self, text):
         self.sb.showMessage(text)
 
-    def enable_selaction(actiontext):
+    def enable_selaction(self, actiontext):
         self.selactions[actiontext].setChecked(True)
 
-    def disable_selaction(actiontext):
+    def disable_selaction(self, actiontext):
         self.selactions[actiontext].setChecked(False)
 
     def showmsg(self, message):
@@ -258,7 +259,7 @@ class MainWindow(qtw.QMainWindow):
         """
         qtw.QMessageBox.information(self, self.base.app_title, message)
 
-    def ask_question(self, parent, question):
+    def ask_question(self, question):
         """ask a question in a standard box with a standard title"""
         answer = qtw.QMessageBox.question(self, self.base.app_title, question)
         return answer == qtw.QMessageBox.Yes
@@ -285,7 +286,7 @@ class OptionsDialog(qtw.QDialog):
         self.parent = parent
         sett2text = {'AskBeforeHide': _('t_hide'),
                      'NotifyOnLoad': _('t_load'),
-                     'NotifyOnSave': _('t_save') }
+                     'NotifyOnSave': _('t_save')}
         super().__init__(parent)
         self.setWindowTitle(_('t_sett'))
         vbox = qtw.QVBoxLayout()
@@ -393,7 +394,7 @@ class KeywordsDialog(qtw.QDialog):
         self.tolist = qtw.QListWidget(self)
         self.tolist.setSelectionMode(qtw.QAbstractItemView.ExtendedSelection)
         self.tolist.itemDoubleClicked.connect(self.move_left)
-        bbox = qtw.QDialogButtonBox(wdg.QDialogButtonBox.Ok | wdg.QDialogButtonBox.Cancel)
+        bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.Ok | qtw.QDialogButtonBox.Cancel)
         bbox.accepted.connect(self.accept)
         bbox.rejected.connect(self.reject)
         self.create_actions()
@@ -597,7 +598,7 @@ class KeywordsManager(qtw.QDialog):
             prompter = qtw.QMessageBox()
             prompter.setText(_('t_repltag').format(oldtext, newtext))
             prompter.setInformativeText(_('t_repltag2'))
-            prompter.setStandardButtons(qtw.QMessageBox.Yes | wdg.QMessageBox.No |
+            prompter.setStandardButtons(qtw.QMessageBox.Yes | qtw.QMessageBox.No |
                                         qtw.QMessageBox.Cancel)
             prompter.setDefaultButton(qtw.QMessageBox.Yes)
             ## prompter.setEscapeButton(qtw.MessageBox.Cancel)
@@ -649,7 +650,7 @@ class GetTextDialog(qtw.QDialog):
             if use_case:
                 self.use_case.setChecked(True)
         vbox.addLayout(hbox)
-        bbox = qtw.QDialogButtonBox(wdg.QDialogButtonBox.Ok | wdg.QDialogButtonBox.Cancel)
+        bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.Ok | qtw.QDialogButtonBox.Cancel)
         bbox.accepted.connect(self.accept)
         bbox.rejected.connect(self.reject)
         vbox.addWidget(bbox)

@@ -4,6 +4,7 @@ import gettext
 import os.path
 import collections
 import shutil
+from datetime import datetime
 
 import notetree.dml as dml
 import notetree.gui as gui
@@ -90,6 +91,8 @@ class NoteTree:
                 (_("m_keys"), self.help_page, _("h_keys"), 'F1'), ), ), )
 
     def reread(self, *args):
+        """revert to the saved version of the notes file
+        """
         ok = self.gui.ask_question(self, _('ask_reload').format(self.project_file))
         if ok:
             self.open()
@@ -98,8 +101,8 @@ class NoteTree:
         """resave the notes to a file
         """
         self.tree_to_dict()  # check for changed values in tree not in dict
-        self.opts["ScreenSize"] = self.get_screensize()
-        self.opts["SashPosition"] = self.get_splitterpos()
+        self.opts["ScreenSize"] = self.gui.get_screensize()
+        self.opts["SashPosition"] = self.gui.get_splitterpos()
         # self.opts["ActiveItem"] = self.get_activeitem()  already done in self.tree_to_dict
         self.save()
 
@@ -118,35 +121,23 @@ class NoteTree:
     def manage_keywords(self, *args):
         """Open a dialog where keywords can be renamed, removed or added
         """
-        self.gui.show_dialog(KeywordsManager)
+        self.gui.show_dialog(gui.KeywordsManager)
 
     def hide_me(self, *args):
         """Minimize application to an icon in the system tray
         """
         if self.opts["AskBeforeHide"]:
-            self.gui.show_dialog(CheckDialog)
+            self.gui.show_dialog(gui.CheckDialog)
         self.gui.sleep()
 
     def choose_language(self):
         """toon dialoog om taal te kiezen en verwerk antwoord
         """
         langcodes = ('nl', 'en')
-        langnames = (_('t_{}'.format(code)) for code in langnames)
-        # data = [(code, _('t_{}'.format(code))) for code in ('nl', 'en')]
-        # for idx, lang in enumerate([x[0] for x in data]):
-        #     if lang == self.opts["Language"]:
-        #         break
-        # text, ok = self.gui.get_choice_from_user(_("t_lang"), [x[1] for x in data], idx)
+        langnames = (_('t_{}'.format(code)) for code in langcodes)
         text, ok = self.gui.get_choice_from_user(_("t_lang"), langnames,
-                                                 langcodes.index(self.opts["Language"])
+                                                 langcodes.index(self.opts["Language"]))
         if ok:
-            # for idx, lang in enumerate([x[1] for x in data]):
-            #     if lang == text:
-            #         code = data[idx][0]
-            #         self.opts["Language"] = code
-            #         self.languages[code].install()
-            #         self.gui.create_menu()
-            #         break
             code = langcodes[langnames.index(text)]
             self.opts["Language"] = code
             self.languages[code].install()
@@ -160,36 +151,36 @@ class NoteTree:
         """add a new item to the tree after asking for a title
         """
         start = datetime.today().strftime("%d-%m-%Y %H:%M:%S")
-        text, ok = self.gui.get_text_from_user(_("t_new"), text=start))
+        text, ok = self.gui.get_text_from_user(_("t_new"), text=start)
         if ok:
             item = self.gui.add_item_to_tree(start, text, '', [])
             self.nt_data[start] = ""
             self.gui.select_item(item)  # or activate_item?
             self.gui.set_item.expanded(self.gui.root)
             self.gui.init_editor()
-            self.gui_focus_editor()
+            self.gui.focus_editor()
 
     def delete_item(self, *args):
         """remove item from tree
         """
         item = self.gui.get_selected_item()
-        if item != self.root:
+        if item != self.gui.root:
             item = self.gui.remove_item_from_tree(item)
             ky = self.gui.get_key_from_item(item)
-            del self.base.nt_data[ky]
+            del self.nt_data[ky]
             # TODO moet hier niet nog activeren van het voorafgaande item bij?
         else:
-            self.showmsg(_("no_delete_root"))
+            self.gui.showmsg(_("no_delete_root"))
 
     def ask_title(self, *args):
         """Get/change a title for this note
         """
         text, ok = self.gui.get_text_from_user(_("t_name"),
-                                                 self.gui.get_itemtext(self.gui.activeitem))
+                                               self.gui.get_itemtext(self.gui.activeitem))
                 # qt: self.activeitem.text(0))
                 # wx: self.tree.GetItemText(self.activeitem)
         if ok:
-            self.gui.set_itemtext(self.gui.activeitem)
+            self.gui.set_itemtext(self.gui.activeitem, text)
             # qt: self.activeitem.setText(0, text)
             # wx: self.tree.SetItemText(self.activeitem, text)
 
@@ -198,10 +189,10 @@ class NoteTree:
         """
         item = self.gui.activeitem
         if item is not None:
-            keywords = get_item_keywords(item)
+            keywords = self.gui.get_item_keywords(item)
         if item is None or keywords is None:
             return
-        ok, new_keywords = self.gui.show_dialog(KeywordsDialog)  # , keywords
+        ok, new_keywords = self.gui.show_dialog(gui.KeywordsDialog)  # , keywords
         if ok:
             self.gui.set_item_keywords(item, new_keywords)
 
@@ -209,13 +200,13 @@ class NoteTree:
         """Go to next
         """
         if not self.gui.goto_next_item():
-            self.showmsg(_("no_next_item"))
+            self.gui.showmsg(_("no_next_item"))
 
     def prev_note(self):
         """Go to previous
         """
         if not self.gui.goto_next_item():
-            self.showmsg(_("no_prev_item"))
+            self.gui.showmsg(_("no_prev_item"))
 
     def reverse(self, *args):
         """set to "newest first"
@@ -235,14 +226,15 @@ class NoteTree:
         seltype, seltext = self.opts['Selection'][:2]
         if abs(seltype) != 1:
             seltext = ''
-        ok = self.gui.show_dialog(GetItemDialog, seltype, seltext, _("i_seltag"))
+        ok = self.gui.show_dialog(gui.GetItemDialog, seltype, seltext, _("i_seltag"))
         if ok:
-            exclude, text = self.dialog_data
+            exclude, text = self.gui.dialog_data
             if exclude:
                 seltype, in_ex = -1, "all except"
             else:
                 seltype, in_ex = 1, 'only'
             self.set_selection((seltype, text), _("h_seltag"))
+            self.gui.show_statusbar_message(_("h_seltag").format(in_ex, text))
         # bij Cancel menukeuze weer aan/uitzetten
         else:
             self.set_option(1, _("m_seltag"))
@@ -257,19 +249,20 @@ class NoteTree:
             use_case = None
         if abs(seltype) != 2:
             seltext = ''
-        ok = self.gui.show_dialog(GetItemDialog, seltype, seltext, _("i_seltxt"), use_case)
+        ok = self.gui.show_dialog(gui.GetItemDialog, seltype, seltext, _("i_seltxt"), use_case)
         if ok:
-            exclude, text, use_case = self.dialog_data
+            exclude, text, use_case = self.gui.dialog_data
             if exclude:
                 seltype, in_ex = -2, "all except"
             else:
                 seltype, in_ex = 2, 'only'
             self.set_selection((seltype, text, use_case), _("h_seltxt"))
+            self.gui.show_statusbar_message(_("h_seltxt").format(in_ex, text))
         # bij Cancel menukeuze weer aan/uitzetten
         else:
             self.set_option(2, _("m_seltxt"))
 
-    def info_page(self. *args):
+    def info_page(self, *args):
         """show program info
         """
         self.gui.showmsg(_('info_text'))
@@ -277,9 +270,9 @@ class NoteTree:
     def help_page(self, *args):
         """show keyboard shortcuts
         """
-        self.gui.show_dialog(gui.GridDialog, title=self.base.app_title + " " + _("t_keys"))
+        self.gui.show_dialog(gui.GridDialog, title=self.app_title + " " + _("t_keys"))
 
-    def open(self, version):
+    def open(self):  # , version):
         """initialize and read data file
         """
         self.opts = initial_opts
@@ -308,34 +301,34 @@ class NoteTree:
         self.gui.create_menu()
         self.gui.set_screen(self.opts["ScreenSize"])
         if len(self.opts['SashPosition']) == 1:
-            righthand_size = self.opts["ScreenSize"][0] - self.opts['SashPosition'])
+            righthand_size = self.opts["ScreenSize"][0] - self.opts['SashPosition']
             self.opts['SashPosition'] = tuple(self.opts['SashPosition'], righthand_size)
         try:
             self.gui.set_splitter(self.opts['SashPosition'])
         except TypeError:
             self.gui.showmsg(_('m_ignore'))
-        root = self.gui.create_root(self.base.opts["RootTitle"])
-        self.activate_item(self.build_tree(first_time=True)
+        root = self.build_tree(first_time=True)
+        self.gui.activate_item(root)
         self.gui.set_item_expanded(root)
         self.gui.clear_editor()
         self.gui.open_editor()
-        self.focus_to_tree()
+        self.gui.set_focus_to_tree()
 
     def build_tree(self, first_time=False):
         """translate the dictionary read to a tree structure, applying the chosen filter
         """
         if not first_time:
             self.tree_to_dict()      # op commentaar in wx versie
-            root = self.gui.create_root(self.opts["RootTitle"])  # qt versie
             # wx versie: self.check_active()  # even zorgen dat de editor inhoud geassocieerd wordt
-            #            self.tree.DeleteChildren(self.root)
-        item_to_activate = self.root    # wx versie: item_to_return = self.root
+        root = self.gui.create_root(self.opts["RootTitle"])  # qt versie
+        # wx versie: self.tree.DeleteChildren(self.root)
+        item_to_activate = root    # wx versie: item_to_return = self.root
         seltype, seldata = self.opts["Selection"][:2]
         use_case = None
         if len(self.opts["Selection"]) > 2:
             use_case = self.opts["Selection"][2]
 
-        for key, value in self.base.nt_data.items():
+        for key, value in self.nt_data.items():
             if key == 0:
                 continue
             try:
@@ -363,14 +356,14 @@ class NoteTree:
                     ok = True
                 if not ok:
                     continue
-            item = self.gui.add_item_to_tree(key, tag, text, keywords)  #, self.opts['RevOrder'])
+            item = self.gui.add_item_to_tree(key, tag, text, keywords)  # , self.opts['RevOrder'])
             if not item_to_activate:
                 item_to_activate = item
-            if key == self.base.opts["ActiveItem"]:
+            if key == self.opts["ActiveItem"]:
                 item_to_activate = item
 
         if not first_time:
-            self.tree.expandItem(self.root)
+            self.gui.set_item_expanded(self.gui.root)
         return item_to_activate
 
     def tree_to_dict(self):
@@ -378,9 +371,9 @@ class NoteTree:
         """
         self.gui.check_active()  # even zorgen dat de editor inhoud geassocieerd wordt
         items, activeitem = self.gui.get_treeitems()
-        self.base.opts["ActiveItem"] = activeitem
+        self.opts["ActiveItem"] = activeitem
         for ky, tag, text, trefw in items:
-            self.base.nt_data[ky] = (str(tag), str(text), trefw)
+            self.nt_data[ky] = (str(tag), str(text), trefw)
 
     def save(self, *args):
         """finalize and write data file
@@ -394,22 +387,22 @@ class NoteTree:
             pass
         dml.save_file(self.project_file, self.nt_data)
 
-    def set_selection(opts, seltext):
+    def set_selection(self, opts, seltext):
+        """selectie aanpassen
+        """
         self.opts["Selection"] = opts
-        self.gui.show_statusbar_message(seltext)
         item_to_activate = self.build_tree()
         self.gui.select_item(item_to_activate)
         for actiontext in(_("m_selall"), _("m_seltag"), _("m_seltxt")):
-            if action == seltext:
+            if actiontext == seltext:
                 self.gui.enable_selaction(actiontext)
             else:
                 self.gui.disable_selaction(actiontext)
 
-    def set_option(self, seltype, name):
+    def set_option(self, seltype, actiontext):
         """bij cancelen selectiedialoog de juiste menukeuze weer aan/uitzetten
         """
         if abs(self.base.opts['Selection'][0]) == seltype:
             self.gui.enable_selaction(actiontext)
         else:
             self.gui.disable_selaction(actiontext)
-

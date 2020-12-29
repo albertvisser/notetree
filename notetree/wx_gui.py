@@ -3,11 +3,12 @@
 van een ibm site afgeplukt
 """
 import os
-import sys
+# import sys
 import gettext
-from datetime import datetime
 import wx
 import wx.adv
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
 
 class MainWindow(wx.Frame):
@@ -155,12 +156,12 @@ class MainWindow(wx.Frame):
     def set_screen(self, screensize):
         self.SetSize(screensize)
 
-    def set_splitter(self. split):
+    def set_splitter(self, split):
         self.splitter.SetSashPosition(split[0], True)
 
     def create_root(self, title):
         self.tree.DeleteAllItems()
-        self.root = self.tree.AddRoot(self.base.opts["RootTitle"])
+        self.root = self.tree.AddRoot(title)  # self.base.opts["RootTitle"])
         self.activeitem = self.root
         return self.root
 
@@ -211,13 +212,13 @@ class MainWindow(wx.Frame):
     def get_key_from_item(self, item):
         return self.tree.GetItemData(item)[0]
 
-    def set_focus_to_tree(self)
+    def set_focus_to_tree(self):
         self.tree.SetFocus()
 
-    def set_focus_to_editor(self)
+    def set_focus_to_editor(self):
         self.editor.SetFocus()
 
-    def add_item_to_tree(key, tag, text, keywords, revorder):
+    def add_item_to_tree(self, key, tag, text, keywords, revorder):
         if revorder:
             item = self.tree.PrependItem(self.root, tag)
         else:
@@ -297,16 +298,16 @@ class MainWindow(wx.Frame):
         """show a message in a standard box with a standard title"""
         wx.MessageBox(message, self.base.app_title, wx.OK | wx.ICON_INFORMATION, self)
 
-    def ask_question(self, parent, question):
+    def ask_question(self, question):
         """ask a question in a standard box with a standard title"""
         answer = wx.MessageBox(question, self.base.app_title, wx.YES_NO | wx.ICON_QUESTION, self)
         return answer == wx.YES
         # alternatively
-        dlg = wx.MessageDialog(self, _("ask_reload"), self.base.app_title, wx.OK | wx.CANCEL)
-        result = dlg.ShowModal()
-        answer = result == wx.ID_OK:
-        dlg.Destroy()
-        return answer
+        # dlg = wx.MessageDialog(self, _("ask_reload"), self.base.app_title, wx.OK | wx.CANCEL)
+        # result = dlg.ShowModal()
+        # answer = result == wx.ID_OK
+        # dlg.Destroy()
+        # return answer
 
     def show_dialog(self, cls, *options):
         with cls(self, *options) as dlg:
@@ -317,7 +318,7 @@ class MainWindow(wx.Frame):
 
     def get_text_from_user(self, prompt, default):
         with wx.TextEntryDialog(self, prompt, self.base.app_title, default) as dlg:
-            ok = wx.dlg.ShowModal() == wx.ID_OK
+            ok = dlg.ShowModal() == wx.ID_OK
             text = dlg.GetValue()  # if ok else ''
         return text, ok
 
@@ -338,7 +339,7 @@ class OptionsDialog(wx.Dialog):
         self.parent = parent
         sett2text = {'AskBeforeHide': _('t_hide'),
                      'NotifyOnLoad': _('t_load'),
-                     'NotifyOnSave': _('t_save') }
+                     'NotifyOnSave': _('t_save')}
         super().__init__(parent, title=_('t_sett'))
         pnl = self  # wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
@@ -381,9 +382,9 @@ class CheckDialog(wx.Dialog):
 
     Eventueel ook te implementeren m.b.v. wx.RichMessageDialog
     """
-    def __init__(self, parent, id, title, size=(-1, 120), pos=wx.DefaultPosition,
+    def __init__(self, parent, id_, title, size=(-1, 120), pos=wx.DefaultPosition,
                  style=wx.DEFAULT_DIALOG_STYLE):
-        wx.Dialog.__init__(self, parent, id, title, pos, size, style)
+        wx.Dialog.__init__(self, parent, id_, title, pos, size, style)
         # pnl = wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer0.Add(wx.StaticText(self, -1, _("sleep_message")), 1, wx.ALL, 5)
@@ -575,7 +576,7 @@ class KeywordsDialog(wx.Dialog):
             dlg.ShowModal()
 
     def confirm(self):
-        return _dlg.tolist.GetItems()
+        return self.tolist.GetItems()
 
 
 class KeywordsManager(wx.Dialog):
