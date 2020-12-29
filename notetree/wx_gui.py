@@ -16,6 +16,7 @@ class MainWindow(wx.Frame):
     def __init__(self, root):
         self.base = root
         self.app = wx.App(False)
+        self.activeitem = None
 
     def start(self):
         "start the GUI"
@@ -32,8 +33,7 @@ class MainWindow(wx.Frame):
 
         # tray icon wordt pas opgezet in de hide() methode
 
-        menuBar = wx.MenuBar()
-        self.SetMenuBar(menuBar)
+        self.SetMenuBar(wx.MenuBar())
         # self.create_menu()
 
         self.splitter = wx.SplitterWindow(self, -1)
@@ -41,7 +41,6 @@ class MainWindow(wx.Frame):
 
         self.tree = wx.TreeCtrl(self.splitter)
         self.root = self.tree.AddRoot(self.base.root_title)
-        self.activeitem = self.root
         self.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelChanging, self.tree)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
 #        self.tree.Bind(wx.EVT_KEY_DOWN, self.on_key)
@@ -162,121 +161,11 @@ class MainWindow(wx.Frame):
     def create_root(self, title):
         self.tree.DeleteAllItems()
         self.root = self.tree.AddRoot(self.base.opts["RootTitle"])
+        self.activeitem = self.root
         return self.root
 
     def set_item_expanded(self, item):
         self.tree.Expand(item)
-
-    def activate_item(self, item):
-        self.tree.SelectItem(item)
-
-    def set_focus_to_tree(self)
-        self.tree.SetFocus()
-
-    def add_item_to_tree(key, tag, text, keywords, revorder):
-        if RevRrder:
-            item = self.tree.PrependItem(self.root, tag)
-        else:
-            item = self.tree.AppendItem(self.root, tag)
-        self.tree.SetItemData(item, (key, text, keywords))
-        return item
-
-    def get_treeitems(self):
-        treeitemlist = []
-        tag, cookie = self.tree.GetFirstChild(self.root)
-        while tag.IsOk():
-            tag_text = self.tree.GetItemText(tag)
-            key, text, keywords = self.tree.GetItemData(tag)
-            if tag == self.activeitem:
-                activeitem = key
-            treeitemlist.append((key, tag_text, text, keywords))
-            tag, cookie = self.tree.GetNextChild(self.root, cookie)
-            return treeitemlist, activeitem
-
-   def get_screensize(self):
-        screensize = self.GetSize()
-        return screensize.GetWidth(), screensize.GetHeight()
-
-    def get_splitterpos(self):
-        return (self.splitter.GetSashPosition(),)
-
-    def hide_me(self, event=None):
-        """Minimize application to an icon in the system tray
-        """
-        cancel = False
-        if self.base.opts["AskBeforeHide"]:
-            with CheckDialog(self, -1, self.base.app_title) as dlg:
-                if dlg.ShowModal() == wx.ID_CANCEL:
-                    cancel = True
-                elif dlg.Check.GetValue():
-                    self.base.opts["AskBeforeHide"] = False
-                # dlg.Destroy()
-        if cancel:
-            return
-        self.tray_icon = TaskbarIcon(self)
-        self.Hide()
-
-    def revive(self, event=None):
-        """make application visible again
-        """
-        self.Show()
-        self.tray_icon.Destroy()
-
-    def new_item(self, event=None):
-        """add a new item to the tree after asking for a title
-        """
-        # kijk waar de cursor staat (of altijd onderaan toevoegen?)
-        start = datetime.today().strftime("%d-%m-%Y %H:%M:%S")
-        dlg = wx.TextEntryDialog(self, _("t_new"), self.base.app_title, start)
-        if dlg.ShowModal() == wx.ID_OK:
-            text = dlg.GetValue()
-            item = self.tree.AppendItem(self.root, text)
-            self.tree.SetItemData(item, (text, "", []))
-            self.base.nt_data[text] = ""
-            self.tree.SelectItem(item)
-            self.tree.Expand(self.root)
-            self.editor.Clear()
-            self.editor.Enable(True)
-            self.editor.SetInsertionPoint(0)
-            self.editor.SetFocus()
-        dlg.Destroy()
-
-    def delete_item(self, event=None):
-        """remove item from tree
-        """
-        item = self.tree.GetSelection()
-        if item != self.root:
-            prev = self.tree.GetPrevSibling(item)
-            self.activeitem = None
-            ky = self.tree.GetItemData(item)[0]
-            self.tree.Delete(item)
-            del self.base.nt_data[ky]
-            if prev.IsOk():
-            # if self.tree.GetItemText(prev):
-                self.activate_item(prev)
-            else:
-                self.editor.Clear()
-                self.editor.Enable(False)
-        else:
-            self.showmsg(_("no_delete_root"))
-
-    def next_note(self, event=None):
-        """Go to next
-        """
-        item = self.tree.GetNextSibling(self.activeitem)
-        if item.IsOk():
-            self.tree.SelectItem(item)
-        else:
-            self.showmsg(_("no_next_item"))
-
-    def prev_note(self, event=None):
-        """Go to previous
-        """
-        item = self.tree.GetPrevSibling(self.activeitem)
-        if item.IsOk():
-            self.tree.SelectItem(item)
-        else:
-            self.showmsg(_("no_prev_item"))
 
     def check_active(self, message=None):
         """if there's a suitable "active" item, make sure its text is saved to the tree
@@ -305,122 +194,104 @@ class MainWindow(wx.Frame):
             self.editor.Enable(True)
         self.tree.EnsureVisible(item)
 
-    def choose_language(self, event=None):
-        """toon dialoog om taal te kiezen en verwerk antwoord
-        """
-        data = [(code, _('t_{}'.format(code))) for code in ('nl', 'en')]
-        with wx.SingleChoiceDialog(self, _("t_lang"), "Apropos", [x[1] for x in data],
-                                   wx.CHOICEDLG_STYLE) as dlg:
-            for idx, lang in enumerate([x[0] for x in data]):
-                if lang == self.base.opts["Language"]:
-                    dlg.SetSelection(idx)
-                    break
-            h = dlg.ShowModal()
-            if h == wx.ID_OK:
-                sel = dlg.GetStringSelection()
-                for idx, lang in enumerate([x[1] for x in data]):
-                    if lang == sel:
-                        code = data[idx][0]
-                        self.base.opts["Language"] = code
-                        self.base.languages[code].install()
-                        self.create_menu()
-                        break
+    def select_item(self, item):
+        self.tree.SelectItem(item)
 
-    def link_keywords(self, event=None):
-        """Open a dialog where keywords can be assigned to the text
-        """
-        key, text, old_keywords = self.tree.GetItemData(self.activeitem)
-        with KeywordsDialog(self) as dlg:
-            ok = dlg.ShowModal()
-            if ok == wx.ID_OK:
-                new_keywords = dlg.tolist.GetItems()
-                self.tree.SetItemData(self.activeitem, (key, text, new_keywords))
+    def get_selected_item(self):
+        return self.tree.GetSelection()
 
-    def manage_keywords(self, event=None):
-        """Open a dialog where keywords can be renamed, removed or added
-        """
-        with KeywordsManager(self) as dlg:
-            dlg.ShowModal()
+    def remove_item_from_tree(self, item):
+        # deze retourneerde ook nog het item dat geactiveerd moet worden
+        # omdat wx na verwijderen het volgende item actief maakt ipv het voorgaande?
+        prev = self.tree.GetPrevSibling(item)
+        self.activeitem = None
+        self.tree.Delete(item)
+        return item  # , prev
 
-    def reverse(self, event=None):
-        """set to "newest first"
-        """
-        self.base.opts['RevOrder'] = not self.base.opts['RevOrder']
-        item_to_activate = self.build_tree()
-        self.activate_item(item_to_activate)
+    def get_key_from_item(self, item):
+        return self.tree.GetItemData(item)[0]
 
-    def no_selection(self, event=None):
-        """make sure nothing is selected
-        """
-        # return  # do nothing for now
-        self._set_selection((0, ""), _("h_selall"))
+    def set_focus_to_tree(self)
+        self.tree.SetFocus()
 
-    def keyword_select(self, event=None):
-        """Open a dialog where a keyword can be chosen to select texts that it's assigned to
-        """
-        # return  # do nothing for now
-        seltype, seltext = self.base.opts['Selection'][:2]
-        if abs(seltype) != 1:
-            seltext = ''
-        with GetItemDialog(self, seltype, seltext, _("i_seltag")) as dlg:
-            ok = dlg.ShowModal()
-            if ok == wx.ID_OK:
-                exclude = dlg.in_exclude.GetValue()
-                text = dlg.inputwin.GetValue()
-                if exclude:
-                    seltype, in_ex = -1, "all except"
-                else:
-                    seltype, in_ex = 1, 'only'
-                self._set_selection((seltype, text), _("s_seltag").format(in_ex, text))
-            else:
-                self._set_option(1, "m_seltag")
+    def set_focus_to_editor(self)
+        self.editor.SetFocus()
 
-    def text_select(self, event=None):
-        """Open a dialog box where text can be entered that the texts to be selected contain
-        """
-        # return  # do nothing for now
-        try:
-            seltype, seltext, use_case = self.base.opts['Selection']
-        except ValueError:
-            seltype, seltext = self.base.opts['Selection']
-            use_case = None
-        if abs(seltype) != 2:
-            seltext = ''
-        with GetTextDialog(self, seltype, seltext, _("i_seltxt"), use_case) as dlg:
-            ok = dlg.ShowModal()
-            if ok == wx.ID_OK:
-                exclude = dlg.in_exclude.GetValue()
-                text = dlg.inputwin.GetValue()
-                use_case = dlg.use_case.GetValue()
-                ## self.base.opts['Selection'] = (2, text)
-                if exclude:
-                    seltype, in_ex = -2, "all except"
-                else:
-                    seltype, in_ex = 2, 'only'
-                self._set_selection((seltype, text, use_case), _("s_seltxt").format(in_ex, text))
-            else:
-                self._set_option(2, "m_seltxt")
-
-    def _set_selection(self, sel, seltext):
-        """selectie aanpassen"""
-        self.base.opts["Selection"] = sel
-        self.sb.SetStatusText(seltext)
-        item_to_activate = self.build_tree()
-        self.editor.Clear()
-        self.tree.SelectItem(item_to_activate)
-        for text, action in self.selactions.items():
-            if text == self.seltypes[abs(sel[0])]:  # seltext:
-                action.Check(True)
-            elif text != _("m_revorder"):
-                action.Check(False)
-
-    def _set_option(self, seltype, name):
-        """bij cancelen selectiedialoog de juiste menukeuze weer aan/uitzetten
-        """
-        if abs(self.base.opts['Selection'][0]) == seltype:
-            self.selactions[_(name)].Check(True)
+    def add_item_to_tree(key, tag, text, keywords, revorder):
+        if revorder:
+            item = self.tree.PrependItem(self.root, tag)
         else:
-            self.selactions[_(name)].Check(False)
+            item = self.tree.AppendItem(self.root, tag)
+        self.tree.SetItemData(item, (key, text, keywords))
+        return item
+
+    def get_treeitems(self):
+        treeitemlist = []
+        tag, cookie = self.tree.GetFirstChild(self.root)
+        while tag.IsOk():
+            tag_text = self.tree.GetItemText(tag)
+            key, text, keywords = self.tree.GetItemData(tag)
+            if tag == self.activeitem:
+                activeitem = key
+            treeitemlist.append((key, tag_text, text, keywords))
+            tag, cookie = self.tree.GetNextChild(self.root, cookie)
+            return treeitemlist, activeitem
+
+    def get_screensize(self):
+        screensize = self.GetSize()
+        return screensize.GetWidth(), screensize.GetHeight()
+
+    def get_splitterpos(self):
+        return (self.splitter.GetSashPosition(),)
+
+    def sleep(self):
+        "hide application"
+        self.tray_icon = TaskbarIcon(self)
+        self.Hide()
+
+    def revive(self, event=None):
+        """make application visible again
+        """
+        self.Show()
+        self.tray_icon.Destroy()
+
+    # dit hoort ook eigenlijk nog bij remove item
+    #         if prev.IsOk():
+    #         # if self.tree.GetItemText(prev):
+    #             self.activate_item(prev)
+    #         else:
+    #             self.editor.Clear()
+    #             self.editor.Enable(False)
+
+    def goto_next_item(self):
+        item = self.tree.GetNextSibling(self.activeitem)
+        ok = item.IsOk()
+        if ok:
+            self.tree.SelectItem(item)
+        return ok
+
+    def goto_prev_item(self):
+        item = self.tree.GetPrevSibling(self.activeitem)
+        ok = item.IsOk()
+        if ok:
+            self.tree.SelectItem(item)
+        return ok
+
+    def get_item_keywords(self, item):
+        return self.tree.GetItemData(self.activeitem)[2]
+
+    def set_item_keywords(self, item, data):
+        key, text = self.tree.GetItemData(self.activeitem)[:2]
+        self.tree.SetItemData(item, (key, text, data))
+
+    def show_statusbar_message(self, text):
+        self.sb.SetStatusText(text)
+
+    def enable_selaction(self, actiontext):
+        self.selactions[actiontext].Check(True)
+
+    def disable_selaction(self, actiontext):
+        self.selactions[actiontext].Check(False)
 
     def showmsg(self, message):
         """show a message in a standard box with a standard title"""
@@ -439,13 +310,25 @@ class MainWindow(wx.Frame):
 
     def show_dialog(self, cls, *options):
         with cls(self, *options) as dlg:
-            dlg.ShowModal()
+            ok = dlg.ShowModal()
+            if ok == wx.ID_OK:
+                data = dlg.confirm()
+        return ok, data
 
     def get_text_from_user(self, prompt, default):
         with wx.TextEntryDialog(self, prompt, self.base.app_title, default) as dlg:
             ok = wx.dlg.ShowModal() == wx.ID_OK
-            text = dlg.GetValue()
+            text = dlg.GetValue()  # if ok else ''
         return text, ok
+
+    def get_choice_from_user(self, prompt, choices, default):
+        with wx.SingleChoiceDialog(self, prompt, "Apropos", choices,
+                                   wx.CHOICEDLG_STYLE) as dlg:
+            dlg.SetSelection(default)
+            h = dlg.ShowModal()
+            ok = h == wx.ID_OK
+            sel = dlg.GetStringSelection()
+        return sel, ok
 
 
 class OptionsDialog(wx.Dialog):
@@ -691,6 +574,9 @@ class KeywordsDialog(wx.Dialog):
             dlg.Layout()
             dlg.ShowModal()
 
+    def confirm(self):
+        return _dlg.tolist.GetItems()
+
 
 class KeywordsManager(wx.Dialog):
     """Dialoog voor het wijzigen van trefwoorden
@@ -800,6 +686,9 @@ class KeywordsManager(wx.Dialog):
             self.parent.base.opts['Keywords'].append(newtext)
         self.refresh_fields()
 
+    def confirm(self):
+        pass
+
 
 class GetTextDialog(wx.Dialog):
     """Dialog to get search string (with options)
@@ -845,6 +734,11 @@ class GetTextDialog(wx.Dialog):
         self.inputwin = wx.TextCtrl(self, value=seltext)
         self.use_case = wx.CheckBox(self, label='case sensitive')
         self.use_case.SetValue(False)
+
+    def confirm(self):
+        self.parent.dialog_data = [self.in_exclude.GetValue(), self.inputwin.GetValue()]
+        if self.use_case:
+            self.parent.dialog_data.append(self.use_case.GetValue())
 
 
 class GetItemDialog(GetTextDialog):

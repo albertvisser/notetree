@@ -122,13 +122,54 @@ class MainWindow(qtw.QMainWindow):
     def set_item_expanded(self, item):
         item.setExpanded(True)
 
+    def check_active(self, message=None):
+        """if there's a suitable "active" item, make sure its text is saved to the tree structure
+        """
+        if self.activeitem and self.activeitem != self.root:
+            font = self.activeitem.font(0)
+            font.setBold(False)
+            self.activeitem.setFont(0, font)
+            if self.editor.document().isModified:
+                if message:
+                    self.showmsg(message)
+                self.activeitem.setText(1, self.editor.toPlainText())
+
     def activate_item(self, item):
+        """make the new item "active" and get the text for itfrom the tree structure
+        """
+        self.editor.clear()
+        if not item:
+            return
+        self.activeitem = item
+        if item == self.root:
+            self.editor.setEnabled(False)
+        else:
+            font = item.font(0)
+            font.setBold(True)
+            item.setFont(0, font)
+            self.editor.setText(item.text(1))
+            self.editor.setEnabled(True)
+
+    def select_item(self, item):
         self.tree.setCurrentItem(item)
 
-    def set_focus_to_tree(self)
+    def get_selected_item(self, item):
+        return self.tree.currentItem()
+
+    def remove_item_from_tree(self):
+        self.root.removeChild(item)
+        return item
+
+    def get_key_from_item(item):
+        return item.data(0, core.Qt.UserRole)
+
+    def set_focus_to_tree(self):
         self.tree.setFocus()
 
-    def add_item_to_tree(key, tag, text, keywords, revorder):
+    def set_focus_to_editor(self):
+        self.editor.setFocus()
+
+    def add_item_to_tree(key, tag, text, keywords):    # , revorder):
         item = qtw.QTreeWidgetItem()
         item.setText(0, tag)
         item.setData(0, core.Qt.UserRole, key)
@@ -158,15 +199,8 @@ class MainWindow(qtw.QMainWindow):
     def get_splitterpos(self):
         return self.splitter.sizes()
 
-    def get_activeitem(self):
-        return self.activeitem.data(0, core.Qt.UserRole)
-
-    def hide_me(self):
-        """Minimize application to an icon in the system tray
-        """
-        if self.base.opts["AskBeforeHide"]:
-            dlg = CheckDialog(self)
-            dlg.exec_()
+    def sleep(self):
+        "hide application"
         self.tray_icon.show()
         self.hide()
 
@@ -181,215 +215,43 @@ class MainWindow(qtw.QMainWindow):
             self.show()
             self.tray_icon.hide()
 
-    def new_item(self):
-        """add a new item to the tree after asking for a title
-        """
-        start = datetime.today().strftime("%d-%m-%Y %H:%M:%S")
-        text, ok = qtw.QInputDialog.getText(self, self.base.app_title, _("t_new"), text=start)
+    def goto_next_item(self):
+        pos = self.get_itempos(self.activeitem)
+        ok = pos < self.gui.get_itemcount() - 1
         if ok:
-            item = qtw.QTreeWidgetItem()
-            item.setText(0, text)
-            item.setData(0, core.Qt.UserRole, text)
-            item.setText(1, "")
-            item.setData(1, core.Qt.UserRole, [])
-            if self.base.opts['RevOrder']:
-                self.root.insertChild(0, item)
-            else:
-                self.root.addChild(item)
-            self.base.nt_data[text] = ""
-            self.tree.setCurrentItem(item)
-            self.root.setExpanded(True)
-            self.editor.clear()
-            self.editor.setEnabled(True)
-            self.editor.setFocus()
+            self.gui.select_item(self.get_item_at_pos(pos + 1))
+        return ok
 
-    def delete_item(self):
-        """remove item from tree
-        """
-        item = self.tree.currentItem()
-        if item != self.root:
-            ## idx = self.root.indexOfChild(item)
-            self.root.removeChild(item)
-            ky = item.data(0, core.Qt.UserRole)
-            del self.base.nt_data[ky]
-        else:
-            self.showmsg(_("no_delete_root"))
+    def goto_prev_item(self):
+        pos = self.get_itempos(self.activeitem)
+        ok = pos > 0
+        if ok:
+            self.gui.select_item(self.get_item_at_pos(pos - 1))
+        return ok
 
-    def next_note(self):
-        """Go to next
-        """
-        idx = self.root.indexOfChild(self.activeitem)
+    def get_itempos(self, item):
+        return self.root.indexOfChild(item)
+
+    def get_itemcount(self):
         if idx < self.root.childCount() - 1:
-            self.tree.setCurrentItem(self.root.child(idx + 1))
-        else:
-            self.showmsg(_("no_next_item"))
 
-    def prev_note(self):
-        """Go to previous
-        """
-        idx = self.root.indexOfChild(self.activeitem)
-        if idx > 0:
-            self.tree.setCurrentItem(self.root.child(idx - 1))
-        else:
-            self.showmsg(_("no_prev_item"))
+    def get_item_at_pos(self, pos):
+        return self.root.child(pos)
 
-    def check_active(self, message=None):
-        """if there's a suitable "active" item, make sure its text is saved to the tree structure
+    def get_item_keywords(self, item):
+        return item.data(1, core.Qt.UserRole)
 
-        """
-        if self.activeitem and self.activeitem != self.root:
-            font = self.activeitem.font(0)
-            font.setBold(False)
-            self.activeitem.setFont(0, font)
-            if self.editor.document().isModified:
-                if message:
-                    self.showmsg(message)
-                self.activeitem.setText(1, self.editor.toPlainText())
+    def set_item_keywords(self, item, keyword_list):
+        item.setData(1, core.Qt.UserRole, keyword_list)
 
-    def activate_item(self, item):
-        """make the new item "active" and get the text for itfrom the tree structure
-        """
-        self.editor.clear()
-        if not item:
-            return
-        self.activeitem = item
-        if item == self.root:
-            self.editor.setEnabled(False)
-        else:
-            font = item.font(0)
-            font.setBold(True)
-            item.setFont(0, font)
-            self.editor.setText(item.text(1))
-            self.editor.setEnabled(True)
+    def show_statusbar_message(text):
+        self.sb.showMessage(text)
 
-    def choose_language(self):
-        """toon dialoog om taal te kiezen en verwerk antwoord
-        """
-        data = [(code, _('t_{}'.format(code))) for code in ('nl', 'en')]
-        for idx, lang in enumerate([x[0] for x in data]):
-            if lang == self.base.opts["Language"]:
-                break
-        text, ok = qtw.QInputDialog.getItem(self, self.base.app_title, _("t_lang"),
-                                            [x[1] for x in data], current=idx,
-                                            editable=False)
-        if ok:
-            for idx, lang in enumerate([x[1] for x in data]):
-                if lang == text:
-                    code = data[idx][0]
-                    self.base.opts["Language"] = code
-                    self.base.languages[code].install()
-                    self.create_menu()
-                    break
+    def enable_selaction(actiontext):
+        self.selactions[actiontext].setChecked(True)
 
-    def link_keywords(self):
-        """Open a dialog where keywords can be assigned to the text
-        """
-        test = self.activeitem
-        if test is None:
-            return
-        if test.data(1, core.Qt.UserRole) is None:
-            return
-        dlg = KeywordsDialog(self)
-        ok = dlg.exec_()
-        if ok == qtw.QDialog.Accepted:
-            self.activeitem.setData(1, core.Qt.UserRole, self.new_keywords)
-
-    def manage_keywords(self):
-        """Open a dialog where keywords can be renamed, removed or added
-        """
-        dlg = KeywordsManager(self)
-        dlg.exec_()
-
-    def reverse(self):
-        """set to "newest first"
-        """
-        self.base.opts['RevOrder'] = not self.base.opts['RevOrder']
-        item_to_activate = self.build_tree()
-        self.tree.setCurrentItem(item_to_activate)
-
-    def no_selection(self):
-        """make sure nothing is selected
-        """
-        self.base.opts["Selection"] = (0, "")
-        self.sb.showMessage(_("h_selall"))
-        item_to_activate = self.build_tree()
-        self.tree.setCurrentItem(item_to_activate)
-        for text, action in self.selactions.items():
-            if text == _("m_selall"):
-                action.setChecked(True)
-            elif text != _("m_revorder"):
-                action.setChecked(False)
-
-    def keyword_select(self):
-        """Open a dialog where a keyword can be chosen to select texts that it's assigned to
-        """
-        seltype, seltext = self.base.opts['Selection'][:2]
-        if abs(seltype) != 1:
-            seltext = ''
-        ## selection_list = self.base.opts['Keywords']
-        ## try:
-            ## selindex = selection_list.index(seltext)
-        ## except ValueError:
-            ## selindex = -1
-        ## text, ok = qtw.QInputDialog.getItem(self, self.base.app_title,
-            ## _("i_seltag"), selection_list, current=selindex)
-        ok = GetItemDialog(self, seltype, seltext, _("i_seltag")).exec_()
-        if ok:
-            exclude, text = self.dialog_data
-            ## self.base.opts['Selection'] = (1, text)
-            if exclude:
-                seltype, in_ex = -1, "all except"
-            else:
-                seltype, in_ex = 1, 'only'
-            self.base.opts['Selection'] = (seltype, text)
-            self.sb.showMessage(_("s_seltag").format(in_ex, text))
-            item_to_activate = self.build_tree()
-            self.tree.setCurrentItem(item_to_activate)
-            for text, action in self.selactions.items():
-                if text == _("m_seltag"):
-                    action.setChecked(True)
-                elif text != _("m_revorder"):
-                    action.setChecked(False)
-        # bij Cancel menukeuze weer aan/uitzetten
-        elif abs(seltype) == 1:
-            self.selactions[_("m_seltag")].setChecked(True)
-        else:
-            self.selactions[_("m_seltag")].setChecked(False)
-
-    def text_select(self):
-        """Open a dialog box where text can be entered that the texts to be selected contain
-        """
-        try:
-            seltype, seltext, use_case = self.base.opts['Selection']
-        except ValueError:
-            seltype, seltext = self.base.opts['Selection']
-            use_case = None
-        if abs(seltype) != 2:
-            seltext = ''
-        ## text, ok = qtw.QInputDialog.getText(self, self.base.app_title,
-            ## _("i_seltxt"), qtw.QLineEdit.Normal, seltext)
-        ok = GetTextDialog(self, seltype, seltext, _("i_seltxt"), use_case).exec_()
-        if ok:
-            exclude, text, use_case = self.dialog_data
-            ## self.base.opts['Selection'] = (2, text)
-            if exclude:
-                seltype, in_ex = -2, "all except"
-            else:
-                seltype, in_ex = 2, 'only'
-            self.base.opts['Selection'] = (seltype, text, use_case)
-            self.sb.showMessage(_("s_seltxt").format(in_ex, text))
-            item_to_activate = self.build_tree()
-            self.tree.setCurrentItem(item_to_activate)
-            for text, action in self.selactions.items():
-                if text == _("m_seltxt"):
-                    action.setChecked(True)
-                elif text != _("m_revorder"):
-                    action.setChecked(False)
-        # bij Cancel menukeuze weer aan/uitzetten
-        elif abs(seltype) == 2:
-            self.selactions[_("m_seltxt")].setChecked(True)
-        else:
-            self.selactions[_("m_seltxt")].setChecked(False)
+    def disable_selaction(actiontext):
+        self.selactions[actiontext].setChecked(False)
 
     def showmsg(self, message):
         """show a message with the standard title
@@ -402,11 +264,18 @@ class MainWindow(qtw.QMainWindow):
         return answer == qtw.QMessageBox.Yes
 
     def show_dialog(self, cls, *options):
-        cls(self, *options).exec_()
+        self.dialog_data = {}
+        ok = cls(self, *options).exec_()
+        data = self.dialog_data
+        return ok == qtw.QDialog.Accepted, data
 
     def get_text_from_user(self, prompt, default):
         return qtw.QInputDialog.getText(self, self.base.app_title, prompt,
                                         qtw.QLineEdit.Normal, default)
+
+    def get_cheice_from_user(self, prompt, choices, choice=0):
+        return qtw.QInputDialog.getItem(self, self.base.app_title, prompt, choices,
+                                        current=choice, editable=False)
 
 
 class OptionsDialog(qtw.QDialog):
@@ -500,8 +369,10 @@ class CheckDialog(qtw.QDialog):
 class KeywordsDialog(qtw.QDialog):
     """Dialoog voor het koppelen van trefwoorden
     """
-    def __init__(self, parent):
+    def __init__(self, parent, keywords=None):
         self.parent = parent
+        if keywords is None:
+            keywords = []
         super().__init__(parent)
         self.setWindowTitle('{} - {}'.format(self.parent.base.app_title, _("w_tags")))
         self.setWindowIcon(self.parent.nt_icon)
@@ -528,8 +399,8 @@ class KeywordsDialog(qtw.QDialog):
         self.create_actions()
         # get data from parent
         all_trefw = self.parent.base.opts['Keywords']
-        self.data = self.parent.activeitem
-        curr_trefw = self.data.data(1, core.Qt.UserRole)
+        # self.data = self.parent.activeitem
+        curr_trefw = keywords  # self.data.data(1, core.Qt.UserRole)
         self.tolist.addItems(curr_trefw)
         self.fromlist.addItems([x for x in all_trefw if x not in curr_trefw])
         # do layout and show
@@ -638,8 +509,7 @@ class KeywordsDialog(qtw.QDialog):
     def accept(self):
         """geef de geselecteerde trefwoorden aan het hoofdprogramma
         """
-        self.parent.new_keywords = [self.tolist.item(i).text() for i in range(
-            len(self.tolist))]
+        self.parent.dialog_data = [self.tolist.item(i).text() for i in range(len(self.tolist))]
         super().accept()
 
 
@@ -823,7 +693,7 @@ class GetItemDialog(GetTextDialog):
         self.use_case = None
 
 
-class GridDiaolog(qtw.QDialog):
+class GridDialog(qtw.QDialog):
     def __init__(self, title=''):
         super().__init__()
         data = [x.split(' - ', 1) for x in _("help_text").split('\n')]
