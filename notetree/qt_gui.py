@@ -103,16 +103,20 @@ class MainWindow(qtw.QMainWindow):
         event.accept()
 
     def init_editor(self):
+        'set up editor'
         self.editor.clear()
         self.editor.setEnabled(False)
 
     def set_screen(self, screensize):
+        'set application size'
         self.resize(screensize)
 
     def set_splitter(self, split):
+        'split screen at the specified position'
         self.splitter.setSizes(split)
 
     def create_root(self, title):
+        'set up the root element'
         self.root = self.tree.takeTopLevelItem(0)
         self.root = qtw.QTreeWidgetItem()
         self.root.setText(0, title)  # self.base.opts['RootTitle']
@@ -121,6 +125,7 @@ class MainWindow(qtw.QMainWindow):
         return self.root
 
     def set_item_expanded(self, item):
+        "show the item's child elements"
         item.setExpanded(True)
 
     def check_active(self, message=None):
@@ -152,25 +157,32 @@ class MainWindow(qtw.QMainWindow):
             self.editor.setEnabled(True)
 
     def select_item(self, item):
+        "set selection"
         self.tree.setCurrentItem(item)
 
     def get_selected_item(self):
+        "get selection"
         return self.tree.currentItem()
 
     def remove_item_from_tree(self, item):
+        "remove an item from the tree and return it"
         self.root.removeChild(item)
         return item
 
     def get_key_from_item(self, item):
+        "ireturn the data dictionary's key for this item"
         return item.data(0, core.Qt.UserRole)
 
     def set_focus_to_tree(self):
+        "schakel over naar tree"
         self.tree.setFocus()
 
     def set_focus_to_editor(self):
+        "schakel over naar editor"
         self.editor.setFocus()
 
     def add_item_to_tree(self, key, tag, text, keywords):    # , revorder):
+        "add an item to the tree and return it"
         item = qtw.QTreeWidgetItem()
         item.setText(0, tag)
         item.setData(0, core.Qt.UserRole, key)
@@ -183,6 +195,7 @@ class MainWindow(qtw.QMainWindow):
         return item
 
     def get_treeitems(self):
+        "return a list with the items in the tree"
         treeitemlist = []
         for num in range(self.root.childCount()):
             tag = self.root.child(num).text(0)
@@ -195,9 +208,11 @@ class MainWindow(qtw.QMainWindow):
         return treeitemlist, activeitem
 
     def get_screensize(self):
+        "return the applications screens's size"
         return self.width(), self.height()
 
     def get_splitterpos(self):
+        "return the position the screen is split at"
         return self.splitter.sizes()
 
     def sleep(self):
@@ -217,6 +232,7 @@ class MainWindow(qtw.QMainWindow):
             self.tray_icon.hide()
 
     def goto_next_item(self):
+        "move to the next item in the tree and return if it's possible"
         pos = self.get_itempos(self.activeitem)
         ok = pos < self.gui.get_itemcount() - 1
         if ok:
@@ -224,6 +240,7 @@ class MainWindow(qtw.QMainWindow):
         return ok
 
     def goto_prev_item(self):
+        "move to the previous item in the tree and return if it's possible"
         pos = self.get_itempos(self.activeitem)
         ok = pos > 0
         if ok:
@@ -231,27 +248,35 @@ class MainWindow(qtw.QMainWindow):
         return ok
 
     def get_itempos(self, item):
+        "return the item's position in the tree"
         return self.root.indexOfChild(item)
 
     def get_itemcount(self):
+        "return the number of items in the tree"
         return self.root.childCount()
 
     def get_item_at_pos(self, pos):
+        "return the tree item at the specified position"
         return self.root.child(pos)
 
     def get_item_keywords(self, item):
+        "return the keywords for an item in a list"
         return item.data(1, core.Qt.UserRole)
 
     def set_item_keywords(self, item, keyword_list):
+        "set the keywords for an item in a list"
         item.setData(1, core.Qt.UserRole, keyword_list)
 
     def show_statusbar_message(self, text):
+        "display a message in the application's status bar"
         self.sb.showMessage(text)
 
     def enable_selaction(self, actiontext):
+        "mark the specified selection method as active"
         self.selactions[actiontext].setChecked(True)
 
     def disable_selaction(self, actiontext):
+        "mark the specified selection method as inactive"
         self.selactions[actiontext].setChecked(False)
 
     def showmsg(self, message):
@@ -265,16 +290,19 @@ class MainWindow(qtw.QMainWindow):
         return answer == qtw.QMessageBox.Yes
 
     def show_dialog(self, cls, *options):
+        "pop up a dialog and return if confirmed"
         self.dialog_data = {}
         ok = cls(self, *options).exec_()
         data = self.dialog_data
         return ok == qtw.QDialog.Accepted, data
 
     def get_text_from_user(self, prompt, default):
+        "ask for text in a popup"
         return qtw.QInputDialog.getText(self, self.base.app_title, prompt,
                                         qtw.QLineEdit.Normal, default)
 
     def get_cheice_from_user(self, prompt, choices, choice=0):
+        "pop up a selection list"
         return qtw.QInputDialog.getItem(self, self.base.app_title, prompt, choices,
                                         current=choice, editable=False)
 
@@ -695,6 +723,8 @@ class GetItemDialog(GetTextDialog):
 
 
 class GridDialog(qtw.QDialog):
+    """dialog showing texts in a grid layout
+    """
     def __init__(self, title=''):
         super().__init__()
         data = [x.split(' - ', 1) for x in _("help_text").split('\n')]

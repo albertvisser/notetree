@@ -150,22 +150,27 @@ class MainWindow(wx.Frame):
         self.Close()
 
     def init_editor(self):
+        'set up editor'
         self.editor.Clear()
         self.editor.Enable(False)
 
     def set_screen(self, screensize):
+        'set application size'
         self.SetSize(screensize)
 
     def set_splitter(self, split):
+        'split screen at the specified position'
         self.splitter.SetSashPosition(split[0], True)
 
     def create_root(self, title):
+        "show the item's child elements"
         self.tree.DeleteAllItems()
         self.root = self.tree.AddRoot(title)  # self.base.opts["RootTitle"])
         self.activeitem = self.root
         return self.root
 
     def set_item_expanded(self, item):
+        "show the item's child elements"
         self.tree.Expand(item)
 
     def check_active(self, message=None):
@@ -196,29 +201,36 @@ class MainWindow(wx.Frame):
         self.tree.EnsureVisible(item)
 
     def select_item(self, item):
+        "set selection"
         self.tree.SelectItem(item)
 
     def get_selected_item(self):
+        "get selection"
         return self.tree.GetSelection()
 
     def remove_item_from_tree(self, item):
-        # deze retourneerde ook nog het item dat geactiveerd moet worden
-        # omdat wx na verwijderen het volgende item actief maakt ipv het voorgaande?
+        "remove an item from the tree and return it"
         prev = self.tree.GetPrevSibling(item)
         self.activeitem = None
         self.tree.Delete(item)
+        # deze retourneerde ook nog het item dat geactiveerd moet worden
+        # omdat wx na verwijderen het volgende item actief maakt ipv het voorgaande?
         return item  # , prev
 
     def get_key_from_item(self, item):
+        "ireturn the data dictionary's key for this item"
         return self.tree.GetItemData(item)[0]
 
     def set_focus_to_tree(self):
+        "schakel over naar tree"
         self.tree.SetFocus()
 
     def set_focus_to_editor(self):
+        "schakel over naar editor"
         self.editor.SetFocus()
 
     def add_item_to_tree(self, key, tag, text, keywords, revorder):
+        "add an item to the tree and return it"
         if revorder:
             item = self.tree.PrependItem(self.root, tag)
         else:
@@ -227,6 +239,7 @@ class MainWindow(wx.Frame):
         return item
 
     def get_treeitems(self):
+        "return a list with the items in the tree"
         treeitemlist = []
         tag, cookie = self.tree.GetFirstChild(self.root)
         while tag.IsOk():
@@ -239,10 +252,12 @@ class MainWindow(wx.Frame):
             return treeitemlist, activeitem
 
     def get_screensize(self):
+        "return the applications screens's size"
         screensize = self.GetSize()
         return screensize.GetWidth(), screensize.GetHeight()
 
     def get_splitterpos(self):
+        "return the position the screen is split at"
         return (self.splitter.GetSashPosition(),)
 
     def sleep(self):
@@ -265,6 +280,7 @@ class MainWindow(wx.Frame):
     #             self.editor.Enable(False)
 
     def goto_next_item(self):
+        "move to the next item in the tree and return if it's possible"
         item = self.tree.GetNextSibling(self.activeitem)
         ok = item.IsOk()
         if ok:
@@ -272,6 +288,7 @@ class MainWindow(wx.Frame):
         return ok
 
     def goto_prev_item(self):
+        "move to the previous item in the tree and return if it's possible"
         item = self.tree.GetPrevSibling(self.activeitem)
         ok = item.IsOk()
         if ok:
@@ -279,19 +296,24 @@ class MainWindow(wx.Frame):
         return ok
 
     def get_item_keywords(self, item):
+        "return the keywords for an item in a list"
         return self.tree.GetItemData(self.activeitem)[2]
 
     def set_item_keywords(self, item, data):
+        "set the keywords for an item in a list"
         key, text = self.tree.GetItemData(self.activeitem)[:2]
         self.tree.SetItemData(item, (key, text, data))
 
     def show_statusbar_message(self, text):
+        "display a message in the application's status bar"
         self.sb.SetStatusText(text)
 
     def enable_selaction(self, actiontext):
+        "mark the specified selection method as active"
         self.selactions[actiontext].Check(True)
 
     def disable_selaction(self, actiontext):
+        "mark the specified selection method as inactive"
         self.selactions[actiontext].Check(False)
 
     def showmsg(self, message):
@@ -310,6 +332,7 @@ class MainWindow(wx.Frame):
         # return answer
 
     def show_dialog(self, cls, *options):
+        "pop up a dialog and return if confirmed"
         with cls(self, *options) as dlg:
             ok = dlg.ShowModal()
             if ok == wx.ID_OK:
@@ -317,12 +340,14 @@ class MainWindow(wx.Frame):
         return ok, data
 
     def get_text_from_user(self, prompt, default):
+        "ask for text in a popup"
         with wx.TextEntryDialog(self, prompt, self.base.app_title, default) as dlg:
             ok = dlg.ShowModal() == wx.ID_OK
             text = dlg.GetValue()  # if ok else ''
         return text, ok
 
     def get_choice_from_user(self, prompt, choices, default):
+        "pop up a selection list"
         with wx.SingleChoiceDialog(self, prompt, "Apropos", choices,
                                    wx.CHOICEDLG_STYLE) as dlg:
             dlg.SetSelection(default)
@@ -575,7 +600,9 @@ class KeywordsDialog(wx.Dialog):
             dlg.Layout()
             dlg.ShowModal()
 
-    def confirm(self):
+    def confirm(self):    # def accept(self):
+        """geef de geselecteerde trefwoorden aan het hoofdprogramma
+        """
         return self.tolist.GetItems()
 
 
@@ -688,6 +715,7 @@ class KeywordsManager(wx.Dialog):
         self.refresh_fields()
 
     def confirm(self):
+        "finish the dialog"
         pass
 
 
@@ -737,6 +765,8 @@ class GetTextDialog(wx.Dialog):
         self.use_case.SetValue(False)
 
     def confirm(self):
+        """confirm data changes and communicate to parent window
+        """
         self.parent.dialog_data = [self.in_exclude.GetValue(), self.inputwin.GetValue()]
         if self.use_case:
             self.parent.dialog_data.append(self.use_case.GetValue())
