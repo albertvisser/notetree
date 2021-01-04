@@ -91,25 +91,29 @@ class MainWindow(qtw.QMainWindow):
         test = self.tree.selectedItems()
         if test == self.root:
             return
-        self.check_active()
-        h = self.tree.currentItem()
-        self.activate_item(h)
+        self.base.check_active()
+        self.base.activate_item(self.tree.currentItem())
 
     def closeEvent(self, event=None):
         """reimplemented callback
         """
         if self.activeitem:
-            self.update()
+            self.base.update()
         event.accept()
 
-    def init_editor(self):
+    def clear_editor(self):
         'set up editor'
         self.editor.clear()
         self.editor.setEnabled(False)
 
+    def open_editor(self):
+        'open up editor'
+        if self.activeitem != self.root:
+            self.editor.setEnabled(True)
+
     def set_screen(self, screensize):
         'set application size'
-        self.resize(screensize)
+        self.resize(*screensize)
 
     def set_splitter(self, split):
         'split screen at the specified position'
@@ -117,7 +121,7 @@ class MainWindow(qtw.QMainWindow):
 
     def create_root(self, title):
         'set up the root element'
-        self.root = self.tree.takeTopLevelItem(0)
+        self.tree.takeTopLevelItem(0)
         self.root = qtw.QTreeWidgetItem()
         self.root.setText(0, title)  # self.base.opts['RootTitle']
         self.tree.addTopLevelItem(self.root)
@@ -128,33 +132,23 @@ class MainWindow(qtw.QMainWindow):
         "show the item's child elements"
         item.setExpanded(True)
 
-    def check_active(self, message=None):
-        """if there's a suitable "active" item, make sure its text is saved to the tree structure
-        """
-        if self.activeitem and self.activeitem != self.root:
-            font = self.activeitem.font(0)
-            font.setBold(False)
-            self.activeitem.setFont(0, font)
-            if self.editor.document().isModified:
-                if message:
-                    self.showmsg(message)
-                self.activeitem.setText(1, self.editor.toPlainText())
+    def emphasize_activeitem(value):
+        "emphisize the active item's title"
+        font = self.activeitem.font(0)
+        font.setBold(value)
+        self.activeitem.setFont(0, font)
 
-    def activate_item(self, item):
-        """make the new item "active" and get the text for itfrom the tree structure
-        """
-        self.editor.clear()
-        if not item:
-            return
-        self.activeitem = item
-        if item == self.root:
-            self.editor.setEnabled(False)
-        else:
-            font = item.font(0)
-            font.setBold(True)
-            item.setFont(0, font)
-            self.editor.setText(item.text(1))
-            self.editor.setEnabled(True)
+    def editor_text_was_changed(self):
+        "return the editor's state"
+        return self.editor.document().isModified
+
+    def copy_text_from_editor_to_activeitem(self):
+        "transfer the editor's text to a treeitem"
+        self.activeitem.setText(1, self.editor.toPlainText())
+
+    def copy_text_from_item_to_editor()
+        "transfer a treeitem's text to the editor"
+        self.editor.setText(item.text(1))
 
     def select_item(self, item):
         "set selection"
@@ -172,6 +166,14 @@ class MainWindow(qtw.QMainWindow):
     def get_key_from_item(self, item):
         "ireturn the data dictionary's key for this item"
         return item.data(0, core.Qt.UserRole)
+
+    def get_activeitem_title(self):
+        "return the selected item's title"
+        return self.activeitem.text(0)
+
+    def set_activeitem_title(self, text):
+        "set the selected item's title to a new value"
+        self.activeitem.setText(0, text)
 
     def set_focus_to_tree(self):
         "schakel over naar tree"
@@ -196,7 +198,7 @@ class MainWindow(qtw.QMainWindow):
 
     def get_treeitems(self):
         "return a list with the items in the tree"
-        treeitemlist = []
+        treeitemlist, activeitem = [], 0
         for num in range(self.root.childCount()):
             tag = self.root.child(num).text(0)
             ky = self.root.child(num).data(0, core.Qt.UserRole)
@@ -232,20 +234,14 @@ class MainWindow(qtw.QMainWindow):
             self.tray_icon.hide()
 
     def goto_next_item(self):
-        "move to the next item in the tree and return if it's possible"
-        pos = self.get_itempos(self.activeitem)
-        ok = pos < self.gui.get_itemcount() - 1
-        if ok:
-            self.gui.select_item(self.get_item_at_pos(pos + 1))
-        return ok
+        "return the next item in the tree if possible"
+        pos = self.root.indexOfChild(self.activeitem)
+        return self.root.child(pos + 1) if pos < self.root.childCount() - 1 else None
 
     def goto_prev_item(self):
-        "move to the previous item in the tree and return if it's possible"
-        pos = self.get_itempos(self.activeitem)
-        ok = pos > 0
-        if ok:
-            self.gui.select_item(self.get_item_at_pos(pos - 1))
-        return ok
+        "return the previous item in the tree if possible"
+        pos = self.root.indexOfChild(self.activeitem)
+        return self.root.child(pos - 1) if pos > 0 else None
 
     def get_itempos(self, item):
         "return the item's position in the tree"
@@ -259,12 +255,36 @@ class MainWindow(qtw.QMainWindow):
         "return the tree item at the specified position"
         return self.root.child(pos)
 
+    def get_rootitem_title(self):
+        "return the root item's title"
+        return self.root.text(0)
+
+    def set_rootitem_title(self, text):
+        "set the root item's title to a new value"
+        self.root.setText(0, text)
+
+    def get_item_text(self, item):
+        "return the full text for an item"
+        return item.text(1)
+
+    def set_editor_text(self, text):
+        "transfer text to the editor"
+         self.editor.setText(text)
+
+    def get_editor_text(self):
+        "return the text in the editor"
+        return self.editor.toPlainText()
+
+    def set_item_text(self, item, text):
+        "set the full text for an item in the tree"
+        item.setText(1, text)
+
     def get_item_keywords(self, item):
         "return the keywords for an item in a list"
         return item.data(1, core.Qt.UserRole)
 
     def set_item_keywords(self, item, keyword_list):
-        "set the keywords for an item in a list"
+        "set the keywords for an item in the tree"
         item.setData(1, core.Qt.UserRole, keyword_list)
 
     def show_statusbar_message(self, text):
@@ -289,11 +309,11 @@ class MainWindow(qtw.QMainWindow):
         answer = qtw.QMessageBox.question(self, self.base.app_title, question)
         return answer == qtw.QMessageBox.Yes
 
-    def show_dialog(self, cls, *options):
+    def show_dialog(self, cls, *args):
         "pop up a dialog and return if confirmed"
         self.dialog_data = {}
-        ok = cls(self, *options).exec_()
-        data = self.dialog_data
+        ok = cls(self, *args).exec_()
+        data = self.dialog_data if ok else None
         return ok == qtw.QDialog.Accepted, data
 
     def get_text_from_user(self, prompt, default):
@@ -301,7 +321,7 @@ class MainWindow(qtw.QMainWindow):
         return qtw.QInputDialog.getText(self, self.base.app_title, prompt,
                                         qtw.QLineEdit.Normal, default)
 
-    def get_cheice_from_user(self, prompt, choices, choice=0):
+    def get_choice_from_user(self, prompt, choices, choice=0):
         "pop up a selection list"
         return qtw.QInputDialog.getItem(self, self.base.app_title, prompt, choices,
                                         current=choice, editable=False)
@@ -312,9 +332,10 @@ class OptionsDialog(qtw.QDialog):
     """
     def __init__(self, parent):
         self.parent = parent
-        sett2text = {'AskBeforeHide': _('t_hide'),
-                     'NotifyOnLoad': _('t_load'),
-                     'NotifyOnSave': _('t_save')}
+        sett2text = self.parent.base.sett2text
+        #             {'AskBeforeHide': _('t_hide'),
+        #              'NotifyOnLoad': _('t_load'),
+        #              'NotifyOnSave': _('t_save')}
         super().__init__(parent)
         self.setWindowTitle(_('t_sett'))
         vbox = qtw.QVBoxLayout()
@@ -391,7 +412,7 @@ class CheckDialog(qtw.QDialog):
     def klaar(self):
         "dialoog afsluiten"
         if self.check.isChecked():
-            self.parent.base.opts["AskBeforeHide"] = False
+            self.parent.base.opts[self.option] = False
         super().done(0)
 
 
@@ -725,8 +746,8 @@ class GetItemDialog(GetTextDialog):
 class GridDialog(qtw.QDialog):
     """dialog showing texts in a grid layout
     """
-    def __init__(self, title=''):
-        super().__init__()
+    def __init__(self, parent, title=''):
+        super().__init__(parent)
         data = [x.split(' - ', 1) for x in _("help_text").split('\n')]
         gbox = qtw.QGridLayout()
         line = 0

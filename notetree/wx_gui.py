@@ -131,28 +131,32 @@ class MainWindow(wx.Frame):
     def OnSelChanging(self, event=None):
         """reimplemented event handler
         """
-        # if event.GetItem() == self.root:
-        #     print('in OnSelChanging: event vetoed - but is this necessary?')
-        #     event.Veto()
+        # oorspronkelijk mocht je niet naar het root item navigeren maar in de qt versie kan dat
+        # niet zo makkelijk voorkomen worden
+        # nisschien moet je de tekst ook maar kunnen invullen net als in treedocs?
 
     def OnSelChanged(self, event=None):
         """reimplemented event handler
         """
-        self.check_active()
-        self.activate_item(event.GetItem())
+        self.base.check_active()
+        self.base.activate_item(event.GetItem())
         event.Skip()
 
     def close(self, event=None):
         """save before shutting down
         """
-        # TODO check of gewijzigd
-        self.update()
+        if self.activeitem:
+            self.base.update()
         self.Close()
 
-    def init_editor(self):
+    def clear_editor(self):
         'set up editor'
         self.editor.Clear()
         self.editor.Enable(False)
+
+    def open_editor(self):
+        'set up editor'
+        self.editor.Enable(True)
 
     def set_screen(self, screensize):
         'set application size'
@@ -173,32 +177,21 @@ class MainWindow(wx.Frame):
         "show the item's child elements"
         self.tree.Expand(item)
 
-    def check_active(self, message=None):
-        """if there's a suitable "active" item, make sure its text is saved to the tree
-        structure
-        """
-        if self.activeitem and self.activeitem != self.root:
-            self.tree.SetItemBold(self.activeitem, False)
-            if self.editor.IsModified:
-                if message:
-                    self.showmsg(message)
-                key, oldtext, keywords = self.tree.GetItemData(self.activeitem)
-                self.tree.SetItemData(self.activeitem, (key, self.editor.GetValue(), keywords))
+    def emphasize_activeitem(value):
+        "emphisize the active item's title"
+        self.tree.SetItemBold(self.activeitem, False)
 
-    def activate_item(self, item):
-        """make the new item "active" and get the text for it from the tree structure
-        """
-        self.tree.SetItemBold(item, True)
-        self.activeitem = item
-        if item == self.root:
-            self.editor.Clear()
-            self.editor.Enable(False)
-        else:
-            test = self.tree.GetItemData(item)
-            if test:
-                self.editor.SetValue(test[1])
-            self.editor.Enable(True)
-        self.tree.EnsureVisible(item)
+    def editor_text_was_changed(self):
+        "return the editor's state"
+        return self.editor.document().isModified
+
+    def copy_text_from_editor_to_activeitem(self):
+        "transfer the editor's text to a treeitem"
+        self.set_item_text(self.activeitem, self.editor.GetValue())
+
+    def copy_text_from_item_to_editor()
+        "transfer a treeitem's text to the editor"
+        self.editor.setText(item.text(1))
 
     def select_item(self, item):
         "set selection"
@@ -215,11 +208,26 @@ class MainWindow(wx.Frame):
         self.tree.Delete(item)
         # deze retourneerde ook nog het item dat geactiveerd moet worden
         # omdat wx na verwijderen het volgende item actief maakt ipv het voorgaande?
+        # misschien moet hier daarom nog activeren van het voorafgaande item bij:
+        # if prev.IsOk():
+        # # if self.tree.GetItemText(prev):
+        #     self.base.activate_item(prev)
+        # else:
+        #     self.editor.Clear()
+        #     self.editor.Enable(False)
         return item  # , prev
 
     def get_key_from_item(self, item):
-        "ireturn the data dictionary's key for this item"
+        "return the data dictionary's key for this item"
         return self.tree.GetItemData(item)[0]
+
+    def get_activeitem_title(self):
+        "return the selected item's title"
+        return self.tree.GetItemText(self.activeitem)
+
+    def set_activeitem_title(self, text):
+        "set the selected item's title to a new value"
+        self.tree.SetItemText(self.activeitem, text)
 
     def set_focus_to_tree(self):
         "schakel over naar tree"
@@ -229,9 +237,9 @@ class MainWindow(wx.Frame):
         "schakel over naar editor"
         self.editor.SetFocus()
 
-    def add_item_to_tree(self, key, tag, text, keywords, revorder):
+    def add_item_to_tree(self, key, tag, text, keywords):  # , revorder):
         "add an item to the tree and return it"
-        if revorder:
+        if self.base.opts['RevOrder']:
             item = self.tree.PrependItem(self.root, tag)
         else:
             item = self.tree.AppendItem(self.root, tag)
@@ -240,7 +248,7 @@ class MainWindow(wx.Frame):
 
     def get_treeitems(self):
         "return a list with the items in the tree"
-        treeitemlist = []
+        treeitemlist, activeitem = [], 0
         tag, cookie = self.tree.GetFirstChild(self.root)
         while tag.IsOk():
             tag_text = self.tree.GetItemText(tag)
@@ -271,37 +279,49 @@ class MainWindow(wx.Frame):
         self.Show()
         self.tray_icon.Destroy()
 
-    # dit hoort ook eigenlijk nog bij remove item
-    #         if prev.IsOk():
-    #         # if self.tree.GetItemText(prev):
-    #             self.activate_item(prev)
-    #         else:
-    #             self.editor.Clear()
-    #             self.editor.Enable(False)
-
     def goto_next_item(self):
-        "move to the next item in the tree and return if it's possible"
+        "return the next item in the tree if possible"
         item = self.tree.GetNextSibling(self.activeitem)
-        ok = item.IsOk()
-        if ok:
-            self.tree.SelectItem(item)
-        return ok
+        return item if item.IsOk() else None
 
     def goto_prev_item(self):
-        "move to the previous item in the tree and return if it's possible"
+        "return the previous item in the tree if possible"
         item = self.tree.GetPrevSibling(self.activeitem)
-        ok = item.IsOk()
-        if ok:
-            self.tree.SelectItem(item)
-        return ok
+        return item if item.IsOk() else None
+
+    def get_rootitem_title(self):
+        "return the root item's title"
+        return self.tree.GetItemText(self.root)
+
+    def set_rootitem_title(self, text):
+        "set the root item's title to a new value"
+        self.tree.SetItemText(self.root, text)
+
+    def get_item_text(self, item):
+        "return the full text for an item"
+        return self.tree.GetItemData(item)[1]
+
+    def set_editor_text(self, text):
+        "transfer text to the editor"
+         self.editor.SetValue(text)
+
+    def get_editor_text(self):
+        "return the text in the editor"
+        return self.editor.GetValue()
+
+    def set_item_text(self, item, text):
+        "set the full text for an item in the tree"
+        itemdata = self.tree.GetItemData(item)
+        key, data = itemdata[0], itemdata[2]
+        self.tree.SetItemData(item, (key, text, data))
 
     def get_item_keywords(self, item):
         "return the keywords for an item in a list"
-        return self.tree.GetItemData(self.activeitem)[2]
+        return self.tree.GetItemData(item)[2]
 
     def set_item_keywords(self, item, data):
-        "set the keywords for an item in a list"
-        key, text = self.tree.GetItemData(self.activeitem)[:2]
+        "set the keywords for an item in the tree"
+        key, text = self.tree.GetItemData(item)[:2]
         self.tree.SetItemData(item, (key, text, data))
 
     def show_statusbar_message(self, text):
@@ -331,12 +351,11 @@ class MainWindow(wx.Frame):
         # dlg.Destroy()
         # return answer
 
-    def show_dialog(self, cls, *options):
+    def show_dialog(self, cls, *args):
         "pop up a dialog and return if confirmed"
-        with cls(self, *options) as dlg:
-            ok = dlg.ShowModal()
-            if ok == wx.ID_OK:
-                data = dlg.confirm()
+        with cls(self, *args) as dlg:
+            ok = dlg.ShowModal() == wx.ID_OK
+            data = dlg.confirm() if ok else None
         return ok, data
 
     def get_text_from_user(self, prompt, default):
@@ -362,9 +381,10 @@ class OptionsDialog(wx.Dialog):
     """
     def __init__(self, parent):
         self.parent = parent
-        sett2text = {'AskBeforeHide': _('t_hide'),
-                     'NotifyOnLoad': _('t_load'),
-                     'NotifyOnSave': _('t_save')}
+        sett2text = self.parent.base.sett2text
+        #             {'AskBeforeHide': _('t_hide'),
+        #              'NotifyOnLoad': _('t_load'),
+        #              'NotifyOnSave': _('t_save')}
         super().__init__(parent, title=_('t_sett'))
         pnl = self  # wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
@@ -380,10 +400,10 @@ class OptionsDialog(wx.Dialog):
             self.controls.append((key, chk))
         sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        btn = wx.Button(pnl, id=wx.ID_APPLY, caption=_('b_apply'))
+        btn = wx.Button(pnl, id=wx.ID_APPLY, label=_('b_apply'))
         sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
         self.SetAffirmativeId(wx.ID_APPLY)
-        btn = wx.Button(pnl, id=wx.ID_CLOSE, caption=_('b_close'))
+        btn = wx.Button(pnl, id=wx.ID_CLOSE, label=_('b_close'))
         sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
         self.SetEscapeId(wx.ID_CLOSE)
         # sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
@@ -394,8 +414,8 @@ class OptionsDialog(wx.Dialog):
         sizer0.SetSizeHints(pnl)
         pnl.Layout()
 
-    def accept(self):
-        """overridden event handler
+    def confirm(self):
+        """update application settings
         """
         for keyvalue, control in self.controls:
             self.parent.base.opts[keyvalue] = control.isChecked()
@@ -438,8 +458,10 @@ class CheckDialog(wx.Dialog):
 class KeywordsDialog(wx.Dialog):
     """Dialoog voor het koppelen van trefwoorden
     """
-    def __init__(self, parent):
+    def __init__(self, parent, keywords=None):
         self.parent = parent
+        if keywords is None:
+            keywords = []
         super().__init__(parent)
         self.SetTitle('{} - {}'.format(self.parent.base.app_title, _("w_tags")))
         self.SetIcon(self.parent.nt_icon)
@@ -460,8 +482,8 @@ class KeywordsDialog(wx.Dialog):
         self.create_actions()
         # get data from parent
         all_trefw = self.parent.base.opts['Keywords']
-        self.data = self.parent.activeitem
-        curr_trefw = self.parent.tree.GetItemData(self.data)[2]
+        # self.data = self.parent.activeitem
+        curr_trefw = keywords  # self.parent.tree.GetItemData(self.data)[2]
         if curr_trefw:
             [self.tolist.Append(x) for x in curr_trefw]
         if all_trefw:
@@ -818,6 +840,10 @@ class GridDialog(wx.Dialog):
         sizer0.SetSizeHints(self)
         # pnl.Layout()
         self.Layout()
+
+    def confirm(self):
+        "finish the dialog (no data to exchange)"
+        pass
 
 
 class TaskbarIcon(wx.adv.TaskBarIcon):
