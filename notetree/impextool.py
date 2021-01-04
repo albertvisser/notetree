@@ -16,7 +16,8 @@ import collections
 import PyQt5.QtWidgets as qtw
 ## import PyQt5.QtGui as gui
 ## import PyQt5.QtCore as core
-from .main import load_file, save_file, initial_opts
+from .main import initial_opts
+from .dml import load_file, save_file
 mrufile = os.path.join(os.path.dirname(__file__), 'mrudata')
 header_1, header_2 = "[nt_files]", "[extfiles]"
 
