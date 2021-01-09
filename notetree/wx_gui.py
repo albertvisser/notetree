@@ -177,9 +177,9 @@ class MainWindow(wx.Frame):
         "show the item's child elements"
         self.tree.Expand(item)
 
-    def emphasize_activeitem(value):
+    def emphasize_activeitem(self,value):
         "emphisize the active item's title"
-        self.tree.SetItemBold(self.activeitem, False)
+        self.tree.SetItemBold(self.activeitem, value)
 
     def editor_text_was_changed(self):
         "return the editor's state"
@@ -189,9 +189,9 @@ class MainWindow(wx.Frame):
         "transfer the editor's text to a treeitem"
         self.set_item_text(self.activeitem, self.editor.GetValue())
 
-    def copy_text_from_item_to_editor()
+    def copy_text_from_activeitem_to_editor(self):
         "transfer a treeitem's text to the editor"
-        self.editor.setText(item.text(1))
+        self.editor.SetValue(self.get_item_text(self.activeitem))
 
     def select_item(self, item):
         "set selection"
@@ -257,7 +257,7 @@ class MainWindow(wx.Frame):
                 activeitem = key
             treeitemlist.append((key, tag_text, text, keywords))
             tag, cookie = self.tree.GetNextChild(self.root, cookie)
-            return treeitemlist, activeitem
+        return treeitemlist, activeitem
 
     def get_screensize(self):
         "return the applications screens's size"
@@ -303,7 +303,7 @@ class MainWindow(wx.Frame):
 
     def set_editor_text(self, text):
         "transfer text to the editor"
-         self.editor.SetValue(text)
+        self.editor.SetValue(text)
 
     def get_editor_text(self):
         "return the text in the editor"
@@ -422,20 +422,20 @@ class OptionsDialog(wx.Dialog):
 
 
 class CheckDialog(wx.Dialog):
-    """Dialoog om te melden dat de applicatie verborgen gaat worden
-    AskBeforeHide bepaalt of deze getoond wordt of niet
+    """Generieke dialoog om iets te melden en te vragen of deze melding in het vervolg
+    nog getoond moet worden
 
     Eventueel ook te implementeren m.b.v. wx.RichMessageDialog
     """
-    def __init__(self, parent, id_, title, size=(-1, 120), pos=wx.DefaultPosition,
-                 style=wx.DEFAULT_DIALOG_STYLE):
-        wx.Dialog.__init__(self, parent, id_, title, pos, size, style)
+    def __init__(self, parent, option, message):
+        wx.Dialog.__init__(self, parent, wx.NewId(), title=parent.base.app_title,
+                           size=(-1, 120), pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE)
         # pnl = wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer0.Add(wx.StaticText(self, -1, _("sleep_message")), 1, wx.ALL, 5)
+        sizer0.Add(wx.StaticText(self, -1, message), 1, wx.ALL, 5)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.Check = wx.CheckBox(self, -1, _("hide_message"))
-        sizer1.Add(self.Check, 0, wx.EXPAND)
+        self.check = wx.CheckBox(self, -1, _("hide_message"))
+        sizer1.Add(self.check, 0, wx.EXPAND)
         sizer0.Add(sizer1, 0, wx.ALIGN_CENTER_HORIZONTAL)
         # sizer1 = wx.BoxSizer(wx.HORIZONTAL)
         # self.bOk = wx.Button(pnl, id=wx.ID_OK)
@@ -454,6 +454,10 @@ class CheckDialog(wx.Dialog):
         sizer0.SetSizeHints(self)
         self.Layout()
 
+    def confirm(self):
+        "dialoog afsluiten"
+        if self.check.GetValue():
+            self.parent.base.opts[self.option] = False
 
 class KeywordsDialog(wx.Dialog):
     """Dialoog voor het koppelen van trefwoorden

@@ -25,7 +25,7 @@ initial_opts = {"Application": "NoteTree",
                 "AskBeforeHide": True,
                 "NotifyOnLoad": True,
                 "NotifyOnSave": True,
-                "SashPosition": 180,
+                "SashPosition": (180,),
                 "ScreenSize": (800, 500),
                 'Language': 'en',
                 "RootTitle": '',
@@ -51,7 +51,7 @@ class NoteTree:
         title = " - ".join((self.project_file, self.app_title))
         iconame = os.path.join(os.path.dirname(__file__), "notetree.ico")
         self.gui.build_screen(title=title, iconame=iconame)
-        mld = self.open()
+        mld = self.open(first_time=True)
         if mld:
             self.gui.showmsg(mld)
             self.gui.close()
@@ -127,7 +127,7 @@ class NoteTree:
         """Minimize application to an icon in the system tray
         """
         if self.opts["AskBeforeHide"]:
-            self.gui.show_dialog(gui.CheckDialog)
+            self.gui.show_dialog(gui.CheckDialog, "AskBeforeHide", _("sleep_message"))
         self.gui.sleep()
 
     def choose_language(self, *args):
@@ -273,7 +273,7 @@ class NoteTree:
         """
         self.gui.show_dialog(gui.GridDialog, self.app_title + " " + _("t_keys"))
 
-    def open(self):  # , version):
+    def open(self, first_time=False):  # , version):
         """initialize and read data file
         """
         self.opts = initial_opts
@@ -286,7 +286,7 @@ class NoteTree:
             return _(str(e)).format(self.project_file)
         if not self.nt_data:
             # return 'Bestand niet gevonden'
-            ok = self.gui.ask_question(self, _('ask_create').format(self.project_file))
+            ok = self.gui.ask_question(_('ask_create').format(self.project_file))
             if not ok:
                 self.project_file = ''
                 return _('404_message')
@@ -311,6 +311,9 @@ class NoteTree:
         self.gui.select_item(self.build_tree(first_time=True))
         self.gui.set_item_expanded(self.gui.root)
         self.gui.open_editor()
+        if self.opts["NotifyOnLoad"] and not first_time:
+            # self.gui.show_dialog(gui.CheckDialog, "NotifyOnLoad", _("load_message"))
+            self.gui.showmsg('\n'.join((_("load_message"), _('hide_me'))))
         self.gui.set_focus_to_tree()
 
     def build_tree(self, first_time=False):
@@ -380,9 +383,9 @@ class NoteTree:
             return
         self.gui.clear_editor()
         self.gui.activeitem = item
-        if item != self.root:
+        if item != self.gui.root:
             self.gui.emphasize_activeitem(True)
-            self.gui.copy_text_from_item_to_editor()
+            self.gui.copy_text_from_activeitem_to_editor()
             self.gui.open_editor()
         # over uit wx versie
         # self.tree.EnsureVisible(item)
@@ -407,6 +410,11 @@ class NoteTree:
         except FileNotFoundError:
             pass
         dml.save_file(self.project_file, self.nt_data)
+        if self.opts["NotifyOnSave"]:
+            # self.gui.show_dialog(gui.CheckDialog, "NotifyOnSave", _("save_message"))
+            # if not self.opts["NotifyOnSave"]:
+            #     pass
+            self.gui.showmsg('\n'.join((_("save_message"), _('hide_me'))))
 
     def set_selection(self, opts, seltext):
         """selectie aanpassen

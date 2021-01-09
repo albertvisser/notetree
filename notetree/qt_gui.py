@@ -132,7 +132,7 @@ class MainWindow(qtw.QMainWindow):
         "show the item's child elements"
         item.setExpanded(True)
 
-    def emphasize_activeitem(value):
+    def emphasize_activeitem(self, value):
         "emphisize the active item's title"
         font = self.activeitem.font(0)
         font.setBold(value)
@@ -146,9 +146,9 @@ class MainWindow(qtw.QMainWindow):
         "transfer the editor's text to a treeitem"
         self.activeitem.setText(1, self.editor.toPlainText())
 
-    def copy_text_from_item_to_editor()
+    def copy_text_from_activeitem_to_editor(self):
         "transfer a treeitem's text to the editor"
-        self.editor.setText(item.text(1))
+        self.editor.setText(self.activeitem.text(1))
 
     def select_item(self, item):
         "set selection"
@@ -269,7 +269,7 @@ class MainWindow(qtw.QMainWindow):
 
     def set_editor_text(self, text):
         "transfer text to the editor"
-         self.editor.setText(text)
+        self.editor.setText(text)
 
     def get_editor_text(self):
         "return the text in the editor"
@@ -377,15 +377,16 @@ class OptionsDialog(qtw.QDialog):
 
 
 class CheckDialog(qtw.QDialog):
-    """Dialoog om te melden dat de applicatie verborgen gaat worden
-    AskBeforeHide bepaalt of deze getoond wordt of niet
+    """Generieke dialoog om iets te melden en te vragen of deze melding in het vervolg
+    nog getoond moet worden
     """
-    def __init__(self, parent):
+    def __init__(self, parent, option, message):
         self.parent = parent
         super().__init__(parent)
+        self.option = option
         self.setWindowTitle(self.parent.base.app_title)
         self.setWindowIcon(self.parent.nt_icon)
-        txt = qtw.QLabel(_("sleep_message"), self)
+        txt = qtw.QLabel(message, self)
         self.check = qtw.QCheckBox(_("hide_message"), self)
         ok_button = qtw.QPushButton("&Ok", self)
         ok_button.clicked.connect(self.klaar)
