@@ -63,15 +63,15 @@ class NoteTree:
         """
         return (
             (_("m_main"), (
-                (_("m_reload"), self.reread, _("h_reload"), 'Ctrl+L'),
+                (_("m_reload"), self.reread, _("h_reload"), 'F5'),
                 (_("m_save"), self.update, _("h_save"), 'Ctrl+S'),
                 ("", None, None, None),
                 (_("m_root"), self.rename, _("h_root"), 'Shift+F2'),
                 (_('m_tagman'), self.manage_keywords, _('h_tagman'), 'Shift+F6'),
                 ("", None, None, None),
                 (_("m_hide"), self.hide_me, _("h_hide"), 'Ctrl+H'),
-                (_("m_lang"), self.choose_language, _("h_lang"), 'Ctrl+F1'),
-                (_('m_opts'), self.set_options, _('h_opts'), 'Ctrl+M'),
+                (_("m_lang"), self.choose_language, _("h_lang"), 'Ctrl+L'),
+                (_('m_opts'), self.set_options, _('h_opts'), 'Ctrl+O'),
                 ("", None, None, None),
                 (_("m_exit"), self.gui.close, _("h_exit"), 'Ctrl+Q,Escape'), ), ),
             (_("m_note"), (
@@ -165,8 +165,8 @@ class NoteTree:
         """
         item = self.gui.get_selected_item()
         if item != self.gui.root:
-            item = self.gui.remove_item_from_tree(item)
             ky = self.gui.get_key_from_item(item)
+            item = self.gui.remove_item_from_tree(item)
             del self.nt_data[ky]
         else:
             self.gui.showmsg(_("no_delete_root"))
@@ -214,30 +214,36 @@ class NoteTree:
         self.opts['RevOrder'] = not self.opts['RevOrder']
         item_to_activate = self.build_tree()
         self.gui.select_item(item_to_activate)
+        self.gui.set_item_expanded(self.gui.root)
+        self.gui.open_editor()
 
     def no_selection(self, *args):
         """make sure nothing is selected
         """
-        self.set_selection((0, ""), _("h_selall"))
+        self.set_selection((0, ""), _("m_selall"))
 
     def keyword_select(self, *args):
         """Open a dialog where a keyword can be chosen to select texts that it's assigned to
         """
-        seltype, seltext = self.opts['Selection'][:2]
-        if abs(seltype) != 1:
-            seltext = ''
-        ok, data = self.gui.show_dialog(gui.GetItemDialog, seltype, seltext, _("i_seltag"))
-        if ok:
-            exclude, text = data
-            if exclude:
-                seltype, in_ex = -1, "all except"
-            else:
-                seltype, in_ex = 1, 'only'
-            self.set_selection((seltype, text), _("h_seltag"))
-            self.gui.show_statusbar_message(_("h_seltag").format(in_ex, text))
-        # bij Cancel menukeuze weer aan/uitzetten
+        if self.opts['Keywords']:
+            seltype, seltext = self.opts['Selection'][:2]
+            if abs(seltype) != 1:
+                seltext = ''
+            ok, data = self.gui.show_dialog(gui.GetItemDialog, seltype, seltext, _("i_seltag"))
         else:
+            self.gui.showmsg('No keywords defined yet')
+            ok = False
+        if not ok:
+            # bij Cancel menukeuze weer aan/uitzetten
             self.set_option(1, _("m_seltag"))
+            return
+        exclude, text = data
+        if exclude:
+            seltype, in_ex = -1, "all except"
+        else:
+            seltype, in_ex = 1, 'only'
+        self.set_selection((seltype, text), _("m_seltag"))
+        self.gui.show_statusbar_message(_("h_seltag").format(in_ex, text))
 
     def text_select(self, *args):
         """Open a dialog box where text can be entered that the texts to be selected contain
@@ -249,18 +255,18 @@ class NoteTree:
             use_case = None
         if abs(seltype) != 2:
             seltext = ''
-        ok, data = self.gui.show_dialog(gui.GetItemDialog,
-                                        seltype, seltext, _("i_seltxt"), use_case)
+        ok, data = self.gui.show_dialog(gui.GetTextDialog, seltype, seltext, _("i_seltxt"),
+                                        use_case)
         if ok:
             exclude, text, use_case = data
             if exclude:
                 seltype, in_ex = -2, "all except"
             else:
                 seltype, in_ex = 2, 'only'
-            self.set_selection((seltype, text, use_case), _("h_seltxt"))
+            self.set_selection((seltype, text, use_case), _("m_seltxt"))
             self.gui.show_statusbar_message(_("h_seltxt").format(in_ex, text))
-        # bij Cancel menukeuze weer aan/uitzetten
         else:
+            # bij Cancel menukeuze weer aan/uitzetten
             self.set_option(2, _("m_seltxt"))
 
     def info_page(self, *args):
@@ -372,6 +378,7 @@ class NoteTree:
         if self.gui.activeitem and self.gui.activeitem != self.gui.root:
             self.gui.emphasize_activeitem(False)
             if self.gui.editor_text_was_changed():
+                # print('in check_active: text in editpr was changed')
                 if message:
                     self.showmsg(message)
                 self.gui.copy_text_from_editor_to_activeitem()
@@ -422,6 +429,7 @@ class NoteTree:
         self.opts["Selection"] = opts
         self.gui.select_item(self.build_tree())
         self.gui.set_item_expanded(self.gui.root)
+        self.gui.open_editor()
         for actiontext in(_("m_selall"), _("m_seltag"), _("m_seltxt")):
             if actiontext == seltext:
                 self.gui.enable_selaction(actiontext)

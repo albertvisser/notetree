@@ -161,7 +161,6 @@ class MainWindow(qtw.QMainWindow):
     def remove_item_from_tree(self, item):
         "remove an item from the tree and return it"
         self.root.removeChild(item)
-        return item
 
     def get_key_from_item(self, item):
         "ireturn the data dictionary's key for this item"

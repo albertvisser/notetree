@@ -183,7 +183,7 @@ class MainWindow(wx.Frame):
 
     def editor_text_was_changed(self):
         "return the editor's state"
-        return self.editor.document().isModified
+        return self.editor.IsModified
 
     def copy_text_from_editor_to_activeitem(self):
         "transfer the editor's text to a treeitem"
@@ -203,19 +203,13 @@ class MainWindow(wx.Frame):
 
     def remove_item_from_tree(self, item):
         "remove an item from the tree and return it"
-        prev = self.tree.GetPrevSibling(item)
-        self.activeitem = None
+        isnotlastitem = self.tree.GetNextSibling(item).IsOk()
+        prev = None if isnotlastitem else self.tree.GetPrevSibling(item)
+        print(isnotlastitem, prev)
+        self.activeitem = None  # prev
         self.tree.Delete(item)
-        # deze retourneerde ook nog het item dat geactiveerd moet worden
-        # omdat wx na verwijderen het volgende item actief maakt ipv het voorgaande?
-        # misschien moet hier daarom nog activeren van het voorafgaande item bij:
-        # if prev.IsOk():
-        # # if self.tree.GetItemText(prev):
-        #     self.base.activate_item(prev)
-        # else:
-        #     self.editor.Clear()
-        #     self.editor.Enable(False)
-        return item  # , prev
+        if prev:
+            self.select_item(prev)
 
     def get_key_from_item(self, item):
         "return the data dictionary's key for this item"
@@ -458,6 +452,7 @@ class CheckDialog(wx.Dialog):
         "dialoog afsluiten"
         if self.check.GetValue():
             self.parent.base.opts[self.option] = False
+
 
 class KeywordsDialog(wx.Dialog):
     """Dialoog voor het koppelen van trefwoorden
@@ -793,9 +788,10 @@ class GetTextDialog(wx.Dialog):
     def confirm(self):
         """confirm data changes and communicate to parent window
         """
-        self.parent.dialog_data = [self.in_exclude.GetValue(), self.inputwin.GetValue()]
+        data = [self.in_exclude.GetValue(), self.inputwin.GetValue()]
         if self.use_case:
-            self.parent.dialog_data.append(self.use_case.GetValue())
+            data.append(self.use_case.GetValue())
+        return data
 
 
 class GetItemDialog(GetTextDialog):
