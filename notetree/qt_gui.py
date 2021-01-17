@@ -198,10 +198,15 @@ class MainWindow(qtw.QMainWindow):
     def get_treeitems(self):
         "return a list with the items in the tree"
         treeitemlist, activeitem = [], 0
+        print('in get_treeitems, self.activeitem is', self.activeitem)
+        # activeitemky = self.activeitem.data(0, core.Qt.UserRole)
         for num in range(self.root.childCount()):
             tag = self.root.child(num).text(0)
             ky = self.root.child(num).data(0, core.Qt.UserRole)
-            if ky == self.activeitem:
+            # print('                  ky is', ky)
+            print('                  child is', self.root.child(num))
+            # if ky == activeitemky:
+            if self.root.child(num) == self.activeitem:
                 activeitem = ky
             text = self.root.child(num).text(1)
             trefw = self.root.child(num).data(1, core.Qt.UserRole)
