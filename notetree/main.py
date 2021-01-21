@@ -221,6 +221,7 @@ class NoteTree:
         """make sure nothing is selected
         """
         self.set_selection((0, ""), _("m_selall"))
+        self.gui.show_statusbar_message(_("h_selall"))
 
     def keyword_select(self, *args):
         """Open a dialog where a keyword can be chosen to select texts that it's assigned to
