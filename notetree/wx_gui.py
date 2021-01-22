@@ -273,12 +273,12 @@ class MainWindow(wx.Frame):
         self.Show()
         self.tray_icon.Destroy()
 
-    def goto_next_item(self):
+    def get_next_item(self):
         "return the next item in the tree if possible"
         item = self.tree.GetNextSibling(self.activeitem)
         return item if item.IsOk() else None
 
-    def goto_prev_item(self):
+    def get_prev_item(self):
         "return the previous item in the tree if possible"
         item = self.tree.GetPrevSibling(self.activeitem)
         return item if item.IsOk() else None

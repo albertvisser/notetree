@@ -237,12 +237,12 @@ class MainWindow(qtw.QMainWindow):
             self.show()
             self.tray_icon.hide()
 
-    def goto_next_item(self):
+    def get_next_item(self):
         "return the next item in the tree if possible"
         pos = self.root.indexOfChild(self.activeitem)
         return self.root.child(pos + 1) if pos < self.root.childCount() - 1 else None
 
-    def goto_prev_item(self):
+    def get_prev_item(self):
         "return the previous item in the tree if possible"
         pos = self.root.indexOfChild(self.activeitem)
         return self.root.child(pos - 1) if pos > 0 else None

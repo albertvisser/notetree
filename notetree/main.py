@@ -81,8 +81,8 @@ class NoteTree:
                 ("", None, None, None),
                 (_("m_tags"), self.link_keywords, _("h_tags"), 'F6'),
                 ("", None, None, None),
-                (_("m_forward"), self.next_note, _("h_forward"), 'Ctrl+PgDown'),
-                (_("m_back"), self.prev_note, _("h_back"), 'Ctrl+PgUp'), ), ),
+                (_("m_forward"), self.goto_next_note, _("h_forward"), 'Ctrl+PgDown'),
+                (_("m_back"), self.goto_prev_note, _("h_back"), 'Ctrl+PgUp'), ), ),
             (_("m_view"), (
                 (_("m_revorder"), self.reverse, _("h_revorder"), 'F9'),
                 ("", None, None, None),
@@ -190,7 +190,7 @@ class NoteTree:
         if ok:
             self.gui.set_item_keywords(item, new_keywords)
 
-    def next_note(self, *args):
+    def goto_next_note(self, *args):
         """Go to next
         """
         item = self.gui.get_next_item()
@@ -199,7 +199,7 @@ class NoteTree:
         else:
             self.gui.showmsg(_("no_next_item"))
 
-    def prev_note(self, *args):
+    def goto_prev_note(self, *args):
         """Go to previous
         """
         item = self.gui.get_prev_item()
