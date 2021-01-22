@@ -23,41 +23,46 @@ class MainWindow(wx.Frame):
         "start the GUI"
         self.app.MainLoop()
 
-    def build_screen(self, parent=None, title='', iconame=''):
+    def init_screen(self, parent=None, title='', iconame=''):
         "setup screen"
         super().__init__(parent, title=title, size=(800, 500),
                          style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
         if iconame:
             self.nt_icon = wx.Icon(iconame, wx.BITMAP_TYPE_ICO)
             self.SetIcon(self.nt_icon)
+        self.SetMenuBar(wx.MenuBar())
+
+    def setup_statusbar(self):
+        "define a statusbar"
         self.sb = self.CreateStatusBar()
 
+    def setup_trayicon(self):
+        "define an icon to put in the systray"
         # tray icon wordt pas opgezet in de hide() methode
 
-        self.SetMenuBar(wx.MenuBar())
-        # self.create_menu()
-
+    def setup_split_screen(self):
+        "define the main splitter widget and place its components"
         self.splitter = wx.SplitterWindow(self, -1)
         self.splitter.SetMinimumPaneSize(1)
+        self.splitter.SplitVertically(self.setup_tree(), self.setup_editor())
+        self.splitter.SetSashPosition(180, True)
+        self.app.SetTopWindow(self)
+        self.Show(True)
 
+    def setup_tree(self):
+        "define the tree panel"
         self.tree = wx.TreeCtrl(self.splitter)
         self.root = self.tree.AddRoot(self.base.root_title)
         self.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelChanging, self.tree)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
-#        self.tree.Bind(wx.EVT_KEY_DOWN, self.on_key)
+        return self.tree
 
+    def setup_editor(self):
+        "define the editor panel"
         self.editor = wx.TextCtrl(self.splitter, -1, style=wx.TE_MULTILINE)
         self.editor.Enable(0)
         self.editor.Bind(wx.EVT_TEXT, self.OnEvtText)
-#        self.editor.Bind(wx.EVT_KEY_DOWN, self.on_key)
-
-        self.splitter.SplitVertically(self.tree, self.editor)
-        self.splitter.SetSashPosition(180, True)
-#        self.splitter.Bind(wx.EVT_KEY_DOWN, self.on_key)
-#        self.Bind(wx.EVT_KEY_DOWN, self.on_key)
-
-        self.Show(True)
-        self.app.SetTopWindow(self)
+        return self.editor
 
     def create_menu(self):
         """Build the application menu

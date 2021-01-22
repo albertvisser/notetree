@@ -24,38 +24,48 @@ class MainWindow(qtw.QMainWindow):
         "start the GUI"
         sys.exit(self.app.exec_())
 
-    def build_screen(self, title, iconame):
+    def init_screen(self, title, iconame):
         "setup screen"
         super().__init__()
-
         self.setWindowTitle(title)
         self.nt_icon = gui.QIcon(iconame)
         self.setWindowIcon(self.nt_icon)
         self.resize(800, 500)
+
+    def setup_statusbar(self):
+        "define a statusbar"
         self.sb = self.statusBar()
 
+    def setup_trayicon(self):
+        "define an icon to put in the systray"
         self.tray_icon = qtw.QSystemTrayIcon(self.nt_icon, self)
         self.tray_icon.setToolTip(_("revive_message"))
         self.tray_icon.activated.connect(self.revive)
         self.tray_icon.hide()
 
-        ## self.create_menu()
-
+    def setup_split_screen(self):
+        "define the main splitter widget and place its components"
         self.splitter = qtw.QSplitter(self)
         self.setCentralWidget(self.splitter)
+        self.splitter.addWidget(self.setup_tree())
+        self.splitter.addWidget(self.setup_editor())
+        self.show()
 
+    def setup_tree(self):
+        "define the tree panel"
         self.tree = qtw.QTreeWidget(self)
         self.tree.setColumnCount(2)
         self.tree.hideColumn(1)
         self.tree.headerItem().setHidden(True)
         self.tree.setSelectionMode(qtw.QTreeWidget.SingleSelection)
-        self.splitter.addWidget(self.tree)
         self.tree.itemSelectionChanged.connect(self.changeselection)
+        return self.tree
 
+    def setup_editor(self):
+        "define the editor panel"
         self.editor = qtw.QTextEdit(self)
         self.editor.setEnabled(False)
-        self.splitter.addWidget(self.editor)
-        self.show()
+        return self.editor
 
     def create_menu(self):
         """build the application menu

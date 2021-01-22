@@ -48,15 +48,22 @@ class NoteTree:
                           'NotifyOnSave': _('t_save')}
         self.project_file = filename
         self.gui = gui.MainWindow(self)
-        title = " - ".join((self.project_file, self.app_title))
-        iconame = os.path.join(os.path.dirname(__file__), "notetree.ico")
-        self.gui.build_screen(title=title, iconame=iconame)
+        self.define_screen()
         mld = self.open(first_time=True)
         if mld:
             self.gui.showmsg(mld)
             self.gui.close()
         else:
             self.gui.start()
+
+    def define_screen(self):
+        "setup main application window"
+        title = " - ".join((self.project_file, self.app_title))
+        iconame = os.path.join(os.path.dirname(__file__), "notetree.ico")
+        self.gui.init_screen(title=title, iconame=iconame)
+        self.gui.setup_statusbar()
+        self.gui.setup_trayicon()
+        self.gui.setup_split_screen()
 
     def get_menudata(self):
         """define of menu options and callbacks
