@@ -326,9 +326,9 @@ class MainWindow(qtw.QMainWindow):
     def show_dialog(self, cls, *args):
         "pop up a dialog and return if confirmed"
         self.dialog_data = {}
-        ok = cls(self, *args).exec_()
+        ok = cls(self, *args).exec_() == qtw.QDialog.Accepted
         data = self.dialog_data if ok else None
-        return ok == qtw.QDialog.Accepted, data
+        return ok, data
 
     def get_text_from_user(self, prompt, default):
         "ask for text in a popup"
@@ -344,12 +344,8 @@ class MainWindow(qtw.QMainWindow):
 class OptionsDialog(qtw.QDialog):
     """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
     """
-    def __init__(self, parent):
+    def __init__(self, parent, text2valuedict):
         self.parent = parent
-        sett2text = self.parent.base.sett2text
-        #             {'AskBeforeHide': _('t_hide'),
-        #              'NotifyOnLoad': _('t_load'),
-        #              'NotifyOnSave': _('t_save')}
         super().__init__(parent)
         self.setWindowTitle(_('t_sett'))
         vbox = qtw.QVBoxLayout()
@@ -357,16 +353,14 @@ class OptionsDialog(qtw.QDialog):
 
         gbox = qtw.QGridLayout()
         col = 0
-        for key, value in self.parent.base.opts.items():
-            if key not in sett2text:
-                continue
+        for labeltext, value in text2valuedict.items():
             col += 1
-            lbl = qtw.QLabel(sett2text[key], self)
+            lbl = qtw.QLabel(labeltext, self)
             gbox.addWidget(lbl, col, 0)
             chk = qtw.QCheckBox('', self)
             chk.setChecked(value)
             gbox.addWidget(chk, col, 1)
-            self.controls.append((key, chk))
+            self.controls.append((labeltext, chk))
         vbox.addLayout(gbox)
 
         hbox = qtw.QHBoxLayout()
@@ -383,10 +377,9 @@ class OptionsDialog(qtw.QDialog):
         self.setLayout(vbox)
 
     def accept(self):
-        """overridden event handler
+        """exchange data with caller (overridden event handler)
         """
-        for keyvalue, control in self.controls:
-            self.parent.base.opts[keyvalue] = control.isChecked()
+        self.parent.dialog_data = {text: control.isChecked() for text, control in self.controls}
         super().accept()
 
 
@@ -397,7 +390,7 @@ class CheckDialog(qtw.QDialog):
     def __init__(self, parent, option, message):
         self.parent = parent
         super().__init__(parent)
-        self.option = option
+        # self.option = option
         self.setWindowTitle(self.parent.base.app_title)
         self.setWindowIcon(self.parent.nt_icon)
         txt = qtw.QLabel(message, self)
@@ -426,9 +419,8 @@ class CheckDialog(qtw.QDialog):
 
     def klaar(self):
         "dialoog afsluiten"
-        if self.check.isChecked():
-            self.parent.base.opts[self.option] = False
-        super().done(0)
+        self.parent.dialog_data = self.check.isChecked()
+        super().accept()
 
 
 class KeywordsDialog(qtw.QDialog):
@@ -744,14 +736,15 @@ class GetTextDialog(qtw.QDialog):
 class GetItemDialog(GetTextDialog):
     """Dialog to select a keyword from a list
     """
-    def create_inputwin(self, seltext):
+    def create_inputwin(self, seldata):
         """define the widgets to use
         """
+        selection_list, selindex = seldata
         selection_list = self.parent.base.opts['Keywords']
         try:
             selindex = selection_list.index(seltext)
         except ValueError:
-            selindex = -1
+            selindex = -2
         self.inputwin = qtw.QComboBox(self)
         self.inputwin.addItems(selection_list)
         self.inputwin.setCurrentIndex(selindex)

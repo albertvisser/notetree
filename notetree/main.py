@@ -134,7 +134,9 @@ class NoteTree:
         """Minimize application to an icon in the system tray
         """
         if self.opts["AskBeforeHide"]:
-            self.gui.show_dialog(gui.CheckDialog, "AskBeforeHide", _("sleep_message"))
+            ok, value = self.gui.show_dialog(gui.CheckDialog, "AskBeforeHide", _("sleep_message"))
+            if ok:
+                self.opts["AskBeforeHide"] = value
         self.gui.sleep()
 
     def choose_language(self, *args):
@@ -152,7 +154,12 @@ class NoteTree:
 
     def set_options(self, *args):
         "manage options for messages"
-        self.gui.show_dialog(gui.OptionsDialog)
+        data = {self.sett2text[x]: y for x, y in self.opts.items() if x in self.sett2text}
+        text2sett = {y: x for x,y in self.sett2text.items()}
+        ok, dialog_data = self.gui.show_dialog(gui.OptionsDialog, data)
+        if ok:
+            for sett_text, settvalue in dialog_data.items():
+                self.opts[text2sett[sett_text]] = settvalue
 
     def new_item(self, *args):
         """add a new item to the tree after asking for a title
@@ -234,10 +241,17 @@ class NoteTree:
         """Open a dialog where a keyword can be chosen to select texts that it's assigned to
         """
         if self.opts['Keywords']:
-            seltype, seltext = self.opts['Selection'][:2]
-            if abs(seltype) != 1:
-                seltext = ''
-            ok, data = self.gui.show_dialog(gui.GetItemDialog, seltype, seltext, _("i_seltag"))
+            seltype, seldata = self.opts['Selection'][:2]
+            if abs(seltype) == 1:
+                selection_list = self.opts['Keywords']
+                try:
+                    selindex = selection_list.index(seltext)
+                except ValueError:
+                    selindex = -1
+                seldata = (selection_list, selindex)
+            else:
+                seldata = ''
+            ok, data = self.gui.show_dialog(gui.GetItemDialog, seltype, seldata, _("i_seltag"))
         else:
             self.gui.showmsg('No keywords defined yet')
             ok = False
@@ -299,7 +313,6 @@ class NoteTree:
         except EOFError as e:
             return _(str(e)).format(self.project_file)
         if not self.nt_data:
-            # return 'Bestand niet gevonden'
             ok = self.gui.ask_question(_('ask_create').format(self.project_file))
             if not ok:
                 self.project_file = ''
@@ -309,7 +322,6 @@ class NoteTree:
             for key, val in options.items():
                 self.opts[key] = val
         languages[self.opts["Language"]].install()
-        # de rest vervangt self.gui.open()
         # recreate menu after loading (because of language)
         self.gui.create_menu()
         self.gui.set_screen(self.opts["ScreenSize"])
@@ -320,13 +332,11 @@ class NoteTree:
             self.gui.set_splitter(self.opts['SashPosition'])
         except TypeError:
             self.gui.showmsg(_('m_ignore'))
-        # self.gui.activate_item(self.build_tree(first_time=True))
         self.gui.clear_editor()
         self.gui.select_item(self.build_tree(first_time=True))
         self.gui.set_item_expanded(self.gui.root)
         self.gui.open_editor()
         if self.opts["NotifyOnLoad"] and not first_time:
-            # self.gui.show_dialog(gui.CheckDialog, "NotifyOnLoad", _("load_message"))
             self.gui.showmsg('\n'.join((_("load_message"), _('hide_me'))))
         self.gui.set_focus_to_tree()
 
@@ -426,9 +436,6 @@ class NoteTree:
             pass
         dml.save_file(self.project_file, self.nt_data)
         if self.opts["NotifyOnSave"]:
-            # self.gui.show_dialog(gui.CheckDialog, "NotifyOnSave", _("save_message"))
-            # if not self.opts["NotifyOnSave"]:
-            #     pass
             self.gui.showmsg('\n'.join((_("save_message"), _('hide_me'))))
 
     def set_selection(self, opts, seltext):

@@ -378,30 +378,24 @@ class MainWindow(wx.Frame):
 class OptionsDialog(wx.Dialog):
     """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
     """
-    def __init__(self, parent):
+    def __init__(self, parent, text2valuedict):
         self.parent = parent
-        sett2text = self.parent.base.sett2text
-        #             {'AskBeforeHide': _('t_hide'),
-        #              'NotifyOnLoad': _('t_load'),
-        #              'NotifyOnSave': _('t_save')}
         super().__init__(parent, title=_('t_sett'))
         pnl = self  # wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer1 = wx.FlexGridSizer(cols=2)
         self.controls = []
-        for key, value in self.parent.base.opts.items():
-            if key not in sett2text:
-                continue
-            sizer1.Add(wx.StaticText(pnl, -1, sett2text[key]), 1, wx.ALL, 5)
+        for labeltext, value in text2valuedict.items():
+            sizer1.Add(wx.StaticText(pnl, -1, labeltext), 1, wx.ALL, 5)
             chk = wx.CheckBox(self, -1, '')
             chk.SetValue(value)
             sizer1.Add(chk, 1, wx.ALL, 5)
-            self.controls.append((key, chk))
+            self.controls.append((labeltext, chk))
         sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        btn = wx.Button(pnl, id=wx.ID_APPLY, label=_('b_apply'))
+        btn = wx.Button(pnl, id=wx.ID_OK, label=_('b_apply'))
         sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
-        self.SetAffirmativeId(wx.ID_APPLY)
+        # self.SetAffirmativeId(wx.ID_APPLY)
         btn = wx.Button(pnl, id=wx.ID_CLOSE, label=_('b_close'))
         sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
         self.SetEscapeId(wx.ID_CLOSE)
@@ -414,10 +408,9 @@ class OptionsDialog(wx.Dialog):
         pnl.Layout()
 
     def confirm(self):
-        """update application settings
+        """exchange data with caller
         """
-        for keyvalue, control in self.controls:
-            self.parent.base.opts[keyvalue] = control.isChecked()
+        return {text: control.GetValue() for text, control in self.controls}
 
 
 class CheckDialog(wx.Dialog):
@@ -441,7 +434,7 @@ class CheckDialog(wx.Dialog):
         ## self.bOk.Bind(wx.EVT_BUTTON, self.on_ok)
         # sizer1.Add(self.bOk, 0, wx.EXPAND | wx.ALL, 2)
         # sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
-        sizer0.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL))
+        sizer0.Add(self.CreateButtonSizer(wx.OK))
         # pnl.SetSizer(sizer0)
         # pnl.SetAutoLayout(True)
         # sizer0.Fit(pnl)
@@ -455,8 +448,9 @@ class CheckDialog(wx.Dialog):
 
     def confirm(self):
         "dialoog afsluiten"
-        if self.check.GetValue():
-            self.parent.base.opts[self.option] = False
+        # if self.check.GetValue():
+        #     self.parent.base.opts[self.option] = False
+        return self.check.GetValue()
 
 
 class KeywordsDialog(wx.Dialog):
@@ -701,7 +695,7 @@ class KeywordsManager(wx.Dialog):
             tag, cookie = self.parent.tree.GetNextChild(self.parent.root, cookie)
 
     def remove_keyword(self, event):
-        """delete a keyword aftre selecting from the dropdown
+        """delete a keyword after selecting from the dropdown
         """
         oldtext = self.oldtag.GetValue()
         msg = _('t_remtag').format(oldtext)
@@ -802,14 +796,10 @@ class GetTextDialog(wx.Dialog):
 class GetItemDialog(GetTextDialog):
     """Dialog to select a keyword from a list
     """
-    def create_inputwin(self, seltext):
+    def create_inputwin(self, seldata):
         """define the widgets to use
         """
-        selection_list = self.parent.base.opts['Keywords']
-        try:
-            selindex = selection_list.index(seltext)
-        except ValueError:
-            selindex = -1
+        selection_list, selindex
         self.inputwin = wx.ComboBox(self, choices=selection_list)
         self.inputwin.SetSelection(selindex)
         self.use_case = None
