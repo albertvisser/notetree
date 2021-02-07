@@ -32,6 +32,9 @@ initial_opts = {"Application": "NoteTree",
                 "Keywords": [],
                 "Selection": (0, ''),
                 "RevOrder": False}
+sett2text = {'AskBeforeHide': _('t_hide'),
+             'NotifyOnLoad': _('t_load'),
+             'NotifyOnSave': _('t_save')}
 
 
 # Main screen
@@ -43,9 +46,7 @@ class NoteTree:
         self.app_title = app_title
         self.root_title = root_title
         self.languages = languages
-        self.sett2text = {'AskBeforeHide': _('t_hide'),
-                          'NotifyOnLoad': _('t_load'),
-                          'NotifyOnSave': _('t_save')}
+        self.sett2text = sett2text
         self.project_file = filename
         self.gui = gui.MainWindow(self)
         self.define_screen()
@@ -241,16 +242,16 @@ class NoteTree:
         """Open a dialog where a keyword can be chosen to select texts that it's assigned to
         """
         if self.opts['Keywords']:
-            seltype, seldata = self.opts['Selection'][:2]
+            selection_list = self.opts['Keywords']
+            seltype, seltext = self.opts['Selection'][:2]
             if abs(seltype) == 1:
-                selection_list = self.opts['Keywords']
                 try:
                     selindex = selection_list.index(seltext)
-                except ValueError:
+                except ValueError:  # kan niet?bij seltype (-)1 is dit altijd een bestaand trefwoord
                     selindex = -1
                 seldata = (selection_list, selindex)
             else:
-                seldata = ''
+                seldata = (selection_list, -1 )  # ''
             ok, data = self.gui.show_dialog(gui.GetItemDialog, seltype, seldata, _("i_seltag"))
         else:
             self.gui.showmsg('No keywords defined yet')
@@ -398,7 +399,7 @@ class NoteTree:
             if self.gui.editor_text_was_changed():
                 # print('in check_active: text in editpr was changed')
                 if message:
-                    self.showmsg(message)
+                    self.gui.showmsg(message)
                 self.gui.copy_text_from_editor_to_activeitem()
 
     def activate_item(self, item):
