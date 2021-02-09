@@ -76,6 +76,7 @@ class MockMainWindow:
 
     def create_root(self, title):
         print('called mainwindow.create_root()')
+        return 'fake_root'
 
     def set_item_expanded(self, item):
         print('called mainwindow.set_item_expanded()')
@@ -660,21 +661,167 @@ class TestNoteTree:
         assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
                                            'called mainwindow.show_dialog()\n')
 
-    def open(self, monkeypatch, capsys):
-        def mock_x(*args):
-            print('called x()')
+    def test_open(self, monkeypatch, capsys):
+        def mock_load_file(*args):
+            print('called dml.load_file()')
+            return {0: main.initial_opts}
+        def mock_load_file_2(*args):
+            print('called dml.load_file()')
+            data = main.initial_opts
+            data['NotifyOnLoad'] = False
+            data['SashPosition'] = (180, 600)
+            return {0: data}
+        def mock_load_file_empty(*args):
+            print('called dml.load_file()')
+            return {}
+        def mock_load_file_error(*args):
+            print('called dml.load_file()')
+            raise EOFError('{} not found')
+        def mock_ask_question(*args):
+            print('called mainwindow.ask_question()')
+            return True
+        def mock_build_tree(*args, **kwargs):
+            print('called self.build_tree()')
+        def mock_set_splitter(*args):
+            print('called mainwindow.set_splitter()')
+            raise TypeError
+        monkeypatch.setattr(main.dml, 'load_file', mock_load_file_error)
+        main.gui.toolkit = 'aa'
         testsubj = setup_notetree_class(monkeypatch)
-        monkeypatch.setattr(testsubj, 'x', mock_x)
+        assert testsubj.open() == 'test not found'
         assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
-                                           'called mainwindow.yyy()\n')
+                                           'called dml.load_file()\n')
+        monkeypatch.setattr(main.dml, 'load_file', mock_load_file_empty)
+        testsubj = setup_notetree_class(monkeypatch)
+        # import pdb; pdb.set_trace()
+        assert testsubj.open() == 'File not found'
+        for opt in main.initial_opts:
+            if opt == 'Version':
+                assert testsubj.opts[opt] == 'Aa'
+            elif opt == 'RootTitle':
+                assert testsubj.opts[opt] == 'mock_root'
+            else:
+                assert testsubj.opts[opt] == main.initial_opts[opt]
+        assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
+                                           'called dml.load_file()\n'
+                                           'called mainwindow.ask_question()\n')
+        monkeypatch.setattr(MockMainWindow, 'ask_question', mock_ask_question)
+        monkeypatch.setattr(main.NoteTree, 'build_tree', mock_build_tree)
+        testsubj = setup_notetree_class(monkeypatch)
+        testsubj.gui.root = 'x'
+        testsubj.open()
+        assert testsubj.opts['SashPosition'] == (180, 620)
+        assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
+                                           'called dml.load_file()\n'
+                                           'called mainwindow.ask_question()\n'
+                                           'called mainwindow.create_menu()\n'
+                                           'called mainwindow.set_screen()\n'
+                                           'called mainwindow.set_splitter()\n'
+                                           'called mainwindow.clear_editor()\n'
+                                           'called self.build_tree()\n'
+                                           'called mainwindow.select_item()\n'
+                                           'called mainwindow.set_item_expanded()\n'
+                                           'called mainwindow.open_editor()\n'
+                                           'called mainwindow.showmsg()\n'
+                                           'called mainwindow.set_focus_to_tree()\n')
+        monkeypatch.setattr(main.dml, 'load_file', mock_load_file)
+        monkeypatch.setattr(MockMainWindow, 'set_splitter', mock_set_splitter)
+        testsubj = setup_notetree_class(monkeypatch)
+        testsubj.gui.root = 'x'
+        testsubj.open()
+        assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
+                                           'called dml.load_file()\n'
+                                           'called mainwindow.create_menu()\n'
+                                           'called mainwindow.set_screen()\n'
+                                           'called mainwindow.set_splitter()\n'
+                                           'called mainwindow.showmsg()\n'
+                                           'called mainwindow.clear_editor()\n'
+                                           'called self.build_tree()\n'
+                                           'called mainwindow.select_item()\n'
+                                           'called mainwindow.set_item_expanded()\n'
+                                           'called mainwindow.open_editor()\n'
+                                           'called mainwindow.showmsg()\n'
+                                           'called mainwindow.set_focus_to_tree()\n')
+        testsubj = setup_notetree_class(monkeypatch)
+        testsubj.gui.root = 'x'
+        testsubj.open(first_time=True)
+        assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
+                                           'called dml.load_file()\n'
+                                           'called mainwindow.create_menu()\n'
+                                           'called mainwindow.set_screen()\n'
+                                           'called mainwindow.set_splitter()\n'
+                                           'called mainwindow.showmsg()\n'
+                                           'called mainwindow.clear_editor()\n'
+                                           'called self.build_tree()\n'
+                                           'called mainwindow.select_item()\n'
+                                           'called mainwindow.set_item_expanded()\n'
+                                           'called mainwindow.open_editor()\n'
+                                           'called mainwindow.set_focus_to_tree()\n')
+        monkeypatch.setattr(main.dml, 'load_file', mock_load_file_2)
+        testsubj = setup_notetree_class(monkeypatch)
+        testsubj.gui.root = 'x'
+        testsubj.open()
+        data = main.initial_opts
+        data['NotifyOnLoad'] = False
+        data['SashPosition'] = (180, 600)
+        assert testsubj.opts == data
+        assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
+                                           'called dml.load_file()\n'
+                                           'called mainwindow.create_menu()\n'
+                                           'called mainwindow.set_screen()\n'
+                                           'called mainwindow.set_splitter()\n'
+                                           'called mainwindow.showmsg()\n'
+                                           'called mainwindow.clear_editor()\n'
+                                           'called self.build_tree()\n'
+                                           'called mainwindow.select_item()\n'
+                                           'called mainwindow.set_item_expanded()\n'
+                                           'called mainwindow.open_editor()\n'
+                                           'called mainwindow.set_focus_to_tree()\n')
 
-    def build_tree(self, monkeypatch, capsys):
-        def mock_x(*args):
-            print('called x()')
+    def test_build_tree(self, monkeypatch, capsys):
+        def mock_tree_to_dict(*args):
+            print('called self.tree_to_dict()')
+        def mock_add_item_to_tree(self, key, tag, text, keywords):    # , revorder):
+            print('called mainwindow.add_item_to_tree(): `{}` ->'
+                  ' (`{}`, `{}`, `{}`)'.format(key, tag, text, keywords))
+            return key
+        def mock_selection_contains_item(*args):
+            return True
+        def mock_selection_contains_item_no(*args):
+            return False
+        monkeypatch.setattr(main.NoteTree, 'tree_to_dict', mock_tree_to_dict)
+        monkeypatch.setattr(main.NoteTree, 'selection_contains_item', mock_selection_contains_item)
         testsubj = setup_notetree_class(monkeypatch)
-        monkeypatch.setattr(testsubj, 'x', mock_x)
+        testsubj.opts = {'RootTitle': 'text', 'Selection': (0, '', True)}
+        testsubj.nt_data = {}
+        assert testsubj.build_tree() == 'fake_root'
         assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
-                                           'called mainwindow.yyy()\n')
+                                           'called self.tree_to_dict()\n'
+                                           'called mainwindow.create_root()\n')
+        monkeypatch.setattr(MockMainWindow, 'add_item_to_tree', mock_add_item_to_tree)
+        testsubj = setup_notetree_class(monkeypatch)
+        testsubj.opts = {'RootTitle': 'text', 'Selection': (0, ''), 'ActiveItem': '1'}
+        testsubj.nt_data = {0: 'x', '0': ('0', 'nul', ['x']), '1': ('1', 'een', ['x', 'y']),
+                            '2': ('3', 'drie')}
+        assert testsubj.build_tree(first_time=True) == '1'
+        assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
+                                           'called mainwindow.create_root()\n'
+                                           'called mainwindow.add_item_to_tree(): `0` ->'
+                                           " (`0`, `nul`, `['x']`)\n"
+                                           'called mainwindow.add_item_to_tree(): `1` ->'
+                                           " (`1`, `een`, `['x', 'y']`)\n"
+                                           'called mainwindow.add_item_to_tree(): `2` ->'
+                                           ' (`3`, `drie`, `[]`)\n')
+        monkeypatch.setattr(main.NoteTree, 'selection_contains_item',
+                            mock_selection_contains_item_no)
+        monkeypatch.setattr(MockMainWindow, 'add_item_to_tree', mock_add_item_to_tree)
+        testsubj = setup_notetree_class(monkeypatch)
+        testsubj.opts = {'RootTitle': 'text', 'Selection': (0, ''), 'ActiveItem': '1'}
+        testsubj.nt_data = {0: 'x', '0': ('0', 'nul', ['x']), '1': ('1', 'een', ['x', 'y']),
+                            '2': ('3', 'drie')}
+        assert testsubj.build_tree(first_time=True) == 'fake_root'
+        assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
+                                           'called mainwindow.create_root()\n')
 
     def test_check_active(self, monkeypatch, capsys):
         def mock_editor_text_was_changed(*args):
@@ -829,3 +976,19 @@ class TestNoteTree:
         testsubj.set_option(1, '')
         assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
                                            'called mainwindow.disable_selaction()\n')
+
+    def test_selection_contains_item(self, monkeypatch, capsys):
+        testsubj = setup_notetree_class(monkeypatch)
+        assert testsubj.selection_contains_item('text', ['key', 'word'], 0, '', None)
+        assert testsubj.selection_contains_item('text', ['key', 'word'], 1, 'word', None)
+        assert not testsubj.selection_contains_item('text', ['key', 'word'], 1, 'other', None)
+        assert not testsubj.selection_contains_item('text', ['key', 'word'], -1, 'word', None)
+        assert testsubj.selection_contains_item('text', ['key', 'word'], -1, 'other', None)
+        assert testsubj.selection_contains_item('text', ['key', 'word'], 2, 'Ex', False)
+        assert not testsubj.selection_contains_item('text', ['key', 'word'], 2, 'Ex', True)
+        assert testsubj.selection_contains_item('tExt', ['key', 'word'], 2, 'Ex', True)
+        assert not testsubj.selection_contains_item('text', ['key', 'word'], 2, 'oink', False)
+        assert not testsubj.selection_contains_item('text', ['key', 'word'], -2, 'Ex', False)
+        assert testsubj.selection_contains_item('text', ['key', 'word'], -2, 'Ex', True)
+        assert not testsubj.selection_contains_item('tExt', ['key', 'word'], -2, 'Ex', True)
+        assert testsubj.selection_contains_item('text', ['key', 'word'], -2, 'oink', False)

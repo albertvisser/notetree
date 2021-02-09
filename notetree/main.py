@@ -344,6 +344,7 @@ class NoteTree:
     def build_tree(self, first_time=False):
         """translate the dictionary read to a tree structure, applying the chosen filter
         """
+
         if not first_time:
             self.tree_to_dict()      # op commentaar in wx versie
             # wx versie: self.check_active()  # even zorgen dat de editor inhoud geassocieerd wordt
@@ -363,29 +364,9 @@ class NoteTree:
             except ValueError:
                 tag, text = value
                 keywords = []
-            if seltype == 1 and seldata not in keywords:
+            if not self.selection_contains_item(text, keywords, seltype, seldata, use_case):
                 continue
-            elif seltype == -1 and seldata in keywords:
-                continue
-            elif seltype == 2:
-                ok = False
-                if use_case and seldata in text:
-                    ok = True
-                elif not use_case and seldata.upper() in text.upper():
-                    ok = True
-                if not ok:
-                    continue
-            elif seltype == -2:
-                ok = False
-                if use_case and seldata not in text:
-                    ok = True
-                elif not use_case and seldata.upper() not in text.upper():
-                    ok = True
-                if not ok:
-                    continue
             item = self.gui.add_item_to_tree(key, tag, text, keywords)  # , self.opts['RevOrder'])
-            if not item_to_activate:
-                item_to_activate = item
             if key == self.opts["ActiveItem"]:
                 item_to_activate = item
 
@@ -459,3 +440,26 @@ class NoteTree:
             self.gui.enable_selaction(actiontext)
         else:
             self.gui.disable_selaction(actiontext)
+
+    def selection_contains_item(self, text, keywords, seltype, seldata, use_case):
+        """determine if item should be added to the selection
+        """
+        if seltype == 0:
+            return True
+        elif seltype == 1:
+            if seldata in keywords:
+                return True
+        elif seltype == -1:
+            if seldata not in keywords:
+                return True
+        elif seltype == 2:
+            if use_case and seldata in text:
+                return True
+            elif not use_case and seldata.upper() in text.upper():
+                return True
+        elif seltype == -2:
+            if use_case and seldata not in text:
+                return True
+            elif not use_case and seldata.upper() not in text.upper():
+                return True
+        return False
