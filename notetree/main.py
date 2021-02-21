@@ -25,6 +25,7 @@ initial_opts = {"Application": "NoteTree",
                 "AskBeforeHide": True,
                 "NotifyOnLoad": True,
                 "NotifyOnSave": True,
+                # "SaveOnEsc": True,
                 "SashPosition": (180,),
                 "ScreenSize": (800, 500),
                 'Language': 'en',
@@ -32,9 +33,10 @@ initial_opts = {"Application": "NoteTree",
                 "Keywords": [],
                 "Selection": (0, ''),
                 "RevOrder": False}
-sett2text = {'AskBeforeHide': _('t_hide'),
-             'NotifyOnLoad': _('t_load'),
-             'NotifyOnSave': _('t_save')}
+sett2text = {'AskBeforeHide': 't_hide',
+             'NotifyOnLoad': 't_load',
+             'NotifyOnSave': 't_save'}
+             # 'SaveOnEsc': 't_svex'}
 
 
 # Main screen

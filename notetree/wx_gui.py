@@ -7,6 +7,7 @@ import os
 import gettext
 import wx
 import wx.adv
+import wx.stc as stc
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
@@ -59,10 +60,44 @@ class MainWindow(wx.Frame):
 
     def setup_editor(self):
         "define the editor panel"
-        self.editor = wx.TextCtrl(self.splitter, -1, style=wx.TE_MULTILINE)
+        # self.editor = wx.TextCtrl(self.splitter, -1, style=wx.TE_MULTILINE)
+        self.editor = stc.StyledTextCtrl(self.splitter)  # , -1, style=wx.TE_MULTILINE)
         self.editor.Enable(0)
+        self.setup_text()
         self.editor.Bind(wx.EVT_TEXT, self.OnEvtText)
         return self.editor
+
+    def setup_text(self):
+        "define the scintilla widget's properties"
+        # # Set the default font
+        # font = gui.QFont()
+        # font.SetFamily('Courier')
+        # font.SetFixedPitch(True)
+        # font.SetPointSize(10)
+        # self.editor.SetFont(font)
+        # self.editor.SetMarginsFont(font)
+        self.editor.SetWrapMode(stc.STC_WRAP_WORD)
+
+        # # Margin 0 is used for line numbers
+        # fontmetrics = gui.QFontMetrics(font)
+        # self.editor.SetMarginsFont(font)
+        # self.editor.SetMarginWidth(0, fontmetrics.width("00000"))
+        # self.editor.SetMarginLineNumbers(0, True)
+        # self.editor.SetMarginsBackgroundColor(gui.QColor("#cccccc"))
+
+        # # Enable brace matching, auto-indent, code-folding
+        # self.editor.SetBraceMatching(sci.QsciScintilla.SloppyBraceMatch)
+        # self.editor.SetAutoIndent(True)
+        # self.editor.SetFolding(sci.QsciScintilla.PlainFoldStyle)
+
+        # # Current line visible with special background color
+        self.editor.SetCaretLineVisible(True)
+        self.editor.SetCaretLineBackground(wx.Colour(255, 244, 244))  # "#ffe4e4"))
+
+        # # Set HTML lexer
+        # lexer = sci.QsciLexerHTML()
+        # lexer.SetDefaultFont(font)
+        self.editor.SetLexer(stc.STC_LEX_MARKDOWN)
 
     def create_menu(self):
         """Build the application menu
@@ -386,7 +421,8 @@ class OptionsDialog(wx.Dialog):
         sizer1 = wx.FlexGridSizer(cols=2)
         self.controls = []
         for labeltext, value in text2valuedict.items():
-            sizer1.Add(wx.StaticText(pnl, -1, labeltext), 1, wx.ALL, 5)
+            print(labeltext, value)
+            sizer1.Add(wx.StaticText(pnl, -1, _(labeltext)), 1, wx.ALL, 5)
             chk = wx.CheckBox(self, -1, '')
             chk.SetValue(value)
             sizer1.Add(chk, 1, wx.ALL, 5)

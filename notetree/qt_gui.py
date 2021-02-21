@@ -355,7 +355,7 @@ class OptionsDialog(qtw.QDialog):
         col = 0
         for labeltext, value in text2valuedict.items():
             col += 1
-            lbl = qtw.QLabel(labeltext, self)
+            lbl = qtw.QLabel(_(labeltext), self)
             gbox.addWidget(lbl, col, 0)
             chk = qtw.QCheckBox('', self)
             chk.setChecked(value)
