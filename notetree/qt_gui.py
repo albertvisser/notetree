@@ -8,6 +8,7 @@ import gettext
 import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
+import PyQt5.Qsci as qsc  # scintilla
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
@@ -63,9 +64,43 @@ class MainWindow(qtw.QMainWindow):
 
     def setup_editor(self):
         "define the editor panel"
-        self.editor = qtw.QTextEdit(self)
+        # self.editor = qtw.QTextEdit(self)
+        self.editor = qsc.QsciScintilla(self)
+        self.setup_text()
         self.editor.setEnabled(False)
         return self.editor
+
+    def setup_text(self):
+        "define the scintilla widget's properties"
+        # Set the default font
+        # font = gui.QFont()
+        # font.setFamily('Courier')
+        # font.setFixedPitch(True)
+        # font.setPointSize(10)
+        # self.editor.setFont(font)
+        # self.editor.setMarginsFont(font)
+        self.editor.setWrapMode(qsc.QsciScintilla.WrapWord)
+
+        # Margin 0 is used for line numbers
+        # fontmetrics = gui.QFontMetrics(font)
+        # self.editor.setMarginsFont(font)
+        # self.editor.setMarginWidth(0, fontmetrics.width("00000"))
+        # self.editor.setMarginLineNumbers(0, True)
+        # self.editor.setMarginsBackgroundColor(gui.QColor("#cccccc"))
+
+        # Enable brace matching, auto-indent, code-folding
+        self.editor.setBraceMatching(qsc.QsciScintilla.SloppyBraceMatch)
+        self.editor.setAutoIndent(True)
+        self.editor.setFolding(qsc.QsciScintilla.PlainFoldStyle)
+
+        # Current line visible with special background color
+        self.editor.setCaretLineVisible(True)
+        self.editor.setCaretLineBackgroundColor(gui.QColor("#ffe4e4"))
+
+        # Set HTML lexer
+        lexer = qsc.QsciLexerMarkdown()
+        # lexer.setDefaultFont(font)
+        self.editor.setLexer(lexer)
 
     def create_menu(self):
         """build the application menu
@@ -150,11 +185,13 @@ class MainWindow(qtw.QMainWindow):
 
     def editor_text_was_changed(self):
         "return the editor's state"
-        return self.editor.document().isModified
+        # return self.editor.document().isModified  # TextCtrl
+        return self.editor.isModified()  # Qsci
 
     def copy_text_from_editor_to_activeitem(self):
         "transfer the editor's text to a treeitem"
-        self.activeitem.setText(1, self.editor.toPlainText())
+        # self.activeitem.setText(1, self.editor.toPlainText())
+        self.activeitem.setText(1, self.editor.text())
 
     def copy_text_from_activeitem_to_editor(self):
         "transfer a treeitem's text to the editor"
@@ -173,7 +210,7 @@ class MainWindow(qtw.QMainWindow):
         self.root.removeChild(item)
 
     def get_key_from_item(self, item):
-        "ireturn the data dictionary's key for this item"
+        "return the data dictionary's key for this item"
         return item.data(0, core.Qt.UserRole)
 
     def get_activeitem_title(self):
@@ -208,7 +245,6 @@ class MainWindow(qtw.QMainWindow):
     def get_treeitems(self):
         "return a list with the items in the tree"
         treeitemlist, activeitem = [], 0
-        print('in get_treeitems, self.activeitem is', self.activeitem)
         # activeitemky = self.activeitem.data(0, core.Qt.UserRole)
         for num in range(self.root.childCount()):
             tag = self.root.child(num).text(0)
@@ -723,13 +759,8 @@ class GetTextDialog(qtw.QDialog):
     def accept(self):
         """confirm data changes and communicate to parent window
         """
-        try:
-            seltext = self.inputwin.text()
-        except AttributeError:
-            seltext = self.inputwin.currentText()
-        self.parent.dialog_data = [self.in_exclude.isChecked(), seltext]
-        if self.use_case:
-            self.parent.dialog_data.append(self.use_case.isChecked())
+        seltext = self.inputwin.text()
+        self.parent.dialog_data = [self.in_exclude.isChecked(), seltext, self.use_case.isChecked()]
         super().accept()
 
 
@@ -748,7 +779,13 @@ class GetItemDialog(GetTextDialog):
         self.inputwin = qtw.QComboBox(self)
         self.inputwin.addItems(selection_list)
         self.inputwin.setCurrentIndex(selindex)
-        self.use_case = None
+
+    def accept(self):
+        """confirm data changes and communicate to parent window
+        """
+        seltext = self.inputwin.currentText()
+        self.parent.dialog_data = [self.in_exclude.isChecked(), seltext]
+        super().accept()
 
 
 class GridDialog(qtw.QDialog):

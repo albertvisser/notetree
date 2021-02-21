@@ -70,10 +70,10 @@ class MainWindow(wx.Frame):
     def setup_text(self):
         "define the scintilla widget's properties"
         # # Set the default font
-        # font = gui.QFont()
-        # font.SetFamily('Courier')
-        # font.SetFixedPitch(True)
-        # font.SetPointSize(10)
+        monospace_font = wx.Font()
+        monospace_font.SetFamily(wx.FONTFAMILY_TELETYPE)
+        # monospace_font.SetFixedPitch(True)
+        monospace_font.SetPointSize(10)
         # self.editor.SetFont(font)
         # self.editor.SetMarginsFont(font)
         self.editor.SetWrapMode(stc.STC_WRAP_WORD)
@@ -94,10 +94,65 @@ class MainWindow(wx.Frame):
         self.editor.SetCaretLineVisible(True)
         self.editor.SetCaretLineBackground(wx.Colour(255, 244, 244))  # "#ffe4e4"))
 
-        # # Set HTML lexer
-        # lexer = sci.QsciLexerHTML()
         # lexer.SetDefaultFont(font)
         self.editor.SetLexer(stc.STC_LEX_MARKDOWN)
+
+        # SCE_MARKDOWN_STRONG1: "**" - Strong emphasis (bold)
+        # SCE_MARKDOWN_STRONG2: "__" - Strong emphasis (bold)
+        for style in (2, 3):
+            self.editor.StyleSetForeground(style, wx.Colour(34, 68, 102))  #224466
+            self.editor.StyleSetBold(style, True)
+
+        # SCE_MARKDOWN_EM1: '*' - Emphasis (italic)
+        # SCE_MARKDOWN_EM2: '_' - Emphasis (italic)
+        for style in (4, 5):
+            self.editor.StyleSetForeground(style, wx.Colour(70, 51, 0))  #663300
+            self.editor.StyleSetItalic(style, True)
+
+        # SCE_MARKDOWN_HEADER1: "#" - Level-one header
+        # SCE_MARKDOWN_HEADER2: "##" - Level-two header
+        # SCE_MARKDOWN_HEADER3: "###" - Level-three header
+        # SCE_MARKDOWN_HEADER4: "####" - Level-four header
+        # SCE_MARKDOWN_HEADER5: "#####" - Level-five header
+        # SCE_MARKDOWN_HEADER6: "######" - Level-six header
+        for style in range(6, 12):
+            self.editor.StyleSetForeground(style, wx.Colour(81, 131, 196))   #5183C4
+            self.editor.StyleSetBold(style, True)
+            # self.editor.StyleSetFont(style, monospace_font)
+
+        # SCE_MARKDOWN_PRECHAR: Prechar (up to three indent spaces, e.g. for a second-level list)
+        self.editor.StyleSetBackground(12, wx.Colour(253, 253, 170))  #EEEEAA
+        self.editor.StyleSetForeground(12, wx.Colour(0, 0, 0))        #000000
+
+        # SCE_MARKDOWN_ULIST_ITEM: "- ", "* ", "+ " - Unordered list item
+        # SCE_MARKDOWN_OLIST_ITEM: "1. " to "9. ", "#. " - Ordered list item
+        self.editor.StyleSetForeground(13, wx.Colour(85, 85, 85))   #555555
+        self.editor.StyleSetForeground(14, wx.Colour(85, 85, 85))   #555555
+
+        # SCE_MARKDOWN_BLOCKQUOTE: "> " - Block quote
+        self.editor.StyleSetForeground(15, wx.Colour(0, 0, 136))   #000088
+
+        # SCE_MARKDOWN_STRIKEOUT: "~~" - Strikeout
+        self.editor.StyleSetBackground(16, wx.Colour(169, 186, 157))   #A9BA9D
+        self.editor.StyleSetForeground(16, wx.Colour(24, 69, 59))   #18453B
+        # self.editor.StyleSetFont(16, monospace_font)
+
+        # SCE_MARKDOWN_HRULE: "---", "***", "___" - Horizontal rule
+        self.editor.StyleSetForeground(17, wx.Colour(85, 85, 85))   #555555
+        self.editor.StyleSetBold(17, True)
+        # self.editor.StyleSetFont(17, monospace_font)
+
+        # SCE_MARKDOWN_LINK: "[]", "![]" - Link or image
+        self.editor.StyleSetForeground(18, wx.Colour(0, 0, 170))    #0000AA
+        self.editor.StyleSetUnderline(style, True)
+
+        # SCE_MARKDOWN_CODE: '`' - Inline code
+        # SCE_MARKDOWN_CODE2: "``" - Inline code (quotes code containing a single backtick)
+        # SCE_MARKDOWN_CODEBK: "~~~" - Code block
+        for style in range(19, 22):
+            self.editor.StyleSetBackground(style, wx.Colour(253, 253, 253))   #EEEEEE
+            self.editor.StyleSetForeground(style, wx.Colour(0, 0, 136))   #000088
+            # self.editor.StyleSetFont(style, monospace_font)
 
     def create_menu(self):
         """Build the application menu
@@ -823,9 +878,7 @@ class GetTextDialog(wx.Dialog):
     def confirm(self):
         """confirm data changes and communicate to parent window
         """
-        data = [self.in_exclude.GetValue(), self.inputwin.GetValue()]
-        if self.use_case:
-            data.append(self.use_case.GetValue())
+        data = [self.in_exclude.GetValue(), self.inputwin.GetValue(), self.use_case.GetValue()]
         return data
 
 
@@ -835,10 +888,15 @@ class GetItemDialog(GetTextDialog):
     def create_inputwin(self, seldata):
         """define the widgets to use
         """
-        selection_list, selindex
+        selection_list, selindex = seldata
         self.inputwin = wx.ComboBox(self, choices=selection_list)
         self.inputwin.SetSelection(selindex)
-        self.use_case = None
+
+    def confirm(self):
+        """confirm data changes and communicate to parent window
+        """
+        data = [self.in_exclude.GetValue(), self.inputwin.GetValue()]
+        return data
 
 
 class GridDialog(wx.Dialog):
