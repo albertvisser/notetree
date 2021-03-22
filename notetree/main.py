@@ -388,6 +388,7 @@ class NoteTree:
     def activate_item(self, item):
         """make the new item "active" and get the text for itfrom the tree structure
         """
+        print('in activate_item: item is {}, root is {}'.format(item, self.gui.root))
         if not item:
             return
         self.gui.clear_editor()

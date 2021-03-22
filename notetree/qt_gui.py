@@ -134,10 +134,14 @@ class MainWindow(qtw.QMainWindow):
         """adjust to the selected tree item
         """
         test = self.tree.selectedItems()
-        if test == self.root:
-            return
+        # if test == self.root:
+        #     return
+        print('in changeselection: selected item is {}'.format(test))
         self.base.check_active()
+        print('in changeselection: item is {}, root is {}'.format(self.tree.currentItem(),
+                                                                  self.root))
         self.base.activate_item(self.tree.currentItem())
+        # selectedItems en currentItem blijken in deze app hetzelfde te zijn, dus dit kan zo
 
     def closeEvent(self, event=None):
         """reimplemented callback
