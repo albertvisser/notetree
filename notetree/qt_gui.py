@@ -27,7 +27,8 @@ class MainWindow(qtw.QMainWindow):
 
     def init_screen(self, title, iconame):
         "setup screen"
-        super().__init__()
+        # super().__init__()              # zoals ik het nu gebruik kan pytest niet tegen super()
+        qtw.QMainWindow.__init__(self)
         self.setWindowTitle(title)
         self.nt_icon = gui.QIcon(iconame)
         self.setWindowIcon(self.nt_icon)
@@ -66,41 +67,15 @@ class MainWindow(qtw.QMainWindow):
         "define the editor panel"
         # self.editor = qtw.QTextEdit(self)
         self.editor = qsc.QsciScintilla(self)
-        self.setup_text()
-        self.editor.setEnabled(False)
-        return self.editor
-
-    def setup_text(self):
-        "define the scintilla widget's properties"
-        # Set the default font
-        # font = gui.QFont()
-        # font.setFamily('Courier')
-        # font.setFixedPitch(True)
-        # font.setPointSize(10)
-        # self.editor.setFont(font)
-        # self.editor.setMarginsFont(font)
         self.editor.setWrapMode(qsc.QsciScintilla.WrapWord)
-
-        # Margin 0 is used for line numbers
-        # fontmetrics = gui.QFontMetrics(font)
-        # self.editor.setMarginsFont(font)
-        # self.editor.setMarginWidth(0, fontmetrics.width("00000"))
-        # self.editor.setMarginLineNumbers(0, True)
-        # self.editor.setMarginsBackgroundColor(gui.QColor("#cccccc"))
-
-        # Enable brace matching, auto-indent, code-folding
         self.editor.setBraceMatching(qsc.QsciScintilla.SloppyBraceMatch)
         self.editor.setAutoIndent(True)
         self.editor.setFolding(qsc.QsciScintilla.PlainFoldStyle)
-
-        # Current line visible with special background color
         self.editor.setCaretLineVisible(True)
         self.editor.setCaretLineBackgroundColor(gui.QColor("#ffe4e4"))
-
-        # Set HTML lexer
-        lexer = qsc.QsciLexerMarkdown()
-        # lexer.setDefaultFont(font)
-        self.editor.setLexer(lexer)
+        self.editor.setLexer(qsc.QsciLexerMarkdown())
+        self.editor.setEnabled(False)
+        return self.editor
 
     def create_menu(self):
         """build the application menu
@@ -109,7 +84,7 @@ class MainWindow(qtw.QMainWindow):
         menu_bar.clear()
         self.selactions = {}
         self.seltypes = []
-        for item, data in self.base.get_menudata():  # defined in mixin class
+        for item, data in self.base.get_menudata():
             menu_label = item
             submenu = menu_bar.addMenu(menu_label)
             for label, handler, info, key in data:
@@ -136,14 +111,11 @@ class MainWindow(qtw.QMainWindow):
         test = self.tree.selectedItems()
         # if test == self.root:
         #     return
-        print('in changeselection: selected item is {}'.format(test))
         self.base.check_active()
-        print('in changeselection: item is {}, root is {}'.format(self.tree.currentItem(),
-                                                                  self.root))
         self.base.activate_item(self.tree.currentItem())
         # selectedItems en currentItem blijken in deze app hetzelfde te zijn, dus dit kan zo
 
-    def closeEvent(self, event=None):
+    def closeEvent(self, event):  # =None): zonder argument kan niet
         """reimplemented callback
         """
         if self.activeitem:
