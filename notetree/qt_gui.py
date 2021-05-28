@@ -10,6 +10,7 @@ import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
 import PyQt5.Qsci as qsc  # scintilla
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+import pdb; pdb.set_trace()
 gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
 
@@ -27,8 +28,7 @@ class MainWindow(qtw.QMainWindow):
 
     def init_screen(self, title, iconame):
         "setup screen"
-        # super().__init__()              # zoals ik het nu gebruik kan pytest niet tegen super()
-        qtw.QMainWindow.__init__(self)
+        super().__init__()
         self.setWindowTitle(title)
         self.nt_icon = gui.QIcon(iconame)
         self.setWindowIcon(self.nt_icon)
@@ -182,7 +182,7 @@ class MainWindow(qtw.QMainWindow):
         return self.tree.currentItem()
 
     def remove_item_from_tree(self, item):
-        "remove an item from the tree and return it"
+        "remove an item from the tree"
         self.root.removeChild(item)
 
     def get_key_from_item(self, item):
@@ -226,7 +226,7 @@ class MainWindow(qtw.QMainWindow):
             tag = self.root.child(num).text(0)
             ky = self.root.child(num).data(0, core.Qt.UserRole)
             # print('                  ky is', ky)
-            print('                  child is', self.root.child(num))
+            # print('                  child is', self.root.child(num))
             # if ky == activeitemky:
             if self.root.child(num) == self.activeitem:
                 activeitem = ky
@@ -713,7 +713,7 @@ class GetTextDialog(qtw.QDialog):
         vbox.addLayout(hbox)
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(self.in_exclude)
-        if self.use_case:
+        if hasattr(self, 'use_case'):
             hbox.addWidget(self.use_case)
             if use_case:
                 self.use_case.setChecked(True)
@@ -732,11 +732,16 @@ class GetTextDialog(qtw.QDialog):
         self.use_case = qtw.QCheckBox('case_sensitive', self)
         self.use_case.setChecked(False)
 
-    def accept(self):
-        """confirm data changes and communicate to parent window
+    def get_dialog_data(self):
+        """get the changed input
         """
         seltext = self.inputwin.text()
         self.parent.dialog_data = [self.in_exclude.isChecked(), seltext, self.use_case.isChecked()]
+
+    def accept(self):
+        """confirm data changes and communicate to parent window
+        """
+        self.get_dialog_data()
         super().accept()
 
 
@@ -747,21 +752,15 @@ class GetItemDialog(GetTextDialog):
         """define the widgets to use
         """
         selection_list, selindex = seldata
-        selection_list = self.parent.base.opts['Keywords']
-        try:
-            selindex = selection_list.index(seltext)
-        except ValueError:
-            selindex = -2
         self.inputwin = qtw.QComboBox(self)
         self.inputwin.addItems(selection_list)
         self.inputwin.setCurrentIndex(selindex)
 
-    def accept(self):
-        """confirm data changes and communicate to parent window
+    def get_dialog_data(self):
+        """get the changed input
         """
         seltext = self.inputwin.currentText()
         self.parent.dialog_data = [self.in_exclude.isChecked(), seltext]
-        super().accept()
 
 
 class GridDialog(qtw.QDialog):
