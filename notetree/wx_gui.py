@@ -26,8 +26,8 @@ class MainWindow(wx.Frame):
 
     def init_screen(self, parent=None, title='', iconame=''):
         "setup screen"
-        super().__init__(parent, title=title, size=(800, 500),
-                         style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
+        wx.Frame.__init__(parent, title=title, size=(800, 500),
+                          style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
         if iconame:
             self.nt_icon = wx.Icon(iconame, wx.BITMAP_TYPE_ICO)
             self.SetIcon(self.nt_icon)
@@ -54,15 +54,17 @@ class MainWindow(wx.Frame):
         "define the tree panel"
         self.tree = wx.TreeCtrl(self.splitter)
         self.root = self.tree.AddRoot(self.base.root_title)
-        self.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelChanging, self.tree)
-        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
+        # self.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelChanging, self.tree)
+        self.tree.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelChanging)
+        # self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
+        self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged)
         return self.tree
 
     def setup_editor(self):
         "define the editor panel"
         # self.editor = wx.TextCtrl(self.splitter, -1, style=wx.TE_MULTILINE)
         self.editor = stc.StyledTextCtrl(self.splitter)  # , -1, style=wx.TE_MULTILINE)
-        self.editor.Enable(0)
+        self.editor.Enable(False)
         self.setup_text()
         self.editor.Bind(wx.EVT_TEXT, self.OnEvtText)
         return self.editor
@@ -189,7 +191,8 @@ class MainWindow(wx.Frame):
                         self.selactions[label_] = menu_item
                     else:
                         menu_item = wx.MenuItem(submenu, -1, label, info)
-                    self.Bind(wx.EVT_MENU, handler, menu_item)
+                    # self.Bind(wx.EVT_MENU, handler, menu_item)
+                    menu_item.Bind(wx.EVT_MENU, handler)
                 else:
                     menu_item = wx.MenuItem(submenu, wx.ID_SEPARATOR)
                 submenu.Append(menu_item)
@@ -199,7 +202,8 @@ class MainWindow(wx.Frame):
                         accel_list.append(accel)
                 for key in keydef:  # define extra keydefs via accelerator table
                     menu_item = wx.MenuItem(id=wx.NewId(), text=label)
-                    self.Bind(wx.EVT_MENU, handler, menu_item)
+                    # self.Bind(wx.EVT_MENU, handler, menu_item)
+                    menu_item.Bind(wx.EVT_MENU, handler)
                     accel = wx.AcceleratorEntry(cmd=menu_item.GetId())
                     if accel.FromString(key):
                         if key == 'Delete':
@@ -223,21 +227,25 @@ class MainWindow(wx.Frame):
         """
         self.editor.IsModified = True
 
-    def OnSelChanging(self, event=None):
+    def OnSelChanging(self, event):
         """reimplemented event handler
         """
         # oorspronkelijk mocht je niet naar het root item navigeren maar in de qt versie kan dat
         # niet zo makkelijk voorkomen worden
-        # nisschien moet je de tekst ook maar kunnen invullen net als in treedocs?
+        # misschien moet je de tekst ook maar kunnen invullen net als in treedocs?
 
-    def OnSelChanged(self, event=None):
+    def OnSelChanged(self, event):
         """reimplemented event handler
         """
+        item_to_activate = event.GetItem()
+        # if item_to_activate == self.root:
+        #     return
         self.base.check_active()
-        self.base.activate_item(event.GetItem())
+        print('in onselchanged: item is {}, root is {}'.format(item_to_activate, self.root))
+        self.base.activate_item(item_to_activate)
         event.Skip()
 
-    def close(self, event=None):
+    def close(self, event):
         """save before shutting down
         """
         if self.activeitem:
@@ -272,7 +280,7 @@ class MainWindow(wx.Frame):
         "show the item's child elements"
         self.tree.Expand(item)
 
-    def emphasize_activeitem(self,value):
+    def emphasize_activeitem(self, value):
         "emphisize the active item's title"
         self.tree.SetItemBold(self.activeitem, value)
 
@@ -297,10 +305,9 @@ class MainWindow(wx.Frame):
         return self.tree.GetSelection()
 
     def remove_item_from_tree(self, item):
-        "remove an item from the tree and return it"
+        "remove an item from the tree"
         isnotlastitem = self.tree.GetNextSibling(item).IsOk()
         prev = None if isnotlastitem else self.tree.GetPrevSibling(item)
-        print(isnotlastitem, prev)
         self.activeitem = None  # prev
         self.tree.Delete(item)
         if prev:
@@ -456,7 +463,7 @@ class MainWindow(wx.Frame):
 
     def get_choice_from_user(self, prompt, choices, default):
         "pop up a selection list"
-        with wx.SingleChoiceDialog(self, prompt, "Apropos", choices,
+        with wx.SingleChoiceDialog(self, prompt, self.base.app_title, choices,
                                    wx.CHOICEDLG_STYLE) as dlg:
             dlg.SetSelection(default)
             h = dlg.ShowModal()
@@ -547,8 +554,9 @@ class CheckDialog(wx.Dialog):
 class KeywordsDialog(wx.Dialog):
     """Dialoog voor het koppelen van trefwoorden
     """
-    def __init__(self, parent, keywords=None):
+    def __init__(self, parent, helptext, keywords=None):
         self.parent = parent
+        self.helptext = helptext
         if keywords is None:
             keywords = []
         super().__init__(parent)
@@ -621,7 +629,7 @@ class KeywordsDialog(wx.Dialog):
                            (_('b_newtag'), 'Ctrl+N', self.add_trefw))
         for name, shortcut, callback in self.actionlist:
             act = wx.MenuItem(id=wx.NewId(), text=name)
-            self.Bind(wx.EVT_MENU, callback, act)
+            act.Bind(wx.EVT_MENU, callback)
             accel = wx.AcceleratorEntry(cmd=act.GetId())
             ok = accel.FromString(shortcut)
             if ok:
@@ -690,10 +698,9 @@ class KeywordsDialog(wx.Dialog):
         """Show possible actions and accelerator keys
         """
         with wx.Dialog(self) as dlg:
-            data = [x.split(' - ', 1) for x in _('tag_help').split('\n')]
             gbox = wx.FlexGridSizer(cols=2, vgap=2, hgap=25)
             line = 0
-            for left, right in data:
+            for left, right in self.helptext:
                 gbox.Add(wx.StaticText(dlg, label=left), 0)
                 gbox.Add(wx.StaticText(dlg, label=right), 0)
                 line += 1
@@ -809,14 +816,14 @@ class KeywordsManager(wx.Dialog):
                 # prompter.setDefaultButton(wxMessageBox.Yes)
                 ## prompter.setEscapeButton(wdg.MessageBox.Cancel)
                 ask = prompter.ShowModal()
-                if ask == wx.ID_CANCEL:
-                    return
-                ix = self.parent.base.opts['Keywords'].index(oldtext)
-                self.parent.base.opts['Keywords'][ix] = newtext
-                if ask == wx.ID_YES:
-                    self.update_items(oldtext, newtext)
-                else:
-                    self.update_items(oldtext)
+            if ask == wx.ID_CANCEL:
+                return
+            ix = self.parent.base.opts['Keywords'].index(oldtext)
+            self.parent.base.opts['Keywords'][ix] = newtext
+            if ask == wx.ID_YES:
+                self.update_items(oldtext, newtext)
+            else:
+                self.update_items(oldtext)
         else:
             msg = _('t_addtag').format(newtext)
             ask = wx.MessageBox(msg, self.parent.base.app_title, wx.YES_NO | wx.ICON_QUESTION, self)
@@ -827,7 +834,6 @@ class KeywordsManager(wx.Dialog):
 
     def confirm(self):
         "finish the dialog"
-        pass
 
 
 class GetTextDialog(wx.Dialog):
@@ -902,10 +908,10 @@ class GetItemDialog(GetTextDialog):
 class GridDialog(wx.Dialog):
     """dialog showing texts in a grid layout
     """
-    def __init__(self, parent, title):
+    def __init__(self, parent, data, title):
         super().__init__(parent, title=title, size=(-1, 320), style=wx.DEFAULT_DIALOG_STYLE)
         # pnl = wx.Panel(self)
-        lines = [x.split(' - ', 1) for x in _("help_text").split('\n')]
+        lines = data  # [x.split(' - ', 1) for x in _("help_text").split('\n')]
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         gbox = wx.FlexGridSizer(cols=2)  # , rows = len(lines))
         line = 0
@@ -932,7 +938,6 @@ class GridDialog(wx.Dialog):
 
     def confirm(self):
         "finish the dialog (no data to exchange)"
-        pass
 
 
 class TaskbarIcon(wx.adv.TaskBarIcon):
