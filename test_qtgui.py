@@ -1205,7 +1205,7 @@ class TestKeywordsDialog:
         monkeypatch.setattr(gui.qtw, 'QPushButton', MockPushButton)
         monkeypatch.setattr(gui.qtw, 'QDialogButtonBox', MockButtonBox)
         monkeypatch.setattr(gui.KeywordsDialog, 'create_actions', mock_create_actions)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         assert capsys.readouterr().out == ('called QDialog.__init__()\n'
                                            "called dialog.setWindowTitle() with args "
                                            "`('title - w_tags',)`\n"
@@ -1294,7 +1294,7 @@ class TestKeywordsDialog:
         monkeypatch.setattr(gui.qtw, 'QPushButton', MockPushButton)
         monkeypatch.setattr(gui.qtw, 'QDialogButtonBox', MockButtonBox)
         monkeypatch.setattr(gui.KeywordsDialog, 'create_actions', mock_create_actions)
-        testobj = gui.KeywordsDialog(mockparent, keywords=['x'])
+        testobj = gui.KeywordsDialog(mockparent, '', keywords=['x'])
         assert capsys.readouterr().out == ('called QDialog.__init__()\n'
                                            "called dialog.setWindowTitle() with args "
                                            "`('title - w_tags',)`\n"
@@ -1365,7 +1365,7 @@ class TestKeywordsDialog:
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.qtw, 'QAction', MockAction)
         monkeypatch.setattr(gui.KeywordsDialog, 'addAction', mock_addAction)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         testobj.create_actions()
         assert capsys.readouterr().out == ('called dialog.__init__()\n'
                                           'call action.setShortcut with arg `Ctrl+L`\n'
@@ -1394,7 +1394,7 @@ class TestKeywordsDialog:
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.qtw, 'QAction', MockAction)
         monkeypatch.setattr(gui.KeywordsDialog, '_activate', mock_activate)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         testobj.fromlist = 'fromlist'
         testobj.activate_left()
         assert capsys.readouterr().out == ('called dialog.__init__()\n'
@@ -1410,7 +1410,7 @@ class TestKeywordsDialog:
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.qtw, 'QAction', MockAction)
         monkeypatch.setattr(gui.KeywordsDialog, '_activate', mock_activate)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         testobj.tolist = 'tolist'
         testobj.activate_right()
         assert capsys.readouterr().out == ('called dialog.__init__()\n'
@@ -1423,7 +1423,7 @@ class TestKeywordsDialog:
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         win = MockListWidget()
         monkeypatch.setattr(win, 'currentItem', lambda: None)
         monkeypatch.setattr(win, 'item', lambda x: MockListWidgetItem('first item'))
@@ -1441,7 +1441,7 @@ class TestKeywordsDialog:
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         win = MockListWidget()
         monkeypatch.setattr(win, 'currentItem', lambda: MockListWidgetItem('current item'))
         testobj._activate(win)
@@ -1460,7 +1460,7 @@ class TestKeywordsDialog:
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.KeywordsDialog, '_moveitem', mock_moveitem)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         testobj.fromlist = 'fromlist'
         testobj.tolist = 'tolist'
         testobj.move_right()
@@ -1476,7 +1476,7 @@ class TestKeywordsDialog:
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.KeywordsDialog, '_moveitem', mock_moveitem)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         testobj.fromlist = 'fromlist'
         testobj.tolist = 'tolist'
         testobj.move_left()
@@ -1489,7 +1489,7 @@ class TestKeywordsDialog:
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         from_ = MockListWidget('fromlist')
         to = MockListWidget('tolist')
         testobj._moveitem(from_, to)
@@ -1516,7 +1516,7 @@ class TestKeywordsDialog:
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.qtw.QInputDialog, 'getText', mock_gettext)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         testobj.tolist = MockListWidget()
         testobj.add_trefw()
         assert testobj.parent.base.opts == {'Keywords': ['x', 'y', 'text']}
@@ -1538,7 +1538,7 @@ class TestKeywordsDialog:
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.qtw.QInputDialog, 'getText', mock_gettext)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         testobj.tolist = MockListWidget()
         testobj.add_trefw()
         assert testobj.parent.base.opts == {'Keywords': ['x', 'y']}
@@ -1547,7 +1547,7 @@ class TestKeywordsDialog:
                                            "called inputdialog.getText() with args"
                                            " `('title', 't_newtag')`\n")
 
-    def keys_help(self, monkeypatch, capsys):
+    def test_keys_help(self, monkeypatch, capsys):
         def mock_init(self, *args):
             print('called dialog.__init__()')
             self.parent = args[0]
@@ -1557,7 +1557,7 @@ class TestKeywordsDialog:
            print('called dialog.setWindowTitle() with args `{}`'.format(args))
         def mock_setLayout(self, *args):
             print('called dialog.setLayout()')
-        def mock_exec_(self, *args):
+        def mock_exec(self, *args):
             print('called dialog.exec_()')
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
@@ -1565,9 +1565,11 @@ class TestKeywordsDialog:
         monkeypatch.setattr(gui.qtw.QDialog, '__init__', mock_init_dialog)
         monkeypatch.setattr(gui.qtw.QDialog, 'setWindowTitle', mock_setWindowTitle)
         monkeypatch.setattr(gui.qtw.QDialog, 'setLayout', mock_setLayout)
+        monkeypatch.setattr(gui.qtw.QDialog, 'exec_', mock_exec)
         monkeypatch.setattr(gui.qtw, 'QGridLayout', MockGridLayout)
         monkeypatch.setattr(gui.qtw, 'QLabel', MockLabel)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
+        testobj.helptext = (('x', 'y'), ('a', 'b'))
         testobj.keys_help()
         assert capsys.readouterr().out == ('called dialog.__init__()\n'
                                            'called QDialog.__init__()\n'
@@ -1576,10 +1578,14 @@ class TestKeywordsDialog:
                                            'called grid.addWidget()\n'
                                            'called MockLabel.__init__()\n'
                                            'called grid.addWidget()\n'
+                                           'called MockLabel.__init__()\n'
+                                           'called grid.addWidget()\n'
+                                           'called MockLabel.__init__()\n'
+                                           'called grid.addWidget()\n'
                                            "called dialog.setWindowTitle() with args"
-                                           " `('title t_keys',)`"
-                                           'called dialog.setLayout()'
-                                           'called dialog.exec_()')
+                                           " `('title t_keys',)`\n"
+                                           'called dialog.setLayout()\n'
+                                           'called dialog.exec_()\n')
 
     def test_accept(self, monkeypatch, capsys):
         def mock_init(self, *args):
@@ -1591,7 +1597,7 @@ class TestKeywordsDialog:
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.qtw.QDialog, 'accept', mock_accept)
-        testobj = gui.KeywordsDialog(mockparent)
+        testobj = gui.KeywordsDialog(mockparent, '')
         testobj.tolist = MockListWidget([MockListWidgetItem('1'), MockListWidgetItem('2')])
         testobj.accept()
         assert capsys.readouterr().out == ('called dialog.__init__()\n'
@@ -1600,6 +1606,7 @@ class TestKeywordsDialog:
                                            'called list.__init__()\n'
                                            'called dialog.accept()\n')
         assert testobj.parent.dialog_data == ['1', '2']
+
 
 class TestKeywordsManager:
     def test_init(self, monkeypatch, capsys):
@@ -2102,7 +2109,6 @@ class TestGetItemDialog:
                                            'called combo.setCurrentIndex(1)\n')
 
     def test_get_dialog_data(self, monkeypatch, capsys):
-        pass
         def mock_init(self, *args):
             print('called textdialog.__init__()')
         monkeypatch.setattr(gui.GetTextDialog, '__init__', mock_init)
@@ -2122,12 +2128,6 @@ class TestGetItemDialog:
 
 class TestGridDialog:
     def test_init(self, monkeypatch, capsys):
-        return  # ik kan de call via _() niet simuleren
-        # gettext.install definieert een GNUTranslations object en herdefinieert de builtin _
-        # om daarvan de gettext methode aan te roepen
-        # maar omdat ik geen referentie naar dat object heb kan ik die call ook niet patchen
-        # wat misschien wel kan is vóór de import gettext.install patchen zodat deze _ op iets
-        # anders mapt
         def mock_init(self, *args):
             print('called QDialog.__init__()')
         def mock_setWindowTitle(self, *args):
@@ -2142,7 +2142,7 @@ class TestGridDialog:
         monkeypatch.setattr(gui.qtw, 'QGridLayout', MockGridLayout)
         monkeypatch.setattr(gui.qtw, 'QLabel', MockLabel)
         # monkeypatch.setattr(gui.gettext, 'translation', mock_translation)
-        testobj = gui.GridDialog('parent', 'title')
+        testobj = gui.GridDialog('parent', (('x', 'y'), ('a', 'b')), 'title')
         assert capsys.readouterr().out == ('called QDialog.__init__()\n'
                                            'called MockGridLayout.__init__()\n'
                                            'called MockLabel.__init__()\n'
@@ -2155,5 +2155,5 @@ class TestGridDialog:
                                            'called grid.addWidget()\n'
                                            "called dialog.setWindowTitle() with args"
                                            " `('title',)`\n"
-                                           'called dialog.setLayout()')
+                                           'called dialog.setLayout()\n')
 

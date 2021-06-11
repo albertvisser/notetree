@@ -10,7 +10,6 @@ import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
 import PyQt5.Qsci as qsc  # scintilla
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-import pdb; pdb.set_trace()
 gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
 
@@ -438,8 +437,9 @@ class CheckDialog(qtw.QDialog):
 class KeywordsDialog(qtw.QDialog):
     """Dialoog voor het koppelen van trefwoorden
     """
-    def __init__(self, parent, keywords=None):
+    def __init__(self, parent, helptext, keywords=None):
         self.parent = parent
+        self.helptext = helptext
         if keywords is None:
             keywords = []
         super().__init__(parent)
@@ -564,10 +564,9 @@ class KeywordsDialog(qtw.QDialog):
         """Show possible actions and accelerator keys
         """
         dlg = qtw.QDialog(self)
-        data = [x.split(' - ', 1) for x in _('tag_help').split('\n')]
         gbox = qtw.QGridLayout()
         line = 0
-        for left, right in data:
+        for left, right in self.helptext:
             gbox.addWidget(qtw.QLabel(left, self), line, 0)
             gbox.addWidget(qtw.QLabel(right, self), line, 1)
             line += 1
@@ -766,9 +765,8 @@ class GetItemDialog(GetTextDialog):
 class GridDialog(qtw.QDialog):
     """dialog showing texts in a grid layout
     """
-    def __init__(self, parent, title=''):
+    def __init__(self, parent, data, title=''):
         super().__init__(parent)
-        data = [x.split(' - ', 1) for x in _("help_text").split('\n')]
         gbox = qtw.QGridLayout()
         line = 0
         for left, right in data:

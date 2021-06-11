@@ -183,7 +183,7 @@ class NoteTree:
         item = self.gui.get_selected_item()
         if item != self.gui.root:
             ky = self.gui.get_key_from_item(item)
-            item = self.gui.remove_item_from_tree(item)
+            self.gui.remove_item_from_tree(item)
             del self.nt_data[ky]
         else:
             self.gui.showmsg(_("no_delete_root"))
@@ -203,7 +203,8 @@ class NoteTree:
             keywords = self.gui.get_item_keywords(item)
         if item is None or keywords is None:
             return
-        ok, new_keywords = self.gui.show_dialog(gui.KeywordsDialog, keywords)
+        helptext = [x.split(' - ', 1) for x in _("tag_help").split('\n')]
+        ok, new_keywords = self.gui.show_dialog(gui.KeywordsDialog, helptext, keywords)
         if ok:
             self.gui.set_item_keywords(item, new_keywords)
 
@@ -302,7 +303,8 @@ class NoteTree:
     def help_page(self, *args):
         """show keyboard shortcuts
         """
-        self.gui.show_dialog(gui.GridDialog, self.app_title + " " + _("t_keys"))
+        data = [x.split(' - ', 1) for x in _("help_text").split('\n')]
+        self.gui.show_dialog(gui.GridDialog, data, self.app_title + " " + _("t_keys"))
 
     def open(self, first_time=False):  # , version):
         """initialize and read data file
@@ -386,9 +388,8 @@ class NoteTree:
                 self.gui.copy_text_from_editor_to_activeitem()
 
     def activate_item(self, item):
-        """make the new item "active" and get the text for itfrom the tree structure
+        """make the new item "active" and get the text for it from the tree structure
         """
-        print('in activate_item: item is {}, root is {}'.format(item, self.gui.root))
         if not item:
             return
         self.gui.clear_editor()
