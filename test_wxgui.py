@@ -429,16 +429,19 @@ class TestMainWindow:
                                            'called app.MainLoop()\n')
 
     def test_init_screen(self, monkeypatch, capsys):
+        def mock_init(self, *args, **kwargs):
+            print('called frame.__init__()')
         def mock_seticon(self, *args):
             print('called frame.SetIcon')
         def mock_setmenubar(self, *args):
             print('called frame.SetMenuBar()')
+        monkeypatch.setattr(gui.wx.Frame, '__init__', mock_init)
         monkeypatch.setattr(gui.wx, 'Icon', MockIcon)
         monkeypatch.setattr(gui.wx.Frame, 'SetIcon', mock_seticon)
         monkeypatch.setattr(gui.wx, 'MenuBar', MockMenuBar)
         monkeypatch.setattr(gui.wx.Frame, 'SetMenuBar', mock_setmenubar)
         testobj = setup_mainwindow(monkeypatch)
-        testobj.init_screen(parent=None, title='', iconame='')
+        testobj.init_screen()
         assert capsys.readouterr().out == ('called MockNoteTree.__init__()\n'
                                            'called app.__init__()\n'
                                            'called frame.__init__()\n'

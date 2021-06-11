@@ -26,8 +26,8 @@ class MainWindow(wx.Frame):
 
     def init_screen(self, parent=None, title='', iconame=''):
         "setup screen"
-        wx.Frame.__init__(parent, title=title, size=(800, 500),
-                          style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
+        super().__init__(parent, title=title, size=(800, 500),
+                         style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
         if iconame:
             self.nt_icon = wx.Icon(iconame, wx.BITMAP_TYPE_ICO)
             self.SetIcon(self.nt_icon)
