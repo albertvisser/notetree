@@ -35,7 +35,7 @@ def load_file(filename):
     """
     if not os.path.exists(filename):
         return {}
-    nt_data, docdict = {}, {}
+    nt_data, options, docdict = {}, {}, {}
     with contextlib.closing(sql.connect(filename)) as db:
         cur = db.cursor()
         cur.execute(read_notes)
@@ -43,12 +43,12 @@ def load_file(filename):
             noteid, created, title, text = line
             if noteid == 0:
                 options = json.loads(text)
-                test = options.get("Application", None)
-                if not test or test != "NoteTree":
-                    raise EOFError("no_nt_file")
             else:
                 nt_data[created] = [title, text, []]
                 docdict[noteid] = created
+        test = options.get("Application", None)
+        if not test or test != "NoteTree":
+            raise EOFError("no_nt_file")
         cur.execute(read_tags)
         tagdict = {x: y for (x, y) in cur}
         options['Keywords'] = list(tagdict.values())
@@ -70,8 +70,8 @@ def save_file(filename, nt_data):
     with contextlib.closing(sql.connect(filename)) as db:
         cur = db.cursor()
         cur.executescript(init_db)
-        count = 0
         tagdict = collections.defaultdict(list)
+        keywords = []
         count = 0
         for created, value in nt_data.items():
             if created == 0:
@@ -85,7 +85,8 @@ def save_file(filename, nt_data):
             doc_id = cur.lastrowid
             for tag in tags:
                 tagdict[tag].append(doc_id)
-        cur.executemany(insert_tag, enumerate(keywords))
+        if keywords:
+            cur.executemany(insert_tag, enumerate(keywords))
         for ix, word in enumerate(keywords):
             docs = [(x, ix) for x in tagdict[word]]
             cur.executemany(insert_link, docs)

@@ -1,10 +1,7 @@
 """NoteTree load/save data through pickle
 """
 import os.path
-try:
-    import cPickle as pck
-except ImportError:
-    import pickle as pck
+import pickle as pck
 
 
 def load_file(filename):
@@ -15,7 +12,7 @@ def load_file(filename):
         return {}
     with open(filename, "rb") as f_in:
         nt_data = pck.load(f_in)
-        options = nt_data.get(0, [])
+        options = nt_data.get(0, {})
         test = options.get("Application", None)
         if not test or test != "NoteTree":
             # simuleer foutgaan bij pck.load als het geen pickle bestand is
