@@ -170,8 +170,8 @@ class NoteTree:
         start = datetime.today().strftime("%d-%m-%Y %H:%M:%S")
         text, ok = self.gui.get_text_from_user(_("t_new"), start)
         if ok:
+            self.nt_data[start] = ""   # alvast toevoegen aan de data structuur
             item = self.gui.add_item_to_tree(start, text, '', [])
-            self.nt_data[start] = ""
             self.gui.select_item(item)  # or activate_item?
             self.gui.set_item_expanded(self.gui.root)
             self.gui.open_editor()

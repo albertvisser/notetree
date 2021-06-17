@@ -59,7 +59,7 @@ def load_file(filename):
     ordered = collections.OrderedDict()
     ordered[0] = options
     for key in sorted(nt_data.keys(),
-                      key=lambda x: datetime.datetime.strptime(x, "%d-%m-%Y %H:%M:%S")):
+                      key=lambda x: datetime.datetime.strptime(str(x), "%d-%m-%Y %H:%M:%S")):
         ordered[key] = nt_data[key]
     return ordered
 

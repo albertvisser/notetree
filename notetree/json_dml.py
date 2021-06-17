@@ -13,7 +13,8 @@ def load_file(filename):
         return {}
     with open(filename, "r") as f_in:
         nt_data = json.load(f_in)
-    options = nt_data.pop(0) if 0 in nt_data else {}
+    # bij testen gezien dan de dict key 0 (integer) weggeschreven wordt als "0" (string)
+    options = nt_data.pop(0) if 0 in nt_data else nt_data.pop('0') if '0' in nt_data else {}
     test = options.get("Application", None)
     if not test or test != "NoteTree":
         raise EOFError("no_nt_file")
