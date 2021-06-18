@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NoteTree 2.2\n"
 "POT-Creation-Date: 2021-01-08 16:23+CET\n"
-"PO-Revision-Date: 2021-01-08 16:28+0100\n"
+"PO-Revision-Date: 2021-06-18 16:30+0200\n"
 "Last-Translator: \n"
 "Language-Team: NL <LL@li.org>\n"
 "Language: nl\n"
@@ -94,7 +94,7 @@ msgstr "Instellingen voor het tonen van meldingen"
 
 #: notetree/main.py:74
 msgid "m_opts"
-msgstr "Meldingen"
+msgstr "Instellingen (voor meldingen)"
 
 #: notetree/main.py:76
 msgid "h_exit"

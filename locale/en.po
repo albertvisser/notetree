@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: NoteTree 2.2\n"
-"POT-Creation-Date: 2021-01-08 16:23+CET\n"
-"PO-Revision-Date: 2021-01-08 16:27+0100\n"
+"POT-Creation-Date: 2021-06-18 16:13+CEST\n"
+"PO-Revision-Date: 2021-06-18 16:27+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -25,339 +25,224 @@ msgstr "Dutch"
 msgid "t_en"
 msgstr "English"
 
-#: notetree/main.py:46
-msgid "t_hide"
-msgstr "Notify that the application will be hidden in the system tray"
-
-#: notetree/main.py:47
-msgid "t_load"
-msgstr "Notify that the data has been reloaded"
-
-#: notetree/main.py:48
-msgid "t_save"
-msgstr "Notify that the data has been saved"
-
-#: notetree/main.py:65
+#: notetree/main.py:75
 msgid "m_main"
 msgstr "&Main"
 
-#: notetree/main.py:66
+#: notetree/main.py:76
 msgid "h_reload"
 msgstr "Reread notes file"
 
-#: notetree/main.py:66
+#: notetree/main.py:76
 msgid "m_reload"
 msgstr "Re&Load "
 
-#: notetree/main.py:67
+#: notetree/main.py:77
 msgid "h_save"
 msgstr "Save notes file"
 
-#: notetree/main.py:67
+#: notetree/main.py:77
 msgid "m_save"
 msgstr "&Save "
 
-#: notetree/main.py:69
+#: notetree/main.py:79
 msgid "h_root"
 msgstr "Rename root item"
 
-#: notetree/main.py:69
+#: notetree/main.py:79
 msgid "m_root"
 msgstr "&Root title "
 
-#: notetree/main.py:70
+#: notetree/main.py:80
 msgid "h_tagman"
 msgstr "Rename,  remove and/or add tags"
 
-#: notetree/main.py:70
+#: notetree/main.py:80
 msgid "m_tagman"
 msgstr "Manage keywords"
 
-#: notetree/main.py:72
+#: notetree/main.py:82
 msgid "h_hide"
 msgstr "Hide in system tray"
 
-#: notetree/main.py:72
+#: notetree/main.py:82
 msgid "m_hide"
 msgstr "&Hide "
 
-#: notetree/main.py:73
+#: notetree/main.py:83
 msgid "h_lang"
 msgstr "Change the interface language"
 
-#: notetree/main.py:73
+#: notetree/main.py:83
 msgid "m_lang"
 msgstr "L&anguage"
 
-#: notetree/main.py:74
+#: notetree/main.py:84
 msgid "h_opts"
 msgstr "Set options for showing messages"
 
-#: notetree/main.py:74
+#: notetree/main.py:84
 msgid "m_opts"
-msgstr "Messages"
+msgstr "Options (for messages)"
 
-#: notetree/main.py:76
+#: notetree/main.py:86
 msgid "h_exit"
 msgstr "Exit program"
 
-#: notetree/main.py:76
+#: notetree/main.py:86
 msgid "m_exit"
 msgstr "e&Xit "
 
-#: notetree/main.py:77
+#: notetree/main.py:87
 msgid "m_note"
 msgstr "&Note"
 
-#: notetree/main.py:78
+#: notetree/main.py:88
 msgid "h_new"
 msgstr "Add Note"
 
-#: notetree/main.py:78
+#: notetree/main.py:88
 msgid "m_new"
 msgstr "&New "
 
-#: notetree/main.py:79
+#: notetree/main.py:89
 msgid "h_delete"
 msgstr "Remove note"
 
-#: notetree/main.py:79
+#: notetree/main.py:89
 msgid "m_delete"
 msgstr "&Delete"
 
-#: notetree/main.py:80
+#: notetree/main.py:90
 msgid "h_name"
 msgstr "Rename current note"
 
-#: notetree/main.py:80
+#: notetree/main.py:90
 msgid "m_name"
 msgstr "Note &Title"
 
-#: notetree/main.py:82
+#: notetree/main.py:92
 msgid "h_tags"
 msgstr "Add tag(s) to this note"
 
-#: notetree/main.py:82
+#: notetree/main.py:92
 msgid "m_tags"
 msgstr "&Tags"
 
-#: notetree/main.py:84
+#: notetree/main.py:94
 msgid "h_forward"
 msgstr "View next note"
 
-#: notetree/main.py:84 notetree/wx_gui.py:101
+#: notetree/main.py:94 notetree/wx_gui.py:199 test_wxgui.py:584
+#: test_wxgui.py:675
 msgid "m_forward"
 msgstr "&Forward"
 
-#: notetree/main.py:85
+#: notetree/main.py:95
 msgid "h_back"
 msgstr "View previous note"
 
-#: notetree/main.py:85 notetree/wx_gui.py:101
+#: notetree/main.py:95 notetree/wx_gui.py:199 test_wxgui.py:585
+#: test_wxgui.py:676
 msgid "m_back"
 msgstr "&Back "
 
-#: notetree/main.py:86 notetree/qt_gui.py:73 notetree/wx_gui.py:90
+#: notetree/main.py:96 notetree/qt_gui.py:92 notetree/wx_gui.py:187
+#: test_qtgui.py:552 test_wxgui.py:587 test_wxgui.py:678
 msgid "m_view"
 msgstr "&View"
 
-#: notetree/main.py:87
-msgid "h_revorder"
-msgstr "Show notes in reverse order of adding"
-
-#: notetree/main.py:87 notetree/qt_gui.py:74 notetree/qt_gui.py:85
-#: notetree/wx_gui.py:91 notetree/wx_gui.py:123
+#: notetree/main.py:97 notetree/qt_gui.py:93 notetree/qt_gui.py:104
+#: notetree/wx_gui.py:188 notetree/wx_gui.py:222 test_qtgui.py:553
+#: test_wxgui.py:588 test_wxgui.py:679
 msgid "m_revorder"
 msgstr "&Newest first"
 
-#: notetree/main.py:89 notetree/main.py:221
-msgid "h_selall"
-msgstr "Show all notes"
+#: notetree/main.py:97 test_qtgui.py:553 test_wxgui.py:588 test_wxgui.py:679
+msgid "h_revorder"
+msgstr "Show notes in reverse order of adding"
 
-#: notetree/main.py:89 notetree/main.py:425
+#: notetree/main.py:99 notetree/main.py:241 notetree/main.py:434
+#: test_qtgui.py:555 test_wxgui.py:590 test_wxgui.py:681
 msgid "m_selall"
 msgstr "Select &All"
 
-#: notetree/main.py:90 notetree/main.py:236 notetree/main.py:237
-msgid "h_seltag"
-msgstr "Show notes with a given tag"
+#: notetree/main.py:99 notetree/main.py:242 test_qtgui.py:555 test_wxgui.py:590
+#: test_wxgui.py:681
+msgid "h_selall"
+msgstr "Show all notes"
 
-#: notetree/main.py:90 notetree/main.py:240 notetree/main.py:425
+#: notetree/main.py:100 notetree/main.py:264 notetree/main.py:271
+#: notetree/main.py:434 test_qtgui.py:556 test_wxgui.py:591 test_wxgui.py:682
 msgid "m_seltag"
 msgstr "Select by &Tag"
 
-#: notetree/main.py:91 notetree/main.py:260 notetree/main.py:261
-msgid "h_seltxt"
-msgstr "Show notes with given content"
+#: notetree/main.py:100 notetree/main.py:272 test_qtgui.py:556
+#: test_wxgui.py:591 test_wxgui.py:682
+msgid "h_seltag"
+msgstr "Show notes with a given tag"
 
-#: notetree/main.py:91 notetree/main.py:264 notetree/main.py:425
+#: notetree/main.py:101 notetree/main.py:292 notetree/main.py:296
+#: notetree/main.py:434 test_qtgui.py:557 test_wxgui.py:592 test_wxgui.py:683
 msgid "m_seltxt"
 msgstr "Select by &Content"
 
-#: notetree/main.py:92
+#: notetree/main.py:101 notetree/main.py:293 test_qtgui.py:557
+#: test_wxgui.py:592 test_wxgui.py:683
+msgid "h_seltxt"
+msgstr "Show notes with given content"
+
+#: notetree/main.py:102
 msgid "m_help"
 msgstr "&Help"
 
-#: notetree/main.py:93
+#: notetree/main.py:103
 msgid "h_about"
 msgstr "About this application"
 
-#: notetree/main.py:93
+#: notetree/main.py:103
 msgid "m_about"
 msgstr "&About"
 
-#: notetree/main.py:94
+#: notetree/main.py:104
 msgid "h_keys"
 msgstr "Keyboard shortcuts"
 
-#: notetree/main.py:94 notetree/qt_gui.py:442 notetree/wx_gui.py:482
+#: notetree/main.py:104 notetree/qt_gui.py:460 notetree/wx_gui.py:575
 msgid "m_keys"
 msgstr "&Keys "
 
-#: notetree/main.py:99
+#: notetree/main.py:109
 msgid "ask_reload"
 msgstr "OK to reload?"
 
-#: notetree/main.py:116
+#: notetree/main.py:126
 msgid "t_root"
 msgstr "New title for root item:"
 
-#: notetree/main.py:130
+#: notetree/main.py:140
 msgid "sleep_message"
 msgstr ""
 "NoteTree wil now go to sleep in the System tray\n"
 "An icon will will come up - click to activate"
 
-#: notetree/main.py:138
+#: notetree/main.py:150
 msgid "t_lang"
 msgstr "Select language"
 
-#: notetree/main.py:154
+#: notetree/main.py:171
 msgid "t_new"
 msgstr "Title for new note:"
 
-#: notetree/main.py:172
+#: notetree/main.py:189
 msgid "no_delete_root"
 msgstr "Can't delete root"
 
-#: notetree/main.py:177
+#: notetree/main.py:194
 msgid "t_name"
 msgstr "New title for current note:"
 
-#: notetree/main.py:200
-msgid "no_next_item"
-msgstr "No next note"
-
-#: notetree/main.py:209
-msgid "no_prev_item"
-msgstr "No previous note"
-
-#: notetree/main.py:229
-msgid "i_seltag"
-msgstr "Enter tag to search for"
-
-#: notetree/main.py:253
-msgid "i_seltxt"
-msgstr "Enter text to search for"
-
-#: notetree/main.py:269
-msgid "info_text"
-msgstr ""
-"NoteTree by Albert Visser\n"
-"Electronic notebook"
-
-#: notetree/main.py:274 notetree/qt_gui.py:556 notetree/wx_gui.py:615
-msgid "t_keys"
-msgstr "special keys"
-
-#: notetree/main.py:289
-msgid "ask_create"
-msgstr "File {} not found, create new?"
-
-#: notetree/main.py:292
-msgid "404_message"
-msgstr "File not found"
-
-#: notetree/main.py:308
-msgid "m_ignore"
-msgstr "Ignoring incompatible sash position"
-
-#: notetree/main.py:316
-msgid "load_message"
-msgstr "Notes have been successfully reloaded"
-
-#: notetree/main.py:316 notetree/main.py:417
-msgid "hide_me"
-msgstr "(You can hide this message in the settings)"
-
-#: notetree/main.py:417
-msgid "save_message"
-msgstr "Notes have been successfully saved"
-
-#: notetree/qt_gui.py:38 notetree/qt_gui.py:229 notetree/wx_gui.py:860
-msgid "revive_message"
-msgstr "Click to revive NoteTree"
-
-#: notetree/qt_gui.py:340 notetree/wx_gui.py:388
-msgid "t_sett"
-msgstr "NoteTree Settings"
-
-#: notetree/qt_gui.py:360 notetree/wx_gui.py:403
-msgid "b_apply"
-msgstr "&Apply"
-
-#: notetree/qt_gui.py:363 notetree/wx_gui.py:406
-msgid "b_close"
-msgstr "&Close"
-
-#: notetree/qt_gui.py:390 notetree/wx_gui.py:437
-msgid "hide_message"
-msgstr "Don't show this message anymore"
-
-#: notetree/qt_gui.py:428 notetree/wx_gui.py:470
-msgid "w_tags"
-msgstr "assign tags"
-
-#: notetree/qt_gui.py:435 notetree/wx_gui.py:475
-msgid "t_tags"
-msgstr "Tag(s):"
-
-#: notetree/qt_gui.py:436 notetree/qt_gui.py:490 notetree/wx_gui.py:476
-#: notetree/wx_gui.py:533
-msgid "b_tag"
-msgstr "&Assign"
-
-#: notetree/qt_gui.py:438 notetree/qt_gui.py:492 notetree/wx_gui.py:478
-#: notetree/wx_gui.py:535
-msgid "b_untag"
-msgstr "&Unassign"
-
-#: notetree/qt_gui.py:440 notetree/qt_gui.py:493 notetree/wx_gui.py:480
-#: notetree/wx_gui.py:536
-msgid "b_newtag"
-msgstr "&New"
-
-#: notetree/qt_gui.py:461 notetree/wx_gui.py:499
-msgid "t_left"
-msgstr "Available:"
-
-#: notetree/qt_gui.py:475 notetree/wx_gui.py:513
-msgid "t_right"
-msgstr "Assigned:"
-
-#: notetree/qt_gui.py:489 notetree/wx_gui.py:532
-msgid "a_from"
-msgstr "Activate Left"
-
-#: notetree/qt_gui.py:491 notetree/wx_gui.py:534
-msgid "a_to"
-msgstr "Activate Right"
-
-#: notetree/qt_gui.py:540 notetree/wx_gui.py:597
-msgid "t_newtag"
-msgstr "Enter new keyword"
-
-#: notetree/qt_gui.py:549 notetree/wx_gui.py:608
+#: notetree/main.py:206
 msgid "tag_help"
 msgstr ""
 "Activate left listbox - Ctrl+L\n"
@@ -366,51 +251,29 @@ msgstr ""
 "Unassign tag - Ctrl+left\n"
 "Create new tag - Ctrl+N"
 
-#: notetree/qt_gui.py:573 notetree/wx_gui.py:641
-msgid "t_tagman"
-msgstr "Manage tags"
+#: notetree/main.py:218
+msgid "no_next_item"
+msgstr "No next note"
 
-#: notetree/qt_gui.py:580 notetree/wx_gui.py:647
-msgid "b_remtag"
-msgstr "Remove selected"
+#: notetree/main.py:227
+msgid "no_prev_item"
+msgstr "No previous note"
 
-#: notetree/qt_gui.py:582 notetree/wx_gui.py:649
-msgid "b_addtag"
-msgstr "Add/Update"
+#: notetree/main.py:258
+msgid "i_seltag"
+msgstr "Enter tag to search for"
 
-#: notetree/qt_gui.py:584 notetree/wx_gui.py:618 notetree/wx_gui.py:651
-msgid "b_done"
-msgstr "Done"
+#: notetree/main.py:284
+msgid "i_seltxt"
+msgstr "Enter text to search for"
 
-#: notetree/qt_gui.py:588 notetree/wx_gui.py:655
-msgid "l_oldval"
-msgstr "Current:"
+#: notetree/main.py:301
+msgid "info_text"
+msgstr ""
+"NoteTree by Albert Visser\n"
+"Electronic notebook"
 
-#: notetree/qt_gui.py:591 notetree/wx_gui.py:658
-msgid "l_newval"
-msgstr "New value"
-
-#: notetree/qt_gui.py:597 notetree/wx_gui.py:664
-msgid "t_applied"
-msgstr "Changes are applied immediately"
-
-#: notetree/qt_gui.py:634 notetree/wx_gui.py:707
-msgid "t_remtag"
-msgstr "About to remove keyword \"{}\" - continue?"
-
-#: notetree/qt_gui.py:649 notetree/wx_gui.py:721
-msgid "t_repltag"
-msgstr "About to replace keyword \"{}\" with \"{}\""
-
-#: notetree/qt_gui.py:650 notetree/wx_gui.py:723
-msgid "t_repltag2"
-msgstr "Also replace where used (if not, entries are removed)?"
-
-#: notetree/qt_gui.py:665 notetree/wx_gui.py:736
-msgid "t_addtag"
-msgstr "About to add new keyword \"{}\" - continue?"
-
-#: notetree/qt_gui.py:752 notetree/wx_gui.py:823
+#: notetree/main.py:306
 msgid "help_text"
 msgstr ""
 "Ctrl-N                   - new note\n"
@@ -427,6 +290,150 @@ msgstr ""
 "F6                       - add/remove tags\n"
 "Shift-F6 - manage tags\n"
 "F9 - reverse order"
+
+#: notetree/main.py:307 notetree/qt_gui.py:573 notetree/wx_gui.py:707
+msgid "t_keys"
+msgstr "special keys"
+
+#: notetree/main.py:321
+msgid "ask_create"
+msgstr "File {} not found, create new?"
+
+#: notetree/main.py:324
+msgid "404_message"
+msgstr "File not found"
+
+#: notetree/main.py:339
+msgid "m_ignore"
+msgstr "Ignoring incompatible sash position"
+
+#: notetree/main.py:345
+msgid "load_message"
+msgstr "Notes have been successfully reloaded"
+
+#: notetree/main.py:345 notetree/main.py:425
+msgid "hide_me"
+msgstr "(You can hide this message in the settings)"
+
+#: notetree/main.py:425
+msgid "save_message"
+msgstr "Notes have been successfully saved"
+
+#: notetree/qt_gui.py:43 notetree/qt_gui.py:254 notetree/wx_gui.py:950
+msgid "revive_message"
+msgstr "Click to revive NoteTree"
+
+#: notetree/qt_gui.py:361 notetree/wx_gui.py:480
+msgid "t_sett"
+msgstr "NoteTree Settings"
+
+#: notetree/qt_gui.py:379 notetree/wx_gui.py:494
+msgid "b_apply"
+msgstr "&Apply"
+
+#: notetree/qt_gui.py:382 notetree/wx_gui.py:497
+msgid "b_close"
+msgstr "&Close"
+
+#: notetree/qt_gui.py:408 notetree/wx_gui.py:527
+msgid "hide_message"
+msgstr "Don't show this message anymore"
+
+#: notetree/qt_gui.py:446 notetree/wx_gui.py:563
+msgid "w_tags"
+msgstr "assign tags"
+
+#: notetree/qt_gui.py:453 notetree/wx_gui.py:568
+msgid "t_tags"
+msgstr "Tag(s):"
+
+#: notetree/qt_gui.py:454 notetree/qt_gui.py:508 notetree/wx_gui.py:569
+#: notetree/wx_gui.py:626
+msgid "b_tag"
+msgstr "&Assign"
+
+#: notetree/qt_gui.py:456 notetree/qt_gui.py:510 notetree/wx_gui.py:571
+#: notetree/wx_gui.py:628
+msgid "b_untag"
+msgstr "&Unassign"
+
+#: notetree/qt_gui.py:458 notetree/qt_gui.py:511 notetree/wx_gui.py:573
+#: notetree/wx_gui.py:629
+msgid "b_newtag"
+msgstr "&New"
+
+#: notetree/qt_gui.py:479 notetree/wx_gui.py:592
+msgid "t_left"
+msgstr "Available:"
+
+#: notetree/qt_gui.py:493 notetree/wx_gui.py:606
+msgid "t_right"
+msgstr "Assigned:"
+
+#: notetree/qt_gui.py:507 notetree/wx_gui.py:625
+msgid "a_from"
+msgstr "Activate Left"
+
+#: notetree/qt_gui.py:509 notetree/wx_gui.py:627
+msgid "a_to"
+msgstr "Activate Right"
+
+#: notetree/qt_gui.py:558 notetree/wx_gui.py:690
+msgid "t_newtag"
+msgstr "Enter new keyword"
+
+#: notetree/qt_gui.py:590 notetree/wx_gui.py:733
+msgid "t_tagman"
+msgstr "Manage tags"
+
+#: notetree/qt_gui.py:597 notetree/wx_gui.py:739
+msgid "b_remtag"
+msgstr "Remove selected"
+
+#: notetree/qt_gui.py:599 notetree/wx_gui.py:741
+msgid "b_addtag"
+msgstr "Add/Update"
+
+#: notetree/qt_gui.py:601 notetree/wx_gui.py:710 notetree/wx_gui.py:743
+msgid "b_done"
+msgstr "Done"
+
+#: notetree/qt_gui.py:605 notetree/wx_gui.py:747
+msgid "l_oldval"
+msgstr "Current:"
+
+#: notetree/qt_gui.py:608 notetree/wx_gui.py:750
+msgid "l_newval"
+msgstr "New value"
+
+#: notetree/qt_gui.py:614 notetree/wx_gui.py:756
+msgid "t_applied"
+msgstr "Changes are applied immediately"
+
+#: notetree/qt_gui.py:651 notetree/wx_gui.py:799
+msgid "t_remtag"
+msgstr "About to remove keyword \"{}\" - continue?"
+
+#: notetree/qt_gui.py:666 notetree/wx_gui.py:813
+msgid "t_repltag"
+msgstr "About to replace keyword \"{}\" with \"{}\""
+
+#: notetree/qt_gui.py:667 notetree/wx_gui.py:815
+msgid "t_repltag2"
+msgstr "Also replace where used (if not, entries are removed)?"
+
+#: notetree/qt_gui.py:682 notetree/wx_gui.py:828
+msgid "t_addtag"
+msgstr "About to add new keyword \"{}\" - continue?"
+
+#~ msgid "t_hide"
+#~ msgstr "Notify that the application will be hidden in the system tray"
+
+#~ msgid "t_load"
+#~ msgstr "Notify that the data has been reloaded"
+
+#~ msgid "t_save"
+#~ msgstr "Notify that the data has been saved"
 
 #~ msgid "no_nt_file"
 #~ msgstr "{} is not a NoteTree file"
