@@ -20,7 +20,7 @@ j_filename = p_filename.replace('.pck', '.json')
 nt_data = dmlp.load_file(p_filename)
 with open(p_filename + '.out-loaded', 'w') as out:
     pprint.pprint(nt_data, stream=out)
-dmlp.save_file(p_filename, nt_data )
+dmlp.save_file(p_filename, nt_data)
 nt_data = dmlp.load_file(p_filename)
 with open(p_filename + '.out-saved', 'w') as out:
     pprint.pprint(nt_data, stream=out)

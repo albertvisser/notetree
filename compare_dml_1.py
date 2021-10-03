@@ -13,12 +13,15 @@ from notetree.settings import backend
 
 settingsfile = pathlib.Path('notetree/settings.py')
 backend_types = ['pck', 'json', 'sql'] * 2
+
+
 def next_backend(fromvalue, tovalue):
     data = settingsfile.read_text()
     old = "backend = '{}'".format(backend_types[fromvalue])
     new = "backend = '{}'".format(backend_types[tovalue])
     data = data.replace(old, new)
     settingsfile.write_text(data)
+
 
 def test_main():
     startdir = pathlib.Path('/tmp/notetree')
@@ -55,6 +58,7 @@ def test_main():
             print(key, value, file=out)
 
     subprocess.run(['meld', p_filename + '.out', s_filename + '.out', j_filename + '.out'])
+
 
 if __name__ == '__main__':
     test_main()

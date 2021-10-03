@@ -209,10 +209,10 @@ class TestNoteTree:
         def mock_define_screen(*args):
             print('called define_screen()')
         def mock_open(self, **kwargs):
-            arg = 'first_time' if kwargs.get('first_time', None) == True else 'not first'
+            arg = 'first_time' if kwargs.get('first_time', None) else 'not first'
             print('called open(`{}`)'.format(arg))
         def mock_open_err(self, **kwargs):
-            arg = 'first_time' if kwargs.get('first_time', None) == True else 'not first'
+            arg = 'first_time' if kwargs.get('first_time', None) else 'not first'
             print('called open(`{}`)'.format(arg))
             return 'error'
         monkeypatch.setattr(main.gui, 'MainWindow', MockMainWindow)
@@ -336,7 +336,7 @@ class TestNoteTree:
         testsubj.opts = {'AskBeforeHide': True}
         monkeypatch.setattr(MockMainWindow, 'show_dialog', mock_show_dialog)
         testsubj.hide_me()
-        assert testsubj.opts['AskBeforeHide'] == False
+        assert not testsubj.opts['AskBeforeHide']
         assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
                                            'called mainwindow.show_dialog()\n'
                                            'called mainwindow.sleep()\n')
@@ -525,7 +525,7 @@ class TestNoteTree:
         testsubj.opts = {'RevOrder': False}
         testsubj.gui.root = 'x'
         testsubj.reverse()
-        assert testsubj.opts['RevOrder'] == True
+        assert testsubj.opts['RevOrder']
         assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
                                            'called self.build_tree()\n'
                                            'called mainwindow.select_item()\n'
@@ -535,7 +535,7 @@ class TestNoteTree:
         testsubj.opts = {'RevOrder': True}
         testsubj.gui.root = 'x'
         testsubj.reverse()
-        assert testsubj.opts['RevOrder'] == False
+        assert not testsubj.opts['RevOrder']
         assert capsys.readouterr().out == ('called mainwindow.__init__()\n'
                                            'called self.build_tree()\n'
                                            'called mainwindow.select_item()\n'

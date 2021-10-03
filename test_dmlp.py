@@ -57,4 +57,3 @@ def test_save(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(dmlp.pck, 'dump', mock_save)
     dmlp.save_file(dest, data)
     assert capsys.readouterr().out == 'called pickle.dump for data `nt_data`\n'
-

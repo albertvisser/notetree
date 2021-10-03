@@ -5,6 +5,7 @@ import json
 import datetime
 import collections
 
+
 def load_file(filename):
     """raise EOFError als file niet gelezen kan worden
     geeft geen resultaat als bestand niet bestaat

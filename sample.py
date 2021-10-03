@@ -6,12 +6,12 @@ waarna het programma eindigt
 
 uitvoeren d.m.v. : `pytest sample.py`
 """
-import sys
 import datetime
 import notetree.main as nt
 from notetree.settings import backend
 ext = 'db' if backend == 'sql' else backend
 filename = '.'.join(('/tmp/notetree/testdata', ext))
+
 
 class MockMainWindow:
     def __init__(self, root):

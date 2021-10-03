@@ -71,7 +71,7 @@ class MainWindow(wx.Frame):
 
     def setup_text(self):
         "define the scintilla widget's properties"
-        # # Set the default font
+        # Set the default font
         monospace_font = wx.Font()
         monospace_font.SetFamily(wx.FONTFAMILY_TELETYPE)
         # monospace_font.SetFixedPitch(True)
@@ -102,13 +102,13 @@ class MainWindow(wx.Frame):
         # SCE_MARKDOWN_STRONG1: "**" - Strong emphasis (bold)
         # SCE_MARKDOWN_STRONG2: "__" - Strong emphasis (bold)
         for style in (2, 3):
-            self.editor.StyleSetForeground(style, wx.Colour(34, 68, 102))  #224466
+            self.editor.StyleSetForeground(style, wx.Colour(34, 68, 102))  # 0x224466
             self.editor.StyleSetBold(style, True)
 
         # SCE_MARKDOWN_EM1: '*' - Emphasis (italic)
         # SCE_MARKDOWN_EM2: '_' - Emphasis (italic)
         for style in (4, 5):
-            self.editor.StyleSetForeground(style, wx.Colour(70, 51, 0))  #663300
+            self.editor.StyleSetForeground(style, wx.Colour(70, 51, 0))  # 0x663300
             self.editor.StyleSetItalic(style, True)
 
         # SCE_MARKDOWN_HEADER1: "#" - Level-one header
@@ -118,42 +118,42 @@ class MainWindow(wx.Frame):
         # SCE_MARKDOWN_HEADER5: "#####" - Level-five header
         # SCE_MARKDOWN_HEADER6: "######" - Level-six header
         for style in range(6, 12):
-            self.editor.StyleSetForeground(style, wx.Colour(81, 131, 196))   #5183C4
+            self.editor.StyleSetForeground(style, wx.Colour(81, 131, 196))   # 0x5183C4
             self.editor.StyleSetBold(style, True)
             # self.editor.StyleSetFont(style, monospace_font)
 
         # SCE_MARKDOWN_PRECHAR: Prechar (up to three indent spaces, e.g. for a second-level list)
-        self.editor.StyleSetBackground(12, wx.Colour(253, 253, 170))  #EEEEAA
-        self.editor.StyleSetForeground(12, wx.Colour(0, 0, 0))        #000000
+        self.editor.StyleSetBackground(12, wx.Colour(253, 253, 170))  # 0xEEEEAA
+        self.editor.StyleSetForeground(12, wx.Colour(0, 0, 0))        # 0x000000
 
         # SCE_MARKDOWN_ULIST_ITEM: "- ", "* ", "+ " - Unordered list item
         # SCE_MARKDOWN_OLIST_ITEM: "1. " to "9. ", "#. " - Ordered list item
-        self.editor.StyleSetForeground(13, wx.Colour(85, 85, 85))   #555555
-        self.editor.StyleSetForeground(14, wx.Colour(85, 85, 85))   #555555
+        self.editor.StyleSetForeground(13, wx.Colour(85, 85, 85))   # 0x555555
+        self.editor.StyleSetForeground(14, wx.Colour(85, 85, 85))   # 0x555555
 
         # SCE_MARKDOWN_BLOCKQUOTE: "> " - Block quote
-        self.editor.StyleSetForeground(15, wx.Colour(0, 0, 136))   #000088
+        self.editor.StyleSetForeground(15, wx.Colour(0, 0, 136))   # 0x000088
 
         # SCE_MARKDOWN_STRIKEOUT: "~~" - Strikeout
-        self.editor.StyleSetBackground(16, wx.Colour(169, 186, 157))   #A9BA9D
-        self.editor.StyleSetForeground(16, wx.Colour(24, 69, 59))   #18453B
+        self.editor.StyleSetBackground(16, wx.Colour(169, 186, 157))   # 0xA9BA9D
+        self.editor.StyleSetForeground(16, wx.Colour(24, 69, 59))   # 0x18453B
         # self.editor.StyleSetFont(16, monospace_font)
 
         # SCE_MARKDOWN_HRULE: "---", "***", "___" - Horizontal rule
-        self.editor.StyleSetForeground(17, wx.Colour(85, 85, 85))   #555555
+        self.editor.StyleSetForeground(17, wx.Colour(85, 85, 85))   # 0x555555
         self.editor.StyleSetBold(17, True)
         # self.editor.StyleSetFont(17, monospace_font)
 
         # SCE_MARKDOWN_LINK: "[]", "![]" - Link or image
-        self.editor.StyleSetForeground(18, wx.Colour(0, 0, 170))    #0000AA
+        self.editor.StyleSetForeground(18, wx.Colour(0, 0, 170))    # 0x0000AA
         self.editor.StyleSetUnderline(style, True)
 
         # SCE_MARKDOWN_CODE: '`' - Inline code
         # SCE_MARKDOWN_CODE2: "``" - Inline code (quotes code containing a single backtick)
         # SCE_MARKDOWN_CODEBK: "~~~" - Code block
         for style in range(19, 22):
-            self.editor.StyleSetBackground(style, wx.Colour(253, 253, 253))   #EEEEEE
-            self.editor.StyleSetForeground(style, wx.Colour(0, 0, 136))   #000088
+            self.editor.StyleSetBackground(style, wx.Colour(253, 253, 253))   # 0xEEEEEE
+            self.editor.StyleSetForeground(style, wx.Colour(0, 0, 136))   # 0x000088
             # self.editor.StyleSetFont(style, monospace_font)
 
     def create_menu(self):

@@ -15,7 +15,7 @@ def setup_mainwindow(monkeypatch):
     return gui.MainWindow(MockNoteTree())
 
 
-#--- redefine gui elements to facilitatie testing ---
+# --- redefine gui elements to facilitatie testing ---
 class MockApp:
     def __init__(self, *args):
         print('called app.__init__()')
@@ -50,7 +50,7 @@ class MockFrame:
     def Hide(self, *args):
         print('called frame.Hide()')
     def GetSize(self):
-        return wx.Size(1, 2)
+        pass
 
 
 class MockSize:
@@ -73,7 +73,7 @@ class MockMenuBar:
         print('called MenuBar.__init__()')
     def GetMenus(self, *args):
         print('called menubar.GetMenus()')
-        return [(MockMenu(), 'label1'),( MockMenu(), 'label2')]
+        return [(MockMenu(), 'label1'), (MockMenu(), 'label2')]
     def Append(self, *args):
         print('called menubar.Append()')
     def Replace(self, *args):
@@ -411,13 +411,13 @@ class MockMessageDialog(gui.wx.Dialog):
         print('called dialog.Destroy()')
 
 
-#--- and now for the actual testing stuff ---
+# --- and now for the actual testing stuff ---
 class TestMainWindow:
     def test_init(self, monkeypatch, capsys):
         testobj = setup_mainwindow(monkeypatch)
         assert hasattr(testobj, 'base')
         assert hasattr(testobj, 'app')
-        assert testobj.activeitem == None
+        assert testobj.activeitem is None
         assert capsys.readouterr().out == ('called MockNoteTree.__init__()\n'
                                            'called app.__init__()\n')
 
@@ -580,16 +580,14 @@ class TestMainWindow:
             return MockMenuBar()
         def mock_get_menudata(*args):
             self = args[0]
-            return ( ('other', (
-                     (_('m_forward'), self.callback, 'forward', 'Ctrl+PgDown'),
-                     (_('m_back'), self.callback, 'back', 'Ctrl+PgUp,F2'),
-                     ('other', self.callback, 'other', 'Ctrl+D,Delete'), ), ),
-                     (_("m_view"), (
-                     (_("m_revorder"), self.callback, _("h_revorder"), 'F9'),
-                     ("", None, None, None),
-                     (_("m_selall"), self.callback, _("h_selall"), None),
-                     (_("m_seltag"), self.callback, _("h_seltag"), None),
-                     (_("m_seltxt"), self.callback, _("h_seltxt"), None), ), ), )
+            return (('other', ((_('m_forward'), self.callback, 'forward', 'Ctrl+PgDown'),
+                               (_('m_back'), self.callback, 'back', 'Ctrl+PgUp,F2'),
+                               ('other', self.callback, 'other', 'Ctrl+D,Delete'), ), ),
+                    (_("m_view"), ((_("m_revorder"), self.callback, _("h_revorder"), 'F9'),
+                                   ("", None, None, None),
+                                   (_("m_selall"), self.callback, _("h_selall"), None),
+                                   (_("m_seltag"), self.callback, _("h_seltag"), None),
+                                   (_("m_seltxt"), self.callback, _("h_seltxt"), None), ), ), )
         def mock_set_accel(*args):
             print('called mainwindow.SetAcceleratorTable()')
         monkeypatch.setattr(MockNoteTree, 'get_menudata', mock_get_menudata)
@@ -671,16 +669,14 @@ class TestMainWindow:
             return MockMenuBar()
         def mock_get_menudata(*args):
             self = args[0]
-            return ( ('other', (
-                     (_('m_forward'), self.callback, 'forward', 'Ctrl+PgDown'),
-                     (_('m_back'), self.callback, 'back', 'Ctrl+PgUp,F2'),
-                     ('other', self.callback, 'other', 'Ctrl+D,Delete'), ), ),
-                     (_("m_view"), (
-                     (_("m_revorder"), self.callback, _("h_revorder"), 'F9'),
-                     ("", None, None, None),
-                     (_("m_selall"), self.callback, _("h_selall"), None),
-                     (_("m_seltag"), self.callback, _("h_seltag"), None),
-                     (_("m_seltxt"), self.callback, _("h_seltxt"), None), ), ), )
+            return ( ('other', ((_('m_forward'), self.callback, 'forward', 'Ctrl+PgDown'),
+                                (_('m_back'), self.callback, 'back', 'Ctrl+PgUp,F2'),
+                                ('other', self.callback, 'other', 'Ctrl+D,Delete'), ), ),
+                     (_("m_view"), ((_("m_revorder"), self.callback, _("h_revorder"), 'F9'),
+                                    ("", None, None, None),
+                                    (_("m_selall"), self.callback, _("h_selall"), None),
+                                    (_("m_seltag"), self.callback, _("h_seltag"), None),
+                                    (_("m_seltxt"), self.callback, _("h_seltxt"), None), ), ), )
         def mock_set_accel(*args):
             print('called mainwindow.SetAcceleratorTable()')
         monkeypatch.setattr(MockNoteTree, 'get_menudata', mock_get_menudata)
@@ -764,7 +760,7 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch)
         testobj.editor = MockEditor()
         testobj.OnEvtText('x')
-        assert testobj.editor.IsModified == True
+        assert testobj.editor.IsModified
 
     def OnSelChanging(self, monkeypatch, capsys):
         "deze methode is wel gedfinieerd maar leeggelaten"
@@ -1251,7 +1247,7 @@ class TestMainWindow:
             return gui.wx.ID_OK
         monkeypatch.setattr(gui.wx.Dialog, 'ShowModal', mock_showmodal)
         testobj = setup_mainwindow(monkeypatch)
-        assert testobj.show_dialog (MockDialog, 'title') == (True, 'confirmation data')
+        assert testobj.show_dialog(MockDialog, 'title') == (True, 'confirmation data')
         assert capsys.readouterr().out == ('called MockNoteTree.__init__()\n'
                                            'called app.__init__()\n'
                                            "called MockDialog.__init__() with args `('title',)`\n"
@@ -1262,7 +1258,7 @@ class TestMainWindow:
             return gui.wx.ID_CANCEL
         monkeypatch.setattr(MockDialog, 'ShowModal', mock_showmodal)
         testobj = setup_mainwindow(monkeypatch)
-        assert testobj.show_dialog (MockDialog, ('title',)) == (False, None)
+        assert testobj.show_dialog(MockDialog, ('title',)) == (False, None)
 
     def test_get_text_from_user(self, monkeypatch, capsys):
         monkeypatch.setattr(gui.wx, 'TextEntryDialog', MockTextDialog)
@@ -1289,7 +1285,7 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch)
         testobj.base.app_title = 'title'
         assert testobj.get_choice_from_user('prompt', ['choices'], 'default') == (
-                'selected value', True)
+            'selected value', True)
         assert capsys.readouterr().out == ('called MockNoteTree.__init__()\n'
                                            'called app.__init__()\n'
                                            'called MockChoiceDialog.__init__ with args'
@@ -1305,7 +1301,7 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch)
         testobj.base.app_title = 'title'
         assert testobj.get_choice_from_user('prompt', ['choices'], 'default') == (
-                'selected value', False)
+            'selected value', False)
 
 
 class TestOptionsDialog:
@@ -1464,7 +1460,7 @@ class TestKeywordsDialog:
         monkeypatch.setattr(gui.KeywordsDialog, 'create_actions', mock_create_actions)
         testobj = gui.KeywordsDialog(mockparent, '')
         assert hasattr(testobj, 'helptext')
-        #testobj = gui.KeywordsDialog(mockparent, keywords)
+        # testobj = gui.KeywordsDialog(mockparent, keywords)
         assert capsys.readouterr().out == ('called wxDialog.__init__()\n'
                                            "called dialog.SetTitle() with args "
                                            "`('title - w_tags',)`\n"
@@ -1911,15 +1907,14 @@ class TestKeywordsDialog:
         assert testobj.confirm() == ['items from listbox']
 
 
-
 class TestKeywordsManager:
     def test_init(self, monkeypatch, capsys):
         def mock_init(self, *args):
             print('called wxDialog.__init__()')
         def mock_SetTitle(self, *args):
-           print('called dialog.SetTitle() with args `{}`'.format(args))
+            print('called dialog.SetTitle() with args `{}`'.format(args))
         def mock_SetIcon(self, *args):
-           print('called dialog.SetIcon() with args `{}`'.format(args))
+            print('called dialog.SetIcon() with args `{}`'.format(args))
         def mock_setaffirmativeid(self, *args):
             print('called dialog.SetAffirmativeId()')
         def mock_setsizer(self, *args):
@@ -2353,7 +2348,7 @@ class TestGetTextDialog:
                                            'called dialog.create_inputwin()\n'
                                            'called TextCtrl.__init__()\n'
                                            'called CheckBox.__init__()\n'
-        #                                  'called checkbox.SetValue(`False`)\n'
+                                           # 'called checkbox.SetValue(`False`)\n'
                                            'called CheckBox.__init__()\n'
                                            'called checkbox.SetValue(`False`)\n'
                                            'called BoxSizer.__init__(`vert`)\n'
@@ -2423,7 +2418,7 @@ class TestGetTextDialog:
                                            'called dialog.create_inputwin()\n'
                                            'called TextCtrl.__init__()\n'
                                            'called CheckBox.__init__()\n'
-        #                                  'called checkbox.SetValue(`False`)\n'
+                                           # 'called checkbox.SetValue(`False`)\n'
                                            'called CheckBox.__init__()\n'
                                            'called checkbox.SetValue(`False`)\n'
                                            'called checkbox.SetValue(`True`)\n'
@@ -2588,4 +2583,3 @@ class TestTaskbarIcon:
                                            'called trayicon.__init__()\n'
                                            'called Menu.__init__()\n'
                                            'called menu.Append()\n')
-

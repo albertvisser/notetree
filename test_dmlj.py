@@ -1,5 +1,4 @@
 import pytest
-import datetime
 import notetree.json_dml as dmlj
 
 
@@ -59,4 +58,3 @@ def test_save(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(dmlj.json, 'dump', mock_save)
     dmlj.save_file(dest, data)
     assert capsys.readouterr().out == 'called json.dump for data `nt_data`\n'
-

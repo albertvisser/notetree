@@ -1,6 +1,4 @@
-import types
 import pytest
-import datetime
 import notetree.sql_dml as dmls
 
 
@@ -101,7 +99,7 @@ def test_load_4(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(dmls.sql, 'connect', mock_connect)
     monkeypatch.setattr(MockCursor, '__iter__', mock_iter)
     assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'Keywords': []},
-                                    '01-01-0001 00:00:00': ['title_1', 'text_1',[]]}
+                                    '01-01-0001 00:00:00': ['title_1', 'text_1', []]}
     assert capsys.readouterr().out == ('execute SQL:'
                                        ' `SELECT noteid, created, title, text FROM notes`\n'
                                        'execute SQL: `SELECT tagid, tagname FROM tags`\n'
@@ -128,7 +126,7 @@ def test_load_5(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(dmls.sql, 'connect', mock_connect)
     monkeypatch.setattr(MockCursor, '__iter__', mock_iter)
     assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'Keywords': ['tag_title_1']},
-                                    '01-01-0001 00:00:00': ['title_1', 'text_1',['tag_title_1']]}
+                                    '01-01-0001 00:00:00': ['title_1', 'text_1', ['tag_title_1']]}
     assert capsys.readouterr().out == ('execute SQL:'
                                        ' `SELECT noteid, created, title, text FROM notes`\n'
                                        'execute SQL: `SELECT tagid, tagname FROM tags`\n'

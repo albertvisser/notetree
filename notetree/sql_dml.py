@@ -22,10 +22,10 @@ CREATE INDEX IF NOT EXISTS linksbydoc ON links(doc_id);
 CREATE INDEX IF NOT EXISTS linksbytag ON links(tag_id);
 """
 insert_note = 'INSERT INTO notes (noteid, created, title, text) VALUES(?, ?, ?, ?)'
-insert_tag ='INSERT INTO tags (tagid, tagname) VALUES(?, ?)'
+insert_tag = 'INSERT INTO tags (tagid, tagname) VALUES(?, ?)'
 insert_link = 'INSERT INTO links (doc_id, tag_id) VALUES(?, ?)'
 read_notes = 'SELECT noteid, created, title, text FROM notes'
-read_tags  = 'SELECT tagid, tagname FROM tags'
+read_tags = 'SELECT tagid, tagname FROM tags'
 read_links = 'SELECT doc_id, tag_id FROM links'
 
 
