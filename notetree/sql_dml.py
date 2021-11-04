@@ -57,10 +57,13 @@ def load_file(filename):
             doc_id, tag_id = line
             nt_data[docdict[doc_id]][2].append(tagdict[tag_id])
     ordered = collections.OrderedDict()
+    for key in ('ScreenSize', 'Selection', 'SashPosition'):
+        options[key] = tuple(options[key])
     ordered[0] = options
+    # ordered = {0: options}
     for key in sorted(nt_data.keys(),
                       key=lambda x: datetime.datetime.strptime(str(x), "%d-%m-%Y %H:%M:%S")):
-        ordered[key] = nt_data[key]
+        ordered[key] = tuple(nt_data[key])
     return ordered
 
 
@@ -75,7 +78,7 @@ def save_file(filename, nt_data):
         count = 0
         for created, value in nt_data.items():
             if created == 0:
-                settings = nt_data[0]
+                settings = {x: y for x, y in nt_data[0].items()}
                 keywords = [x for x in settings.pop('Keywords')]
                 cur.execute(insert_note, (0, '', '', json.dumps(settings)))
                 continue

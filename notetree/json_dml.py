@@ -20,10 +20,13 @@ def load_file(filename):
     if not test or test != "NoteTree":
         raise EOFError("no_nt_file")
     ordered = collections.OrderedDict()
+    for key in ('ScreenSize', 'Selection', 'SashPosition'):
+        options[key] = tuple(options[key])
     ordered[0] = options
+    # ordered = {0: options}
     for key in sorted(nt_data.keys(),
                       key=lambda x: datetime.datetime.strptime(x, "%d-%m-%Y %H:%M:%S")):
-        ordered[key] = nt_data[key]
+        ordered[key] = tuple(nt_data[key])
     return ordered
 
 

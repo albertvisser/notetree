@@ -1,6 +1,8 @@
 """NoteTree load/save data through pickle
 """
 import os.path
+import collections
+import datetime
 import pickle as pck
 
 
@@ -17,7 +19,17 @@ def load_file(filename):
         if not test or test != "NoteTree":
             # simuleer foutgaan bij pck.load als het geen pickle bestand is
             raise EOFError("no_nt_file")
-    return nt_data
+    # in lijn brengen met de andere backends
+    # return nt_data
+    nt_data.pop(0)
+    ordered = collections.OrderedDict()
+    for key in ('ScreenSize', 'Selection', 'SashPosition'):
+        options[key] = tuple(options[key])
+    ordered[0] = options
+    for key in sorted(nt_data.keys(),
+                      key=lambda x: datetime.datetime.strptime(str(x), "%d-%m-%Y %H:%M:%S")):
+        ordered[key] = nt_data[key]
+    return ordered
 
 
 def save_file(filename, nt_data):
