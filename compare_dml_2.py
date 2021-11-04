@@ -13,11 +13,12 @@ import notetree.pickle_dml as dmlp
 import notetree.sql_dml as dmls
 import notetree.json_dml as dmlj
 
-p_filename = 'MyNotes.pck'
+base_filename = 'MyNotes.pck'
+p_filename = '/tmp/notetree/' + base_filename
 s_filename = p_filename.replace('.pck', '.db')
 j_filename = p_filename.replace('.pck', '.json')
 
-nt_data = dmlp.load_file(p_filename)
+nt_data = dmlp.load_file(base_filename)
 with open(p_filename + '.out-loaded', 'w') as out:
     pprint.pprint(nt_data, stream=out)
 dmlp.save_file(p_filename, nt_data)
