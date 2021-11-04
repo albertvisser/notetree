@@ -41,21 +41,33 @@ def test_main():
     with open(p_filename + '.out', 'w') as out:
     #     pprint.pprint(pck_data, stream=out)
         for key, value in pck_data.items():
-            print(key, value, file=out)
+            if key == 0:
+                for x, y in sorted(value.items()):
+                    print(x, y, file=out)
+            else:
+                print(key, value, file=out)
 
     s_filename = str(filename.with_suffix('.db'))
     sql_data = dmls.load_file(s_filename)
     with open(s_filename + '.out', 'w') as out:
     #     pprint.pprint(sql_data, stream=out)
         for key, value in sql_data.items():
-            print(key, value, file=out)
+            if key == 0:
+                for x, y in sorted(value.items()):
+                    print(x, y, file=out)
+            else:
+                print(key, value, file=out)
 
     j_filename = str(filename.with_suffix('.json'))
     json_data = dmlj.load_file(j_filename)
     with open(j_filename + '.out', 'w') as out:
     #     pprint.pprint(json_data, stream=out)
         for key, value in json_data.items():
-            print(key, value, file=out)
+            if key == 0:
+                for x, y in sorted(value.items()):
+                    print(x, y, file=out)
+            else:
+                print(key, value, file=out)
 
     subprocess.run(['meld', p_filename + '.out', s_filename + '.out', j_filename + '.out'])
 
