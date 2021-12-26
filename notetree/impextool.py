@@ -227,14 +227,14 @@ class FileBrowseButton(qtw.QFrame):
 class MainWidget(qtw.QWidget):
     """Main GUI
     """
-    def __init__(self):
+    def __init__(self, fname):
         super().__init__()
         sizer = qtw.QVBoxLayout()
 
         nt_files, extfiles = read_mru()
         hsizer = qtw.QHBoxLayout()
         browse = FileBrowseButton(self, caption='NoteTree file:',
-                                  text='',
+                                  text=fname,
                                   items=nt_files)
         hsizer.addWidget(browse)
         ## hsizer.addStretch()
@@ -323,9 +323,9 @@ class MainWidget(qtw.QWidget):
         self.close()
 
 
-def main():
+def main(fname=''):
     """start the utility
     """
     app = qtw.QApplication(sys.argv)
-    win = MainWidget()
+    win = MainWidget(fname)
     sys.exit(app.exec_())
