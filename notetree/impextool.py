@@ -146,7 +146,6 @@ def import_(nt_file, extfile, remove_unused):
                 key = line[4:].strip()
                 print(oldkey, key)
                 if oldkey and key != oldkey:
-                    # TODO: title, text en keywords zijn hier nog niet gedefinieerd
                     nt_data[oldkey] = (title, "\n".join(text), keywords)
                 oldkey = key
             elif line.startswith('title:'):  # and not in_text:
