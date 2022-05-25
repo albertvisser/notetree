@@ -201,7 +201,7 @@ class MainWindow(wx.Frame):
                     if accel.FromString(primary):
                         accel_list.append(accel)
                 for key in keydef:  # define extra keydefs via accelerator table
-                    menu_item = wx.MenuItem(id=wx.NewId(), text=label)
+                    menu_item = wx.MenuItem(text=label)
                     # self.Bind(wx.EVT_MENU, handler, menu_item)
                     menu_item.Bind(wx.EVT_MENU, handler)
                     accel = wx.AcceleratorEntry(cmd=menu_item.GetId())
@@ -518,8 +518,8 @@ class CheckDialog(wx.Dialog):
     Eventueel ook te implementeren m.b.v. wx.RichMessageDialog
     """
     def __init__(self, parent, option, message):
-        wx.Dialog.__init__(self, parent, wx.NewId(), title=parent.base.app_title,
-                           size=(-1, 120), pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE)
+        wx.Dialog.__init__(self, parent, title=parent.base.app_title, size=(-1, 120),
+                           pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE)
         # pnl = wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer0.Add(wx.StaticText(self, -1, message), 1, wx.ALL, 5)
@@ -628,7 +628,7 @@ class KeywordsDialog(wx.Dialog):
                            (_('b_untag'), 'Ctrl+Left', self.move_left),
                            (_('b_newtag'), 'Ctrl+N', self.add_trefw))
         for name, shortcut, callback in self.actionlist:
-            act = wx.MenuItem(id=wx.NewId(), text=name)
+            act = wx.MenuItem(text=name)
             act.Bind(wx.EVT_MENU, callback)
             accel = wx.AcceleratorEntry(cmd=act.GetId())
             ok = accel.FromString(shortcut)
@@ -942,7 +942,7 @@ class GridDialog(wx.Dialog):
 
 class TaskbarIcon(wx.adv.TaskBarIcon):
     "icon in the taskbar"
-    id_revive = wx.NewId()
+    id_revive = wx.NewIdRef()
 
     def __init__(self, parent):
         super().__init__(wx.adv.TBI_DOCK)
