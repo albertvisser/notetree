@@ -1,3 +1,4 @@
+import json
 import pytest
 import notetree.sql_dml as dmls
 
@@ -81,6 +82,7 @@ def test_load_3(monkeypatch, capsys, tmp_path):
 
 def test_load_4(monkeypatch, capsys, tmp_path):
     "everyting ok, no tags"
+    conf = {"Application": 'NoteTree', "ScreenSize": (9, 6), "Selection": [10, 1], "SashPosition": [55]}
     count = 0
     def mock_connect(*args):
         return MockConn()
@@ -88,7 +90,7 @@ def test_load_4(monkeypatch, capsys, tmp_path):
         nonlocal count
         count += 1
         if count == 1:
-            return (x for x in [(0, '', '', '{"Application": "NoteTree"}'),
+            return (x for x in [(0, '', '', json.dumps(conf)),
                                 (1, '01-01-0001 00:00:00', 'title_1', 'text_1')])
         elif count == 2:
             return (x for x in [])
@@ -98,8 +100,10 @@ def test_load_4(monkeypatch, capsys, tmp_path):
     dest.touch()
     monkeypatch.setattr(dmls.sql, 'connect', mock_connect)
     monkeypatch.setattr(MockCursor, '__iter__', mock_iter)
-    assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'Keywords': []},
-                                    '01-01-0001 00:00:00': ['title_1', 'text_1', []]}
+    # assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'Keywords': []},
+    assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'ScreenSize': (9, 6),
+                                       'Selection': (10,1), 'SashPosition': (55,), 'Keywords': []},
+                                    '01-01-0001 00:00:00': ('title_1', 'text_1', [])}
     assert capsys.readouterr().out == ('execute SQL:'
                                        ' `SELECT noteid, created, title, text FROM notes`\n'
                                        'execute SQL: `SELECT tagid, tagname FROM tags`\n'
@@ -108,6 +112,7 @@ def test_load_4(monkeypatch, capsys, tmp_path):
 
 def test_load_5(monkeypatch, capsys, tmp_path):
     "everyting ok, with tags"
+    conf = {'Application': 'NoteTree', 'ScreenSize': (9, 6), 'Selection': [10, 1], 'SashPosition': [55]}
     count = 0
     def mock_connect(*args):
         return MockConn()
@@ -115,7 +120,7 @@ def test_load_5(monkeypatch, capsys, tmp_path):
         nonlocal count
         count += 1
         if count == 1:
-            return (x for x in [(0, '', '', '{"Application": "NoteTree"}'),
+            return (x for x in [(0, '', '', json.dumps(conf)),
                                 (1, '01-01-0001 00:00:00', 'title_1', 'text_1')])
         elif count == 2:
             return (x for x in [('tagid_1', 'tag_title_1')])
@@ -125,8 +130,11 @@ def test_load_5(monkeypatch, capsys, tmp_path):
     dest.touch()
     monkeypatch.setattr(dmls.sql, 'connect', mock_connect)
     monkeypatch.setattr(MockCursor, '__iter__', mock_iter)
-    assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'Keywords': ['tag_title_1']},
-                                    '01-01-0001 00:00:00': ['title_1', 'text_1', ['tag_title_1']]}
+    # assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'Keywords': ['tag_title_1']},
+    assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'ScreenSize': (9, 6),
+                                       'Selection': (10,1), 'SashPosition': (55,),
+                                       'Keywords': ['tag_title_1']},
+                                    '01-01-0001 00:00:00': ('title_1', 'text_1', ['tag_title_1'])}
     assert capsys.readouterr().out == ('execute SQL:'
                                        ' `SELECT noteid, created, title, text FROM notes`\n'
                                        'execute SQL: `SELECT tagid, tagname FROM tags`\n'

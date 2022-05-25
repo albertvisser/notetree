@@ -45,9 +45,11 @@ def test_load_5(monkeypatch, capsys, tmp_path):
     "no errors"
     dest = tmp_path / 'load5.json'
     dest.touch()
-    monkeypatch.setattr(dmlj.json, 'load', lambda x: {0: {'Application': 'NoteTree'},
-                                                      '01-01-0001 00:00:00': 'x'})
-    assert dmlj.load_file(dest) == {0: {'Application': 'NoteTree'}, '01-01-0001 00:00:00': 'x'}
+    conf = {'Application': 'NoteTree', 'ScreenSize': (9, 6), 'Selection': [10, 1], 'SashPosition': [55]}
+    monkeypatch.setattr(dmlj.json, 'load', lambda x: {0: conf, '01-01-0001 00:00:00': 'x'})
+    assert dmlj.load_file(dest) == {0: {'Application': 'NoteTree', 'ScreenSize': (9, 6),
+                                       'Selection': (10,1), 'SashPosition': (55,)},
+                                       '01-01-0001 00:00:00': ('x',)}    # is dit text + keywords?
 
 
 def test_save(monkeypatch, capsys, tmp_path):

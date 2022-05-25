@@ -1,12 +1,13 @@
 """ unittests voor wx_gui.py
 """
 import os
+# import gettext
 import pytest
-import gettext
 import types
 import notetree.wx_gui as gui
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-gettext.install("NoteTree", os.path.join(HERE, 'locale'))
+# HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# HERE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
 
 def setup_mainwindow(monkeypatch):

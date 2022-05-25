@@ -2,11 +2,12 @@
 """
 import os
 import types
+# import gettext
 import pytest
-import gettext
 import notetree.qt_gui as gui
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-gettext.install("NoteTree", os.path.join(HERE, 'locale'))
+# HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# HERE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
 
 def setup_mainwindow(monkeypatch):
@@ -1053,6 +1054,7 @@ class TestOptionsDialog:
             print('called QDialog.__init__()')
         # in methoden die een super() aanroep bevatten om een methode op aan te roepen moet ik de
         # overgeërfde methoden die via self worden aangeroepen ook op de superklasse patchen
+        # de superklasse zelf patchen werkt blijkbaar niet
         def mock_setWindowTitle(self, *args):
             print('called dialog.setWindowTitle() with args `{}`'.format(args))
         def mock_setLayout(self, *args):
