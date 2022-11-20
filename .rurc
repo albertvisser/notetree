@@ -1,0 +1,18 @@
+[testdir]
+unittests
+
+[testscripts]
+dmlj:  test_dmlj.py
+dmlp:  test_dmlp.py
+dmls:  test_dmls.py
+main:  test_main.py
+qtgui: test_qtgui.py
+wxgui: test_wxgui.py
+
+[testees]
+dmlj:  notetree/json_dml.py
+dmlp:  notetree/pickle_dml.py
+dmls:  notetree/sql_dml.py
+main:  notetree/main.py
+qtgui: notetree/qt_gui.py
+wxgui: notetree/wx_gui.py
