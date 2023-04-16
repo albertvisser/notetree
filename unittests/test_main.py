@@ -296,17 +296,55 @@ class TestNoteTree:
             "called self.open()\n"
         )
 
+    def test_save_from_menu(self, monkeypatch, capsys):
+        def mock_update(force_save):
+            print(f"called update() with arg {force_save}")
+        testsubj = setup_notetree_class(monkeypatch)
+        assert capsys.readouterr().out == "called mainwindow.__init__()\n"
+        monkeypatch.setattr(testsubj, "update", mock_update)
+        testsubj.save_from_menu()
+        assert capsys.readouterr().out == 'called update() with arg True\n'
+
     def test_update(self, monkeypatch, capsys):
         def mock_tree_to_dict(*args):
             print("called tree_to_dict()")
-
+        def mock_tree_to_dict_2(self):
+            print("called tree_to_dict()")
+            self.nt_data = {'not': 'empty'}
         def mock_save(*args):
             print("called save()")
-
         testsubj = setup_notetree_class(monkeypatch)
-        testsubj.opts = {}
+        assert capsys.readouterr().out == "called mainwindow.__init__()\n"
         monkeypatch.setattr(testsubj, "tree_to_dict", mock_tree_to_dict)
         monkeypatch.setattr(testsubj, "save", mock_save)
+        testsubj.nt_data = {}
+        testsubj.old_nt_data = {}
+        testsubj.opts = {}
+        testsubj.update()
+        assert "ScreenSize" in testsubj.opts
+        assert "SashPosition" in testsubj.opts
+        assert capsys.readouterr().out == (
+            "called tree_to_dict()\n"
+            "called mainwindow.get_screensize()\n"
+            "called mainwindow.get_splitterpos()\n")
+        testsubj.nt_data = {}
+        testsubj.old_nt_data = {}
+        testsubj.opts = {}
+        testsubj.update(force_save=True)
+        assert "ScreenSize" in testsubj.opts
+        assert "SashPosition" in testsubj.opts
+        assert capsys.readouterr().out == (
+            "called tree_to_dict()\n"
+            "called mainwindow.get_screensize()\n"
+            "called mainwindow.get_splitterpos()\n"
+            "called save()\n")
+        monkeypatch.setattr(main.NoteTree, "__init__", mock_init)
+        monkeypatch.setattr(main.NoteTree, "tree_to_dict", mock_tree_to_dict_2)
+        testsubj = main.NoteTree("test")
+        monkeypatch.setattr(testsubj, "save", mock_save)
+        testsubj.nt_data = {}
+        testsubj.old_nt_data = {}
+        testsubj.opts = {}
         testsubj.update()
         assert "ScreenSize" in testsubj.opts
         assert "SashPosition" in testsubj.opts
@@ -315,8 +353,7 @@ class TestNoteTree:
             "called tree_to_dict()\n"
             "called mainwindow.get_screensize()\n"
             "called mainwindow.get_splitterpos()\n"
-            "called save()\n"
-        )
+            "called save()\n")
 
     def test_rename(self, monkeypatch, capsys):
         def mock_get_text_from_user(*args):
@@ -862,6 +899,7 @@ class TestNoteTree:
         testsubj.gui.root = "x"
         testsubj.open()
         assert testsubj.opts["SashPosition"] == (180, 620)
+        assert testsubj.nt_data == testsubj.old_nt_data
         assert capsys.readouterr().out == (
             "called mainwindow.__init__()\n"
             "called dml.load_file()\n"
@@ -882,6 +920,7 @@ class TestNoteTree:
         testsubj = setup_notetree_class(monkeypatch)
         testsubj.gui.root = "x"
         testsubj.open()
+        assert testsubj.nt_data == testsubj.old_nt_data
         assert capsys.readouterr().out == (
             "called mainwindow.__init__()\n"
             "called dml.load_file()\n"
@@ -900,6 +939,7 @@ class TestNoteTree:
         testsubj = setup_notetree_class(monkeypatch)
         testsubj.gui.root = "x"
         testsubj.open(first_time=True)
+        assert testsubj.nt_data == testsubj.old_nt_data
         assert capsys.readouterr().out == (
             "called mainwindow.__init__()\n"
             "called dml.load_file()\n"
@@ -918,6 +958,7 @@ class TestNoteTree:
         testsubj = setup_notetree_class(monkeypatch)
         testsubj.gui.root = "x"
         testsubj.open()
+        assert testsubj.nt_data == testsubj.old_nt_data
         data = main.initial_opts
         data["NotifyOnLoad"] = False
         data["SashPosition"] = (180, 600)
@@ -1129,6 +1170,7 @@ class TestNoteTree:
         testsubj.nt_data = {0: "r*x", "x": "y"}
         testsubj.save()
         assert testsubj.nt_data == {0: {"NotifyOnSave": True}, "x": "y"}
+        assert testsubj.old_nt_data == testsubj.nt_data
         assert capsys.readouterr().out == (
             "called mainwindow.__init__()\n"
             "called shutil.copyfile()\n"
@@ -1142,6 +1184,7 @@ class TestNoteTree:
         testsubj.nt_data = {0: "r*x", "x": "y"}
         testsubj.save()
         assert testsubj.nt_data == {0: {"NotifyOnSave": False}, "x": "y"}
+        assert testsubj.old_nt_data == testsubj.nt_data
         assert capsys.readouterr().out == (
             "called mainwindow.__init__()\n"
             "called shutil.copyfile(`x`, `x~`)\n"

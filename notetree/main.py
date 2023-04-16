@@ -6,8 +6,7 @@ import collections
 import shutil
 from datetime import datetime
 
-import notetree.dml as dml
-import notetree.gui as gui
+from notetree import dml, gui
 
 app_title = "NoteTree"
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -74,7 +73,7 @@ class NoteTree:
         return (
             (_("m_main"), (
                 (_("m_reload"), self.reread, _("h_reload"), 'F5'),
-                (_("m_save"), self.update, _("h_save"), 'Ctrl+S'),
+                (_("m_save"), self.save_from_menu, _("h_save"), 'Ctrl+S'),
                 ("", None, None, None),
                 (_("m_root"), self.rename, _("h_root"), 'Shift+F2'),
                 (_('m_tagman'), self.manage_keywords, _('h_tagman'), 'Shift+F6'),
@@ -110,15 +109,19 @@ class NoteTree:
         if ok:
             self.open()
 
-    def update(self, *args):
+    def save_from_menu(self, *args):
+        "saving from the menu means saving should always happen"
+        self.update(force_save=True)
+
+    def update(self, *args, force_save=False):
         """resave the notes to a file
         """
-        # TODO check of gewijzigd
         self.tree_to_dict()  # check for changed values in tree not in dict
         self.opts["ScreenSize"] = self.gui.get_screensize()
         self.opts["SashPosition"] = self.gui.get_splitterpos()
         # self.opts["ActiveItem"] = self.get_activeitem()  already done in self.tree_to_dict
-        self.save()
+        if self.nt_data != self.old_nt_data or force_save:
+            self.save()
 
     def rename(self, *args):
         """ask for a new title for the root item
@@ -146,7 +149,7 @@ class NoteTree:
         """toon dialoog om taal te kiezen en verwerk antwoord
         """
         langcodes = ('nl', 'en')
-        langnames = [_('t_{}'.format(code)) for code in langcodes]
+        langnames = [_(f't_{code}') for code in langcodes]
         text, ok = self.gui.get_choice_from_user(_("t_lang"), langnames,
                                                  langcodes.index(self.opts["Language"]))
         if ok:
@@ -158,7 +161,7 @@ class NoteTree:
     def set_options(self, *args):
         "manage options for messages"
         data = {self.sett2text[x]: y for x, y in self.opts.items() if x in self.sett2text}
-        text2sett = {y: x for x,y in self.sett2text.items()}
+        text2sett = {y: x for x, y in self.sett2text.items()}
         ok, dialog_data = self.gui.show_dialog(gui.OptionsDialog, data)
         if ok:
             for sett_text, settvalue in dialog_data.items():
@@ -254,7 +257,7 @@ class NoteTree:
                     selindex = -1
                 seldata = (selection_list, selindex)
             else:
-                seldata = (selection_list, -1 )  # ''
+                seldata = (selection_list, -1)  # ''
             ok, data = self.gui.show_dialog(gui.GetItemDialog, seltype, seldata, _("i_seltag"))
         else:
             self.gui.showmsg('No keywords defined yet')
@@ -322,6 +325,7 @@ class NoteTree:
             if not ok:
                 self.project_file = ''
                 return _('404_message')
+        self.old_nt_data = self.nt_data.copy()
         options = self.nt_data.get(0, [])
         if "AskBeforeHide" in options:
             for key, val in options.items():
@@ -344,6 +348,7 @@ class NoteTree:
         if self.opts["NotifyOnLoad"] and not first_time:
             self.gui.showmsg('\n'.join((_("load_message"), _('hide_me'))))
         self.gui.set_focus_to_tree()
+        return ''
 
     def build_tree(self, first_time=False):
         """translate the dictionary read to a tree structure, applying the chosen filter
@@ -421,6 +426,7 @@ class NoteTree:
         except FileNotFoundError:
             pass
         dml.save_file(self.project_file, self.nt_data)
+        self.old_nt_data = self.nt_data.copy()
         if self.opts["NotifyOnSave"]:
             self.gui.showmsg('\n'.join((_("save_message"), _('hide_me'))))
 
@@ -431,7 +437,7 @@ class NoteTree:
         self.gui.select_item(self.build_tree())
         self.gui.set_item_expanded(self.gui.root)
         self.gui.open_editor()
-        for actiontext in(_("m_selall"), _("m_seltag"), _("m_seltxt")):
+        for actiontext in (_("m_selall"), _("m_seltag"), _("m_seltxt")):
             if actiontext == seltext:
                 self.gui.enable_selaction(actiontext)
             else:
@@ -450,7 +456,7 @@ class NoteTree:
         """
         if seltype == 0:
             return True
-        elif seltype == 1:
+        if seltype == 1:
             if seldata in keywords:
                 return True
         elif seltype == -1:
@@ -459,11 +465,11 @@ class NoteTree:
         elif seltype == 2:
             if use_case and seldata in text:
                 return True
-            elif not use_case and seldata.upper() in text.upper():
+            if not use_case and seldata.upper() in text.upper():
                 return True
         elif seltype == -2:
             if use_case and seldata not in text:
                 return True
-            elif not use_case and seldata.upper() not in text.upper():
+            if not use_case and seldata.upper() not in text.upper():
                 return True
         return False
