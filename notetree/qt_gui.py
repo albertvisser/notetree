@@ -66,6 +66,8 @@ class MainWindow(qtw.QMainWindow):
         "define the editor panel"
         # self.editor = qtw.QTextEdit(self)
         self.editor = qsc.QsciScintilla(self)
+        font = gui.QFont()
+        self.editor.setFont(font)
         self.editor.setWrapMode(qsc.QsciScintilla.WrapWord)
         self.editor.setBraceMatching(qsc.QsciScintilla.SloppyBraceMatch)
         self.editor.setAutoIndent(True)
