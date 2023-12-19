@@ -8,9 +8,8 @@ uitvoeren d.m.v. : `pytest sample.py`
 """
 import datetime
 import notetree.main as nt
-from notetree.settings import backend
-ext = 'db' if backend == 'sql' else backend
-filename = '.'.join(('/tmp/notetree/testdata', ext))
+from notetree.settings import ext
+filename = f"/tmp/notetree/testdata.{ext}"
 
 
 class MockMainWindow:

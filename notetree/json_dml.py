@@ -12,7 +12,7 @@ def load_file(filename):
     """
     if not os.path.exists(filename):
         return {}
-    with open(filename, "r") as f_in:
+    with open(filename) as f_in:
         nt_data = json.load(f_in)
     # bij testen gezien dan de dict key 0 (integer) weggeschreven wordt als "0" (string)
     options = nt_data.pop(0) if 0 in nt_data else nt_data.pop('0') if '0' in nt_data else {}

@@ -4,6 +4,7 @@ import gettext
 import os.path
 import collections
 import shutil
+import contextlib
 from datetime import datetime
 
 from notetree import dml, gui
@@ -36,6 +37,7 @@ sett2text = {'AskBeforeHide': 't_hide',
              'NotifyOnLoad': 't_load',
              'NotifyOnSave': 't_save'}
              # 'SaveOnEsc': 't_svex'}
+selectionmodes = (_("m_selall"), _("m_seltag"), _("m_seltxt"))
 
 
 # Main screen
@@ -60,7 +62,7 @@ class NoteTree:
 
     def define_screen(self):
         "setup main application window"
-        title = " - ".join((self.project_file, self.app_title))
+        title = f"{self.project_file} - {self.app_title}"
         iconame = os.path.join(os.path.dirname(__file__), "notetree.ico")
         self.gui.init_screen(title=title, iconame=iconame)
         self.gui.setup_statusbar()
@@ -421,10 +423,8 @@ class NoteTree:
         if not self.project_file:
             return
         self.nt_data[0] = self.opts
-        try:
+        with contextlib.suppress(FileNotFoundError):
             shutil.copyfile(self.project_file, self.project_file + '~')
-        except FileNotFoundError:
-            pass
         dml.save_file(self.project_file, self.nt_data)
         self.old_nt_data = self.nt_data.copy()
         if self.opts["NotifyOnSave"]:
@@ -437,7 +437,7 @@ class NoteTree:
         self.gui.select_item(self.build_tree())
         self.gui.set_item_expanded(self.gui.root)
         self.gui.open_editor()
-        for actiontext in (_("m_selall"), _("m_seltag"), _("m_seltxt")):
+        for actiontext in selectionmodes:
             if actiontext == seltext:
                 self.gui.enable_selaction(actiontext)
             else:
@@ -454,20 +454,21 @@ class NoteTree:
     def selection_contains_item(self, text, keywords, seltype, seldata, use_case):
         """determine if item should be added to the selection
         """
-        if seltype == 0:
+        exclude = -1
+        if seltype == selectionmodes.index(_("m_selall")):  # 0:
             return True
-        if seltype == 1:
+        if seltype == selectionmodes.index(_("m_seltag")):  # 1:
             if seldata in keywords:
                 return True
-        elif seltype == -1:
+        elif seltype == exclude * selectionmodes.index(_("m_seltag")):  # -1:
             if seldata not in keywords:
                 return True
-        elif seltype == 2:
+        elif seltype == selectionmodes.index(_("m_seltxt")):  # 2:
             if use_case and seldata in text:
                 return True
             if not use_case and seldata.upper() in text.upper():
                 return True
-        elif seltype == -2:
+        elif seltype == exclude * selectionmodes.index(_("m_seltxt")):  # -2:
             if use_case and seldata not in text:
                 return True
             if not use_case and seldata.upper() not in text.upper():

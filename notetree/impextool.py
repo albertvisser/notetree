@@ -62,7 +62,7 @@ def save_mru(file_list_1, file_list_2):
 def ok_to_overwrite(filename):
     """ask for confirmation
     """
-    msg = 'File exists - ok to overwrite {}?'.format(filename)
+    msg = f'File exists - ok to overwrite {filename}?'
     ok = True
     if os.path.exists(filename):
         ok = qtw.QMessageBox.question(None, '', msg)
@@ -84,7 +84,7 @@ def dumpdata(nt_file, extfile=""):
     else:
         pprint.pprint(nt_data)
         extfile = 'stdout'
-    return 'Data from {} dumped to {}'.format(nt_file, extfile)
+    return f'Data from {nt_file} dumped to {extfile}'
 
 
 def export(nt_file, extfile, sort_notes):
@@ -117,7 +117,7 @@ def export(nt_file, extfile, sort_notes):
             except ValueError:
                 print('value:', value, file=_o)
             print(file=_o)
-    return 'Notes exported from {} to {}'.format(nt_file, extfile)
+    return f'Notes exported from {nt_file} to {extfile}'
 
 
 def import_(nt_file, extfile, remove_unused):
@@ -175,7 +175,7 @@ def import_(nt_file, extfile, remove_unused):
     else:
         nt_data[0]['Keywords'] = [x for x in all_keywords.union(nt_data[0]['Keywords'])]
     save_file(nt_file, nt_data)
-    return 'Notes imported from {} into {}'.format(extfile, nt_file)
+    return f'Notes imported from {extfile} into {nt_file}'
 
 
 functions = [('Print entire data structure', dumpdata, ''),
@@ -308,10 +308,7 @@ class MainWidget(qtw.QWidget):
             self.extfile.input.addItems(self.extfile.mrulist)
         for rb, func, cb in self.radiofuncs:
             if rb.isChecked():
-                if cb:
-                    msg = func(nt_file, extfile, cb.isChecked())
-                else:
-                    msg = func(nt_file, extfile)
+                msg = func(nt_file, extfile, cb.isChecked()) if cb else func(nt_file, extfile)
                 break
         qtw.QMessageBox.information(self, '', msg)
 
@@ -326,5 +323,5 @@ def main(fname=''):
     """start the utility
     """
     app = qtw.QApplication(sys.argv)
-    win = MainWidget(fname)
+    MainWidget(fname)
     sys.exit(app.exec_())

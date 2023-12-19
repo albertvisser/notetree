@@ -17,15 +17,15 @@ class MockCursor:
     def __iter__(self):
         pass
     def execute(self, *args):
-        print('execute SQL: `{}`'.format(args[0]))
+        print(f'execute SQL: `{args[0]}`')
         if len(args) > 1:
-            print('  with:', ', '.join(['`{}`'.format(x) for x in args[1]]))
+            print('  with:', ', '.join([f'`{x}`' for x in args[1]]))
     def executemany(self, *args):
-        print('execute SQL: `{}`'.format(args[0]))
+        print(f'execute SQL: `{args[0]}`')
         if len(args) > 1:
-            print('  with:', ', '.join(['`{}`'.format(x) for x in args[1]]))
+            print(f'  with:', ', '.join(['`{x}`' for x in args[1]]))
     def executescript(self, *args):
-        print('execute SQL: `{}`'.format(args[0]))
+        print(f'execute SQL: `{args[0]}`')
     def commit(self, *args, **kwargs):
         print('called commit() on cursor')
     def close(self, *args, **kwargs):
@@ -39,10 +39,7 @@ class MockCursor:
 def test_load_1(monkeypatch, capsys, tmp_path):
     "test file does not exist"
     dest = tmp_path / 'load1.sql'
-    try:
-        dest.unlink()
-    except FileNotFoundError:
-        pass
+    dest.unlink(missing_ok=True)
     assert dmls.load_file(dest) == {}
     assert capsys.readouterr().out == ''
 
@@ -82,7 +79,8 @@ def test_load_3(monkeypatch, capsys, tmp_path):
 
 def test_load_4(monkeypatch, capsys, tmp_path):
     "everyting ok, no tags"
-    conf = {"Application": 'NoteTree', "ScreenSize": (9, 6), "Selection": [10, 1], "SashPosition": [55]}
+    conf = {"Application": 'NoteTree', "ScreenSize": (9, 6), "Selection": [10, 1],
+            "SashPosition": [55]}
     count = 0
     def mock_connect(*args):
         return MockConn()
@@ -92,10 +90,7 @@ def test_load_4(monkeypatch, capsys, tmp_path):
         if count == 1:
             return (x for x in [(0, '', '', json.dumps(conf)),
                                 (1, '01-01-0001 00:00:00', 'title_1', 'text_1')])
-        elif count == 2:
-            return (x for x in [])
-        elif count == 3:
-            return (x for x in [])
+        return (x for x in [])
     dest = tmp_path / 'load4.sql'
     dest.touch()
     monkeypatch.setattr(dmls.sql, 'connect', mock_connect)
@@ -149,8 +144,8 @@ def test_save_1(monkeypatch, capsys, tmp_path):
     data = {}
     monkeypatch.setattr(dmls.sql, 'connect', mock_connect)
     dmls.save_file(dest, data)
-    assert capsys.readouterr().out == ('execute SQL: `{}`\n'
-                                       'called commit() on connection\n'.format(dmls.init_db))
+    assert capsys.readouterr().out == (f'execute SQL: `{dmls.init_db}`\n'
+                                       'called commit() on connection\n')
 
 
 def test_save_2(monkeypatch, capsys, tmp_path):
@@ -161,11 +156,11 @@ def test_save_2(monkeypatch, capsys, tmp_path):
     data = {'01-01-0001 00:00:00': ('title', 'text', ['keyword'])}
     monkeypatch.setattr(dmls.sql, 'connect', mock_connect)
     dmls.save_file(dest, data)
-    assert capsys.readouterr().out == ('execute SQL: `{}`\n'
+    assert capsys.readouterr().out == (f'execute SQL: `{dmls.init_db}`\n'
                                        'execute SQL: `INSERT INTO notes (noteid, created,'
                                        ' title, text) VALUES(?, ?, ?, ?)`\n'
                                        '  with: `1`, `01-01-0001 00:00:00`, `title`, `text`\n'
-                                       'called commit() on connection\n'.format(dmls.init_db))
+                                       'called commit() on connection\n')
     # note that without the 0 key, no associated keywords are saved. Luckily this is not realistic
 
 
@@ -178,10 +173,10 @@ def test_save_3(monkeypatch, capsys, tmp_path):
             '01-01-0001 00:00:00': ('title', 'text', ['keyword'])}
     monkeypatch.setattr(dmls.sql, 'connect', mock_connect)
     dmls.save_file(dest, data)
-    assert capsys.readouterr().out == ('execute SQL: `{}`\n'
+    assert capsys.readouterr().out == (f'execute SQL: `{dmls.init_db}`\n'
                                        'execute SQL: `INSERT INTO notes (noteid, created,'
                                        ' title, text) VALUES(?, ?, ?, ?)`\n'
-                                       '  with: `0`, ``, ``, `{{"Application": "NoteTree"}}`\n'
+                                       '  with: `0`, ``, ``, `{"Application": "NoteTree"}`\n'
                                        'execute SQL: `INSERT INTO notes (noteid, created,'
                                        ' title, text) VALUES(?, ?, ?, ?)`\n'
                                        '  with: `1`, `01-01-0001 00:00:00`, `title`, `text`\n'
@@ -191,4 +186,4 @@ def test_save_3(monkeypatch, capsys, tmp_path):
                                        'execute SQL: `INSERT INTO links (doc_id, tag_id)'
                                        ' VALUES(?, ?)`\n'
                                        "  with: `(0, 0)`\n"
-                                       'called commit() on connection\n'.format(dmls.init_db))
+                                       'called commit() on connection\n')

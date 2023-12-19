@@ -109,7 +109,7 @@ class MainWindow(qtw.QMainWindow):
     def changeselection(self):
         """adjust to the selected tree item
         """
-        test = self.tree.selectedItems()
+        # test = self.tree.selectedItems()
         # if test == self.root:
         #     return
         self.base.check_active()
@@ -633,17 +633,17 @@ class KeywordsManager(qtw.QDialog):
     def update_items(self, oldtext, newtext=''):
         """refresh list of associated keywords
         """
-        for ix in range(self.parent.root.childCount()):
-            item = self.parent.root.child(ix)
+        for itemindex in range(self.parent.root.childCount()):
+            item = self.parent.root.child(itemindex)
             keywords = item.data(1, core.Qt.UserRole)
             try:
-                ix = keywords.index(oldtext)
+                keywordindex = keywords.index(oldtext)
             except ValueError:
                 continue
             if newtext:
-                keywords[ix] = newtext
+                keywords[keywordindex] = newtext
             else:
-                keywords.pop(ix)
+                keywords.pop(keywordindex)
             item.setData(1, core.Qt.UserRole, keywords)
 
     def remove_keyword(self):

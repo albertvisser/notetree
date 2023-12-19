@@ -7,7 +7,7 @@ import os
 import gettext
 import wx
 import wx.adv
-import wx.stc as stc
+from wx import stc
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
@@ -183,7 +183,7 @@ class MainWindow(wx.Frame):
                     if primary:
                         if primary == 'Ctrl+PgDown':
                             primary = 'Ctrl+PgDn'
-                        label = '\t'.join((label, primary))
+                        label = f'{label}\t{primary}'
                     if menu_label == _('m_view'):
                         if label_ != _('m_revorder'):
                             self.seltypes.append(label_)
@@ -241,7 +241,7 @@ class MainWindow(wx.Frame):
         # if item_to_activate == self.root:
         #     return
         self.base.check_active()
-        print('in onselchanged: item is {}, root is {}'.format(item_to_activate, self.root))
+        print(f'in onselchanged: item is {item_to_activate}, root is {self.root}')
         self.base.activate_item(item_to_activate)
         event.Skip()
 

@@ -1,10 +1,7 @@
 """unittests for main.py
 """
-import os
-
 # import gettext
-import pytest
-import notetree.main as main
+from notetree import main
 
 # HERE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # gettext.install("NoteTree", os.path.join(HERE, 'locale'))
@@ -29,7 +26,7 @@ class MockLanguage:
         self.lang = lang
 
     def install(self):
-        print("called language.install for language `{}`".format(self.lang))
+        print(f"called language.install for language `{self.lang}`")
 
 
 class MockMainWindow:
@@ -218,11 +215,11 @@ class TestNoteTree:
 
         def mock_open(self, **kwargs):
             arg = "first_time" if kwargs.get("first_time", None) else "not first"
-            print("called open(`{}`)".format(arg))
+            print(f"called open(`{arg}`)")
 
         def mock_open_err(self, **kwargs):
             arg = "first_time" if kwargs.get("first_time", None) else "not first"
-            print("called open(`{}`)".format(arg))
+            print(f"called open(`{arg}`)")
             return "error"
 
         monkeypatch.setattr(main.gui, "MainWindow", MockMainWindow)
@@ -426,7 +423,7 @@ class TestNoteTree:
 
         def mock_gettext(*args):
             text = args[0]
-            print("called gettext('{}')".format(text))
+            print(f"called gettext('{text}')")
             return text
 
         testsubj = setup_notetree_class(monkeypatch)
@@ -702,7 +699,7 @@ class TestNoteTree:
 
         def mock_set_selection(self, *args):
             seltype, text = args[0]
-            print("called self.set_selection() seltype is {}, tekst is `{}`".format(seltype, text))
+            print(f"called self.set_selection() seltype is {seltype}, tekst is `{text}`")
 
         def mock_show_dialog(*args):
             print("called mainwindow.show_dialog()")
@@ -775,10 +772,8 @@ class TestNoteTree:
 
         def mock_set_selection(self, *args):
             seltype, text, use_case = args[0]
-            print(
-                "called self.set_selection() seltype is {}, tekst is `{}`,"
-                " use_case is {}".format(seltype, text, use_case)
-            )
+            print(f"called self.set_selection() seltype is {seltype}, tekst is `{text}`,"
+                  f" use_case is {use_case}")
 
         def mock_show_dialog(*args):
             print("called mainwindow.show_dialog()")
@@ -983,10 +978,8 @@ class TestNoteTree:
             print("called self.tree_to_dict()")
 
         def mock_add_item_to_tree(self, key, tag, text, keywords):  # , revorder):
-            print(
-                "called mainwindow.add_item_to_tree(): `{}` ->"
-                " (`{}`, `{}`, `{}`)".format(key, tag, text, keywords)
-            )
+            print(f"called mainwindow.add_item_to_tree(): `{key}` -> (`{tag}`, `{text}`,"
+                  f" `{keywords}`)")
             return key
 
         def mock_selection_contains_item(*args):
@@ -1149,7 +1142,7 @@ class TestNoteTree:
 
     def test_save(self, monkeypatch, capsys):
         def mock_copyfile(*args):
-            print("called shutil.copyfile(`{}`, `{}`)".format(args[0], args[1]))
+            print(f"called shutil.copyfile(`{args[0]}`, `{args[1]}`)")
 
         def mock_copyfile_error(*args):
             print("called shutil.copyfile()")

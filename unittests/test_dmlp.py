@@ -1,3 +1,4 @@
+import contextlib
 import pytest
 import notetree.pickle_dml as dmlp
 
@@ -5,10 +6,7 @@ import notetree.pickle_dml as dmlp
 def test_load_1(monkeypatch, capsys, tmp_path):
     "test file does not exist"
     dest = tmp_path / 'load1.pck'
-    try:
-        dest.unlink()
-    except FileNotFoundError:
-        pass
+    dest.unlink(missing_ok=True)
     assert dmlp.load_file(dest) == {}
 
 
@@ -54,7 +52,7 @@ def test_load_5(monkeypatch, capsys, tmp_path):
 
 def test_save(monkeypatch, capsys, tmp_path):
     def mock_save(*args, **kwargs):
-        print('called pickle.dump for data `{}`'.format(args[0]))
+        print(f'called pickle.dump for data `{args[0]}`')
     dest = tmp_path / 'save.pck'
     data = 'nt_data'
     monkeypatch.setattr(dmlp.pck, 'dump', mock_save)

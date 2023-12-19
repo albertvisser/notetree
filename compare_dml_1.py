@@ -17,8 +17,8 @@ backend_types = ['pck', 'json', 'sql'] * 2
 
 def next_backend(fromvalue, tovalue):
     data = settingsfile.read_text()
-    old = "backend = '{}'".format(backend_types[fromvalue])
-    new = "backend = '{}'".format(backend_types[tovalue])
+    old = f"backend = '{backend_types[fromvalue]}'"
+    new = f"backend = '{backend_types[tovalue]}'"
     data = data.replace(old, new)
     settingsfile.write_text(data)
 
@@ -32,7 +32,7 @@ def test_main():
 
     startvalue = backend_types.index(backend)
     for count in range(3):
-        subprocess.run(['pytest', 'sample.py'])
+        subprocess.run(['pytest', 'sample.py'], check=False)
         next_backend(startvalue, startvalue + 1)
         startvalue += 1
 
@@ -69,7 +69,8 @@ def test_main():
             else:
                 print(key, value, file=out)
 
-    subprocess.run(['meld', p_filename + '.out', s_filename + '.out', j_filename + '.out'])
+    subprocess.run(['meld', p_filename + '.out', s_filename + '.out', j_filename + '.out'],
+                   check=False)
 
 
 if __name__ == '__main__':

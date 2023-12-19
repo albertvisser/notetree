@@ -1,14 +1,8 @@
 """ unittests voor wx_gui.py
 """
-import os
-# import gettext
-import pytest
 import types
 from mockgui import mockwxwidgets as mockwx
 import notetree.wx_gui as gui
-# HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# HERE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
 
 def setup_mainwindow(monkeypatch, capsys):
@@ -32,7 +26,7 @@ class MockNoteTree:
     def check_active(self, *args):
         print('called base.check_active()')
     def activate_item(self, *args):
-        print('called base.activate_item() with arg `{}`'.format(args[0]))
+        print(f'called base.activate_item() with arg `{args[0]}`')
     def update(self):
         print('called base.update()')
 
@@ -371,10 +365,10 @@ class TestMainWindow:
         "deze methode is wel gedfinieerd maar leeggelaten"
 
     def test_OnSelChanged(self, monkeypatch, capsys):
-        def mock_check_active(*args):
-            print('called notetree.check_active()')
-        def mock_activate_item(*args):
-            print('called notetree.activate_item(`{}`)'.format(args[0]))
+        # def mock_check_active(*args):
+        #     print('called notetree.check_active()')
+        # def mock_activate_item(*args):
+        #     print('called notetree.activate_item(`{args[0]}`)')
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.root = 'root'
         testobj.OnSelChanged(mockwx.MockEvent())
@@ -420,7 +414,7 @@ class TestMainWindow:
 
     def test_set_screen(self, monkeypatch, capsys):
         def mock_setsize(*args):
-            print('called frame.SetSize({})'.format(args[0]))
+            print(f'called frame.SetSize({args[0]})')
         testobj = setup_mainwindow(monkeypatch, capsys)
         monkeypatch.setattr(testobj, 'SetSize', mock_setsize)
         testobj.set_screen('screensize')
@@ -464,7 +458,7 @@ class TestMainWindow:
 
     def test_copy_text_from_editor_to_activeitem(self, monkeypatch, capsys):
         def mock_set_itemtext(*args):
-            print('set text of `{}` to `{}`'.format(args[0], args[1]))
+            print(f'set text of `{args[0]}` to `{args[1]}`')
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.activeitem = 'active item'
         testobj.editor = mockwx.MockEditor()
@@ -660,7 +654,7 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.tree = mockwx.MockTree()
         monkeypatch.setattr(testobj.tree, 'GetNextSibling', mock_getnextsibling)
-        assert testobj.get_next_item() == None
+        assert testobj.get_next_item() is None
 
     def test_get_prev_item(self, monkeypatch, capsys):
         "test previous item gevonden"
@@ -752,20 +746,18 @@ class TestMainWindow:
 
     def test_showmsg(self, monkeypatch, capsys):
         def mock_messagebox(*args):
-            print('called wx.MessageBox() with args `{}`, `{}`, `{}`'.format(
-                args[0], args[1], args[2]))
+            print(f'called wx.MessageBox() with args `{args[0]}`, `{args[1]}`, `{args[2]}`')
         monkeypatch.setattr(gui.wx, 'MessageBox', mock_messagebox)
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.base.app_title = 'title'
         flags = gui.wx.OK | gui.wx.ICON_INFORMATION
         testobj.showmsg('message')
         assert capsys.readouterr().out == ('called wx.MessageBox() with args'
-                                           " `message`, `title`, `{}`\n".format(flags))
+                                           f" `message`, `title`, `{flags}`\n")
 
     def test_ask_question(self, monkeypatch, capsys):
         def mock_messagebox(*args):
-            print('called wx.MessageBox() with args `{}`, `{}`, `{}`'.format(
-                args[0], args[1], args[2]))
+            print(f'called wx.MessageBox() with args `{args[0]}`, `{args[1]}`, `{args[2]}`')
             return gui.wx.YES
         monkeypatch.setattr(gui.wx, 'MessageBox', mock_messagebox)
         testobj = setup_mainwindow(monkeypatch, capsys)
@@ -773,7 +765,7 @@ class TestMainWindow:
         flags = gui.wx.YES_NO | gui.wx.ICON_QUESTION
         assert testobj.ask_question('question')
         assert capsys.readouterr().out == ('called wx.MessageBox() with args'
-                                           " `question`, `title`, `{}`\n".format(flags))
+                                           f" `question`, `title`, `{flags}`\n")
 
     def test_show_dialog(self, monkeypatch, capsys):
         def mock_showmodal(self, *args):
@@ -781,7 +773,7 @@ class TestMainWindow:
         monkeypatch.setattr(gui.wx.Dialog, 'ShowModal', mock_showmodal)
         testobj = setup_mainwindow(monkeypatch, capsys)
         assert testobj.show_dialog(mockwx.MockDialog, 'title') == (True, 'confirmation data')
-        assert capsys.readouterr().out == ("called MockDialog.__init__() with args `('title',)`\n"
+        assert capsys.readouterr().out == ("called MockDialog.__init__() with args ('title',) {}\n"
                                            'called dialog.Destroy()\n')
 
     def test_show_dialog_2(self, monkeypatch, capsys):
@@ -797,7 +789,7 @@ class TestMainWindow:
         testobj.base.app_title = 'title'
         assert testobj.get_text_from_user('prompt', 'default') == ('entered value', True)
         assert capsys.readouterr().out == ('called MockTextDialog.__init__() with args'
-                                           " `('prompt', 'title', 'default')`\n"
+                                           " ('prompt', 'title', 'default') {}\n"
                                            'called dialog.Destroy()\n')
 
     def test_get_text_from_user_2(self, monkeypatch, capsys):
@@ -816,7 +808,7 @@ class TestMainWindow:
         assert testobj.get_choice_from_user('prompt', ['choices'], 'default') == (
             'selected value', True)
         assert capsys.readouterr().out == ('called MockChoiceDialog.__init__ with args'
-                                           " `('prompt', 'title', ['choices'])`\n"
+                                           " ('prompt', 'title', ['choices'])\n"
                                            'called dialog.SetSelection(`default`)\n'
                                            'called dialog.Destroy()\n')
 
@@ -949,9 +941,9 @@ class TestKeywordsDialog:
         def mock_init(self, *args):
             print('called wxDialog.__init__()')
         def mock_SetTitle(self, *args):
-            print('called dialog.SetTitle() with args `{}`'.format(args))
+            print('called dialog.SetTitle() with args', args)
         def mock_SetIcon(self, *args):
-            print('called dialog.SetIcon() with args `{}`'.format(args))
+            print('called dialog.SetIcon() with args', args)
         def mock_createbuttons(self, *args):
             print('called dialog.createbuttons()')
         def mock_setaffirmativeid(self, *args):
@@ -989,9 +981,8 @@ class TestKeywordsDialog:
         assert hasattr(testobj, 'helptext')
         # testobj = gui.KeywordsDialog(mockparent, keywords)
         assert capsys.readouterr().out == ('called wxDialog.__init__()\n'
-                                           "called dialog.SetTitle() with args "
-                                           "`('title - w_tags',)`\n"
-                                           "called dialog.SetIcon() with args `('icon',)`\n"
+                                           "called dialog.SetTitle() with args ('title - w_tags',)\n"
+                                           "called dialog.SetIcon() with args ('icon',)\n"
                                            'called ListBox.__init__()\n'
                                            'called listbox.bind()\n'
                                            'called StaticText.__init__()\n'
@@ -1047,9 +1038,9 @@ class TestKeywordsDialog:
         def mock_init(self, *args):
             print('called wxDialog.__init__()')
         def mock_SetTitle(self, *args):
-            print('called dialog.SetTitle() with args `{}`'.format(args))
+            print('called dialog.SetTitle() with args', args)
         def mock_SetIcon(self, *args):
-            print('called dialog.SetIcon() with args `{}`'.format(args))
+            print('called dialog.SetIcon() with args', args)
         def mock_createbuttons(self, *args):
             print('called dialog.createbuttons()')
         def mock_setaffirmativeid(self, *args):
@@ -1086,9 +1077,8 @@ class TestKeywordsDialog:
         testobj = gui.KeywordsDialog(mockparent, '', ['y'])
         assert hasattr(testobj, 'helptext')
         assert capsys.readouterr().out == ('called wxDialog.__init__()\n'
-                                           "called dialog.SetTitle() with args "
-                                           "`('title - w_tags',)`\n"
-                                           "called dialog.SetIcon() with args `('icon',)`\n"
+                                           "called dialog.SetTitle() with args ('title - w_tags',)\n"
+                                           "called dialog.SetIcon() with args ('icon',)\n"
                                            'called ListBox.__init__()\n'
                                            'called listbox.bind()\n'
                                            'called StaticText.__init__()\n'
@@ -1186,7 +1176,7 @@ class TestKeywordsDialog:
         def mock_init(self, *args, **kwargs):
             print('called dialog.__init__()')
         def mock_activate(self, *args):
-            print('called dialog._activate(`{}`)'.format(args[0]))
+            print(f'called dialog._activate(`{args[0]}`)')
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.KeywordsDialog, '_activate', mock_activate)
         testobj = gui.KeywordsDialog('parent', '')
@@ -1199,7 +1189,7 @@ class TestKeywordsDialog:
         def mock_init(self, *args, **kwargs):
             print('called dialog.__init__()')
         def mock_activate(self, *args):
-            print('called dialog._activate(`{}`)'.format(args[0]))
+            print(f'called dialog._activate(`{args[0]}`)')
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.KeywordsDialog, '_activate', mock_activate)
         testobj = gui.KeywordsDialog('parent', '')
@@ -1283,7 +1273,7 @@ class TestKeywordsDialog:
         def mock_init(self, *args, **kwargs):
             print('called dialog.__init__()')
         def mock_moveitem(self, *args):
-            print('called dialog._moveitem(`{}`, `{}`)'.format(args[0], args[1]))
+            print(f'called dialog._moveitem(`{args[0]}`, `{args[1]}`)')
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.KeywordsDialog, '_moveitem', mock_moveitem)
         testobj = gui.KeywordsDialog('parent', '')
@@ -1297,7 +1287,7 @@ class TestKeywordsDialog:
         def mock_init(self, *args, **kwargs):
             print('called dialog.__init__()')
         def mock_moveitem(self, *args):
-            print('called dialog._moveitem(`{}`, `{}`)'.format(args[0], args[1]))
+            print(f'called dialog._moveitem(`{args[0]}`, `{args[1]}`)')
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.KeywordsDialog, '_moveitem', mock_moveitem)
         testobj = gui.KeywordsDialog('parent', '')
@@ -1328,7 +1318,7 @@ class TestKeywordsDialog:
             print('called dialog.__init__()')
             self.parent = args[0]
         def mock_textinit(self, *args, **kwargs):
-            print('called MockTextDialog.__init__() with args `{}`'.format(kwargs))
+            print('called MockTextDialog.__init__() with args', kwargs)
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
@@ -1340,7 +1330,7 @@ class TestKeywordsDialog:
         assert capsys.readouterr().out == ('called dialog.__init__()\n'
                                            'called ListBox.__init__()\n'
                                            'called MockTextDialog.__init__() with args'
-                                           " `{'caption': 'title', 'message': 't_newtag'}`\n"
+                                           " {'caption': 'title', 'message': 't_newtag'}\n"
                                            'called listbox.append() with arg `entered value`\n'
                                            'called dialog.Destroy()\n')
 
@@ -1350,7 +1340,7 @@ class TestKeywordsDialog:
             print('called dialog.__init__()')
             self.parent = args[0]
         def mock_textinit(self, *args, **kwargs):
-            print('called MockTextDialog.__init__() with args `{}`'.format(kwargs))
+            print('called MockTextDialog.__init__() with args', kwargs)
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
@@ -1363,7 +1353,7 @@ class TestKeywordsDialog:
         assert capsys.readouterr().out == ('called dialog.__init__()\n'
                                            'called ListBox.__init__()\n'
                                            'called MockTextDialog.__init__() with args'
-                                           " `{'caption': 'title', 'message': 't_newtag'}`\n"
+                                           " {'caption': 'title', 'message': 't_newtag'}\n"
                                            'called dialog.Destroy()\n')
 
     def test_keys_help(self, monkeypatch, capsys):
@@ -1400,7 +1390,7 @@ class TestKeywordsDialog:
         testobj = gui.KeywordsDialog(mockparent, (('x', 'y'), ('a', 'b')))
         testobj.keys_help('event')
         assert capsys.readouterr().out == ('called dialog.__init__()\n'
-                                           'called MockDialog.__init__() with args `()`\n'
+                                           'called MockDialog.__init__() with args () {}\n'
                                            'called GridSizer.__init__()\n'
                                            'called StaticText.__init__()\n'
                                            'called gridsizer.Add()\n'
@@ -1439,9 +1429,9 @@ class TestKeywordsManager:
         def mock_init(self, *args):
             print('called wxDialog.__init__()')
         def mock_SetTitle(self, *args):
-            print('called dialog.SetTitle() with args `{}`'.format(args))
+            print('called dialog.SetTitle() with args', args)
         def mock_SetIcon(self, *args):
-            print('called dialog.SetIcon() with args `{}`'.format(args))
+            print('called dialog.SetIcon() with args', args)
         def mock_setaffirmativeid(self, *args):
             print('called dialog.SetAffirmativeId()')
         def mock_setsizer(self, *args):
@@ -1468,11 +1458,11 @@ class TestKeywordsManager:
         monkeypatch.setattr(gui.wx, 'Button', mockwx.MockButton)
         monkeypatch.setattr(gui.wx, 'ComboBox', mockwx.MockComboBox)
         monkeypatch.setattr(gui.wx, 'TextCtrl', mockwx.MockTextCtrl)
-        testobj = gui.KeywordsManager(mockparent)
+        gui.KeywordsManager(mockparent)
         assert capsys.readouterr().out == ('called wxDialog.__init__()\n'
                                            "called dialog.SetTitle() with args "
-                                           "`('title - t_tagman',)`\n"
-                                           "called dialog.SetIcon() with args `('icon',)`\n"
+                                           "('title - t_tagman',)\n"
+                                           "called dialog.SetIcon() with args ('icon',)\n"
                                            'called ComboBox.__init__()\n'
                                            'called TextCtrl.__init__()\n'
                                            'called combobox.clear()\n'
@@ -1613,8 +1603,7 @@ class TestKeywordsManager:
         def mock_refresh(self, *args, **kwargs):
             print('called manager.refresh_fields()')
         def mock_messagebox(*args):
-            print('called wx.MessageBox() with args `{}`, `{}`, `{}`'.format(
-                args[0], args[1], args[2]))
+            print(f'called wx.MessageBox() with args `{args[0]}`, `{args[1]}`, `{args[2]}`')
             return gui.wx.YES
         monkeypatch.setattr(gui.wx, 'MessageBox', mock_messagebox)
         monkeypatch.setattr(gui.KeywordsManager, '__init__', mock_init)
@@ -1630,9 +1619,9 @@ class TestKeywordsManager:
         assert capsys.readouterr().out == ('called manager.__init__()\n'
                                            'called ComboBox.__init__()\n'
                                            'called wx.MessageBox() with args'
-                                           " `t_remtag`, `title`, `{}`\n"
+                                           f" `t_remtag`, `title`, `{flags}`\n"
                                            'called manager.update_items()\n'
-                                           'called manager.refresh_fields()\n').format(flags)
+                                           'called manager.refresh_fields()\n')
 
     def test_remove_keyword_2(self, monkeypatch, capsys):
         "test voor afbreken verwijderen"
@@ -1644,8 +1633,7 @@ class TestKeywordsManager:
         def mock_refresh(self, *args, **kwargs):
             print('called manager.refresh_fields()')
         def mock_messagebox(*args):
-            print('called wx.MessageBox() with args `{}`, `{}`, `{}`'.format(
-                args[0], args[1], args[2]))
+            print(f'called wx.MessageBox() with args `{args[0]}`, `{args[1]}`, `{args[2]}`')
             return gui.wx.NO
         monkeypatch.setattr(gui.wx, 'MessageBox', mock_messagebox)
         monkeypatch.setattr(gui.KeywordsManager, '__init__', mock_init)
@@ -1661,7 +1649,7 @@ class TestKeywordsManager:
         assert capsys.readouterr().out == ('called manager.__init__()\n'
                                            'called ComboBox.__init__()\n'
                                            'called wx.MessageBox() with args'
-                                           " `t_remtag`, `title`, `{}`\n").format(flags)
+                                           f" `t_remtag`, `title`, `{flags}`\n")
 
     def test_add_keyword(self, monkeypatch, capsys):
         "test adding keyword"
@@ -1673,8 +1661,7 @@ class TestKeywordsManager:
         def mock_refresh(self, *args, **kwargs):
             print('called manager.refresh_fields()')
         def mock_messagebox(*args):
-            print('called wx.MessageBox() with args `{}`, `{}`, `{}`'.format(
-                args[0], args[1], args[2]))
+            print(f'called wx.MessageBox() with args `{args[0]}`, `{args[1]}`, `{args[2]}`')
             return gui.wx.YES
         monkeypatch.setattr(gui.wx, 'MessageBox', mock_messagebox)
         monkeypatch.setattr(gui.KeywordsManager, '__init__', mock_init)
@@ -1693,8 +1680,8 @@ class TestKeywordsManager:
                                            'called ComboBox.__init__()\n'
                                            'called ComboBox.__init__()\n'
                                            'called wx.MessageBox() with args'
-                                           " `t_addtag`, `title`, `{}`\n"
-                                           'called manager.refresh_fields()\n').format(flags)
+                                           f" `t_addtag`, `title`, `{flags}`\n"
+                                           'called manager.refresh_fields()\n')
 
     def test_add_keyword_2(self, monkeypatch, capsys):
         "test canceling adding keyword"
@@ -1704,8 +1691,7 @@ class TestKeywordsManager:
         def mock_refresh(self, *args, **kwargs):
             print('called manager.refresh_fields()')
         def mock_messagebox(*args):
-            print('called wx.MessageBox() with args `{}`, `{}`, `{}`'.format(
-                args[0], args[1], args[2]))
+            print(f'called wx.MessageBox() with args `{args[0]}`, `{args[1]}`, `{args[2]}`')
             return gui.wx.NO
         monkeypatch.setattr(gui.wx, 'MessageBox', mock_messagebox)
         monkeypatch.setattr(gui.KeywordsManager, '__init__', mock_init)
@@ -1724,7 +1710,7 @@ class TestKeywordsManager:
                                            'called ComboBox.__init__()\n'
                                            'called ComboBox.__init__()\n'
                                            'called wx.MessageBox() with args'
-                                           " `t_addtag`, `title`, `{}`\n").format(flags)
+                                           f" `t_addtag`, `title`, `{flags}`\n")
 
     def test_add_keyword_3(self, monkeypatch, capsys):
         "test canceling replacing keyword"
@@ -1764,7 +1750,7 @@ class TestKeywordsManager:
         def mock_showmodal(self):
             return gui.wx.ID_YES
         def mock_update(self, *args, **kwargs):
-            print('called manager.update_items() with args `{}`'.format(args))
+            print('called manager.update_items() with args', args)
         def mock_refresh(self, *args, **kwargs):
             print('called manager.refresh_fields()')
         monkeypatch.setattr(gui.wx, 'MessageDialog', mockwx.MockMessageDialog)
@@ -1787,7 +1773,7 @@ class TestKeywordsManager:
                                            'called MessageDialog.__init__()\n'
                                            'called dialog.SetExtendedMessage()\n'
                                            'called dialog.Destroy()\n'
-                                           "called manager.update_items() with args `('y', 'z')`\n"
+                                           "called manager.update_items() with args ('y', 'z')\n"
                                            'called manager.refresh_fields()\n')
 
     def test_add_keyword_5(self, monkeypatch, capsys):
@@ -1798,7 +1784,7 @@ class TestKeywordsManager:
         def mock_showmodal(self):
             return gui.wx.ID_NO
         def mock_update(self, *args, **kwargs):
-            print('called manager.update_items() with args `{}`'.format(args))
+            print('called manager.update_items() with args', args)
         def mock_refresh(self, *args, **kwargs):
             print('called manager.refresh_fields()')
         monkeypatch.setattr(gui.wx, 'MessageDialog', mockwx.MockMessageDialog)
@@ -1821,7 +1807,7 @@ class TestKeywordsManager:
                                            'called MessageDialog.__init__()\n'
                                            'called dialog.SetExtendedMessage()\n'
                                            'called dialog.Destroy()\n'
-                                           "called manager.update_items() with args `('y',)`\n"
+                                           "called manager.update_items() with args ('y',)\n"
                                            'called manager.refresh_fields()\n')
 
     def confirm(self, monkeypatch, capsys):
@@ -2048,7 +2034,7 @@ class TestGridDialog:
         monkeypatch.setattr(gui.wx, 'BoxSizer', mockwx.MockBoxSizer)
         monkeypatch.setattr(gui.wx, 'FlexGridSizer', mockwx.MockGridSizer)
         monkeypatch.setattr(gui.wx, 'StaticText', mockwx.MockStaticText)
-        testobj = gui.GridDialog('parent', (('1', '2'), ('3', '4')), 'title')
+        gui.GridDialog('parent', (('1', '2'), ('3', '4')), 'title')
         assert capsys.readouterr().out == ('called wxDialog.__init__()\n'
                                            'called BoxSizer.__init__(`vert`)\n'
                                            'called GridSizer.__init__()\n'
@@ -2088,7 +2074,7 @@ class TestTaskbarIcon:
         mockparent = setup_mainwindow(monkeypatch, capsys)
         mockparent.nt_icon = gui.wx.Icon()
         mockparent.revive = lambda x: 'revive'
-        testobj = gui.TaskbarIcon(mockparent)
+        gui.TaskbarIcon(mockparent)
         assert capsys.readouterr().out == ('called Icon.__init__()\n'
                                            'called trayicon.__init__()\n'
                                            'called trayicon.SetIcon()\n'

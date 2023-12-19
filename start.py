@@ -3,7 +3,7 @@
 """
 import argparse
 from notetree.main import NoteTree
-from notetree.settings import backend, ext
+from notetree.settings import ext
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Simple Tree Notebook")

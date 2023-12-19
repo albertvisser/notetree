@@ -1,3 +1,4 @@
+import contextlib
 import pytest
 import notetree.json_dml as dmlj
 
@@ -5,10 +6,7 @@ import notetree.json_dml as dmlj
 def test_load_1(monkeypatch, capsys, tmp_path):
     "test file does not exist"
     dest = tmp_path / 'load1.json'
-    try:
-        dest.unlink()
-    except FileNotFoundError:
-        pass
+    dest.unlink(missing_ok=True)
     assert dmlj.load_file(dest) == {}
 
 
@@ -54,7 +52,7 @@ def test_load_5(monkeypatch, capsys, tmp_path):
 
 def test_save(monkeypatch, capsys, tmp_path):
     def mock_save(*args, **kwargs):
-        print('called json.dump for data `{}`'.format(args[0]))
+        print(f'called json.dump for data `{args[0]}`')
     dest = tmp_path / 'save.json'
     data = 'nt_data'
     monkeypatch.setattr(dmlj.json, 'dump', mock_save)

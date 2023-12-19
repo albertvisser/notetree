@@ -45,14 +45,14 @@ with open(j_filename + '.out-saved', 'w') as out:
     pprint.pprint(new_data, stream=out)
 
 print('comparing pickle save and load')
-subprocess.run(['diff', '{}.out-loaded'.format(p_filename), '{}.out-saved'.format(p_filename)])
+subprocess.run(['diff', f'{p_filename}.out-loaded', f'{p_filename}.out-saved'], check=False)
 print('comparing pickle load and sql save')
 # hier verschillen vanwege gebruik lists ipv tuples
-subprocess.run(['diff', '{}.out-loaded'.format(p_filename), '{}.out-saved'.format(s_filename)])
+subprocess.run(['diff', f'{p_filename}.out-loaded', f'{s_filename}.out-saved'], check=False)
 print('comparing sql save and load')
-subprocess.run(['diff', '{}.out-loaded'.format(s_filename), '{}.out-saved'.format(s_filename)])
+subprocess.run(['diff', f'{s_filename}.out-loaded', f'{s_filename}.out-saved'], check=False)
 print('comparing sql load and json save')
 # hier verschil vanwege ontbreken keywords in één van beide
-subprocess.run(['diff', '{}.out-loaded'.format(s_filename), '{}.out-saved'.format(j_filename)])
+subprocess.run(['diff', f'{s_filename}.out-loaded', f'{j_filename}.out-saved'], check=False)
 print('comparing json save and load')
-subprocess.run(['diff', '{}.out-loaded'.format(j_filename), '{}.out-saved'.format(j_filename)])
+subprocess.run(['diff', f'{j_filename}.out-loaded', f'{j_filename}.out-saved'], check=False)

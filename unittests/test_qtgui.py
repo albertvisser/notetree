@@ -1,15 +1,9 @@
 """ unittests voor qt_gui.py
 """
-import os
 import types
-# import gettext
 import pytest
-# import unittests.mockqtwidgets as mockqtw
 from mockgui import mockqtwidgets as mockqtw
 import notetree.qt_gui as gui
-# HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# HERE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
 
 class MockNoteTree:
@@ -22,7 +16,7 @@ class MockNoteTree:
     def check_active(self, *args):
         print('called Base.check_active')
     def activate_item(self, *args):
-        print('called Base.activate_item with arg `{}`'.format(args[0]))
+        print(f'called Base.activate_item with arg `{args[0]}`')
     def update(self):
         print('called Base.update')
 
@@ -55,11 +49,11 @@ class TestMainWindow:
 
     def test_init_screen(self, monkeypatch, capsys):
         def mock_setWindowTitle(self, *args):
-            print('called setWindowTitle with args `{}`'.format(args))
+            print('called setWindowTitle with args', args)
         def mock_setWindowIcon(self, *args):
             print('called setWindowIcon()`')
         def mock_resize(self, *args):
-            print('called resize with args `{}`'.format(args))
+            print('called resize with args', args)
         monkeypatch.setattr(gui.gui, 'QIcon', mockqtw.MockIcon)
         monkeypatch.setattr(gui.qtw.QMainWindow, 'setWindowTitle', mock_setWindowTitle)
         monkeypatch.setattr(gui.qtw.QMainWindow, 'setWindowIcon', mock_setWindowIcon)
@@ -69,10 +63,10 @@ class TestMainWindow:
         testobj.init_screen('title', 'iconame')
         assert hasattr(testobj, 'nt_icon')
         assert capsys.readouterr().out == ('called Widget.__init__\n'
-                                           "called setWindowTitle with args `('title',)`\n"
+                                           "called setWindowTitle with args ('title',)\n"
                                            'called Icon.__init__ with arg `iconame`\n'
                                            'called setWindowIcon()`\n'
-                                           'called resize with args `(800, 500)`\n')
+                                           'called resize with args (800, 500)\n')
 
     def test_setup_statusbar(self, monkeypatch, capsys):
         def mock_statusbar(self, *args):
@@ -135,6 +129,7 @@ class TestMainWindow:
         newstuff = testobj.setup_editor()
         assert newstuff == testobj.editor
         assert capsys.readouterr().out == (f'called Editor.__init__ with args ({testobj},)\n'
+                                           'called Editor.setFont\n'
                                            'called Editor.setWrapMode\n'
                                            'called Editor.setBraceMatching\n'
                                            'called Editor.setAutoIndent\n'
@@ -184,7 +179,7 @@ class TestMainWindow:
         testobj.tree = mockqtw.MockTreeWidget()
         testobj.changeselection()
         assert capsys.readouterr().out == ('called Tree.__init__\n'
-                                           'called Tree.selectedItems\n'
+                                           #'called Tree.selectedItems\n'
                                            'called Base.check_active\n'
                                            'called Base.activate_item with arg'
                                            ' `called Tree.currentItem`\n')
@@ -228,18 +223,18 @@ class TestMainWindow:
 
     def test_set_screen(self, monkeypatch, capsys):
         def mock_resize(self, *args):
-            print('called resize with args `{}`'.format(args))
+            print('called resize with args' , args)
         monkeypatch.setattr(gui.qtw.QMainWindow, 'resize', mock_resize)
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.set_screen(('x', 'y'))
-        assert capsys.readouterr().out == "called resize with args `('x', 'y')`\n"
+        assert capsys.readouterr().out == "called resize with args ('x', 'y')\n"
 
     def test_set_splitter(self, monkeypatch, capsys):
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.splitter = mockqtw.MockSplitter()  # gui.qtw.QSplitter()
         testobj.set_splitter('split')
         assert capsys.readouterr().out == ('called Splitter.__init__\n'
-                                           "called Splitter.setSizes with args `('split',)`\n")
+                                           "called Splitter.setSizes with args ('split',)\n")
 
     def test_create_root(self, monkeypatch, capsys):
         monkeypatch.setattr(gui.qtw, 'QTreeWidgetItem', mockqtw.MockTreeItem)
@@ -279,7 +274,7 @@ class TestMainWindow:
 
     def test_copy_text_from_editor_to_activeitem(self, monkeypatch, capsys):
         def mock_settext(self, *args):
-            print('called TreeItem.setText with args `{}`, `{}`'.format(args[0], args[1]))
+            print(f'called TreeItem.setText with args `{args[0]}`, `{args[1]}`')
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.activeitem = mockqtw.MockTreeItem()
         assert capsys.readouterr().out == "called TreeItem.__init__ with args ()\n"
@@ -488,14 +483,14 @@ class TestMainWindow:
         testobj.root = mockqtw.MockTreeItem()
         assert capsys.readouterr().out == "called TreeItem.__init__ with args ()\n"
         testobj.root.subitems = ['cheddar', 'stilton', 'gouda']
-        assert testobj.get_itempos('gouda') == 2
+        assert testobj.get_itempos('gouda') == testobj.root.subitems.index('gouda')
 
     def test_get_itemcount(self, monkeypatch, capsys):
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.root = mockqtw.MockTreeItem()
         assert capsys.readouterr().out == "called TreeItem.__init__ with args ()\n"
         testobj.root.subitems = ['cheddar', 'stilton', 'gouda']
-        assert testobj.get_itemcount() == 3
+        assert testobj.get_itemcount() == len(testobj.root.subitems)
 
     def test_get_item_at_pos(self, monkeypatch, capsys):
         testobj = setup_mainwindow(monkeypatch, capsys)
@@ -589,7 +584,7 @@ class TestMainWindow:
 
     def test_showmsg(self, monkeypatch, capsys):
         def mock_info(self, *args):
-            print('called MessageBox.information with args `{}`, `{}`'.format(args[0], args[1]))
+            print(f'called MessageBox.information with args `{args[0]}`, `{args[1]}`')
         monkeypatch.setattr(gui.qtw.QMessageBox, 'information', mock_info)
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.base.app_title = 'app_title'
@@ -599,14 +594,14 @@ class TestMainWindow:
 
     def test_ask_question(self, monkeypatch, capsys):
         def mock_ask(self, *args):
-            print('called MessageBox.question with args `{}`, `{}`'.format(args[0], args[1]))
+            print('called MessageBox.question with args', args)
             return 'x'
         monkeypatch.setattr(gui.qtw.QMessageBox, 'question', mock_ask)
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.base.app_title = 'app_title'
         assert not testobj.ask_question('question')
         assert capsys.readouterr().out == ('called MessageBox.question with args'
-                                           ' `app_title`, `question`\n')
+                                           " ('app_title', 'question')\n")
 
     def test_show_dialog(self, monkeypatch, capsys):
         def mock_exec(self):
@@ -615,28 +610,28 @@ class TestMainWindow:
         monkeypatch.setattr(mockqtw.MockDialog, 'exec_', mock_exec)
         testobj = setup_mainwindow(monkeypatch, capsys)
         assert testobj.show_dialog(mockqtw.MockDialog, 'arg') == (True, {'x': 'y'})
-        assert capsys.readouterr().out == "called Dialog.__init__ with args `('arg',)`\n"
+        assert capsys.readouterr().out == "called Dialog.__init__ with args ('arg',)\n"
 
     def test_get_text_from_user(self, monkeypatch, capsys):
         def mock_gettext(self, *args):
-            print('called InputDialog.getText with args `{}`'.format(args))
+            print('called InputDialog.getText with args', args)
         monkeypatch.setattr(gui.qtw.QInputDialog, 'getText', mock_gettext)
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.base.app_title = 'app_title'
         testobj.get_text_from_user('prompt', 'default')
         assert capsys.readouterr().out == ("called InputDialog.getText with args"
-                                           " `('app_title', 'prompt', 0, 'default')`\n")
+                                           " ('app_title', 'prompt', 0, 'default')\n")
 
     def test_get_choice_from_user(self, monkeypatch, capsys):
         def mock_getitem(self, *args, **kwargs):
-            print('called InputDialog.getItem with args `{}` kwargs `{}`'.format(args, kwargs))
+            print('called InputDialog.getItem with args', args, kwargs)
         monkeypatch.setattr(gui.qtw.QInputDialog, 'getItem', mock_getitem)
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.base.app_title = 'app_title'
         testobj.get_choice_from_user('prompt', ['choices'], 0)
         assert capsys.readouterr().out == ("called InputDialog.getItem with args"
-                                           " `('app_title', 'prompt', ['choices'])`"
-                                           " kwargs `{'current': 0, 'editable': False}`\n")
+                                           " ('app_title', 'prompt', ['choices'])"
+                                           " {'current': 0, 'editable': False}\n")
 
 
 class TestOptionsDialog:
@@ -647,7 +642,7 @@ class TestOptionsDialog:
         # overgeërfde methoden die via self worden aangeroepen ook op de superklasse patchen
         # de superklasse zelf patchen werkt blijkbaar niet
         def mock_setWindowTitle(self, *args):
-            print('called Dialog.setWindowTitle with args `{}`'.format(args))
+            print('called Dialog.setWindowTitle with args', args)
         def mock_setLayout(self, *args):
             print('called Dialog.setLayout')
         monkeypatch.setattr(gui.qtw.QDialog, '__init__', mock_init)
@@ -664,8 +659,7 @@ class TestOptionsDialog:
         assert len(testobj.controls) == 1
         assert testobj.controls[0][0] == 'text'
         assert capsys.readouterr().out == ('called Dialog.__init__\n'
-                                           "called Dialog.setWindowTitle with args"
-                                           " `('t_sett',)`\n"
+                                           "called Dialog.setWindowTitle with args ('t_sett',)\n"
                                            'called VBox.__init__\n'
                                            'called Grid.__init__\n'
                                            f"called Label.__init__ with args ('text', {testobj})\n"
@@ -717,9 +711,9 @@ class TestCheckDialog:
         def mock_init(self, *args):
             print('called Dialog.__init__')
         def mock_setWindowTitle(self, *args):
-            print('called Dialog.setWindowTitle with args `{}`'.format(args))
+            print('called Dialog.setWindowTitle with args', args)
         def mock_setWindowIcon(self, *args):
-            print('called Dialog.setWindowIcon with args `{}`'.format(args))
+            print('called Dialog.setWindowIcon with args', args)
         def mock_setLayout(self, *args):
             print('called Dialog.setLayout')
         mockbase = types.SimpleNamespace(app_title='title')
@@ -736,8 +730,8 @@ class TestCheckDialog:
         testobj = gui.CheckDialog(mockparent, {}, 'message')
         assert testobj.parent == mockparent
         assert capsys.readouterr().out == ('called Dialog.__init__\n'
-                                           "called Dialog.setWindowTitle with args `('title',)`\n"
-                                           "called Dialog.setWindowIcon with args `('icon',)`\n"
+                                           "called Dialog.setWindowTitle with args ('title',)\n"
+                                           "called Dialog.setWindowIcon with args ('icon',)\n"
                                            f"called Label.__init__ with args ('message', {testobj})\n"
                                            'called CheckBox.__init__\n'
                                            "called PushButton.__init__ with args"
@@ -787,9 +781,9 @@ class TestKeywordsDialog:
         def mock_init(self, *args):
             print('called Dialog.__init__')
         def mock_setWindowTitle(self, *args):
-            print('called Dialog.setWindowTitle with args `{}`'.format(args))
+            print('called Dialog.setWindowTitle with args', args)
         def mock_setWindowIcon(self, *args):
-            print('called Dialog.setWindowIcon with args `{}`'.format(args))
+            print('called Dialog.setWindowIcon with args', args)
         def mock_resize(self, *args):
             print('called Dialog.resize')
         def mock_create_actions(self, *args):
@@ -814,8 +808,8 @@ class TestKeywordsDialog:
         assert testobj.parent == mockparent
         assert capsys.readouterr().out == ('called Dialog.__init__\n'
                                            "called Dialog.setWindowTitle with args "
-                                           "`('title - w_tags',)`\n"
-                                           "called Dialog.setWindowIcon with args `('icon',)`\n"
+                                           "('title - w_tags',)\n"
+                                           "called Dialog.setWindowIcon with args ('icon',)\n"
                                            'called Dialog.resize\n'
                                            'called List.__init__\n'
                                            'called List.setSelectionMode\n'
@@ -890,9 +884,9 @@ class TestKeywordsDialog:
         def mock_init(self, *args, **kwargs):
             print('called Dialog.__init__')
         def mock_setWindowTitle(self, *args):
-            print('called Dialog.setWindowTitle with args `{}`'.format(args))
+            print('called Dialog.setWindowTitle with args', args)
         def mock_setWindowIcon(self, *args):
-            print('called Dialog.setWindowIcon with args `{}`'.format(args))
+            print('called Dialog.setWindowIcon with args', args)
         def mock_resize(self, *args):
             print('called Dialog.resize')
         def mock_create_actions(self, *args):
@@ -917,8 +911,8 @@ class TestKeywordsDialog:
         assert testobj.parent == mockparent
         assert capsys.readouterr().out == ('called Dialog.__init__\n'
                                            "called Dialog.setWindowTitle with args "
-                                           "`('title - w_tags',)`\n"
-                                           "called Dialog.setWindowIcon with args `('icon',)`\n"
+                                           "('title - w_tags',)\n"
+                                           "called Dialog.setWindowIcon with args ('icon',)\n"
                                            'called Dialog.resize\n'
                                            'called List.__init__\n'
                                            'called List.setSelectionMode\n'
@@ -1027,7 +1021,7 @@ class TestKeywordsDialog:
         def mock_init(self, *args):
             print('called dialog.__init__')
         def mock_activate(self, *args):
-            print('called dialog.activate(`{}`)'.format(args[0]))
+            print('called dialog.activate with args', args)
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
@@ -1037,13 +1031,13 @@ class TestKeywordsDialog:
         testobj.fromlist = 'fromlist'
         testobj.activate_left()
         assert capsys.readouterr().out == ('called dialog.__init__\n'
-                                           'called dialog.activate(`fromlist`)\n')
+                                           "called dialog.activate with args ('fromlist',)\n")
 
     def test_activate_right(self, monkeypatch, capsys):
         def mock_init(self, *args):
             print('called dialog.__init__')
         def mock_activate(self, *args):
-            print('called dialog.activate(`{}`)'.format(args[0]))
+            print('called dialog.activate with args', args)
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
@@ -1053,7 +1047,7 @@ class TestKeywordsDialog:
         testobj.tolist = 'tolist'
         testobj.activate_right()
         assert capsys.readouterr().out == ('called dialog.__init__\n'
-                                           'called dialog.activate(`tolist`)\n')
+                                           "called dialog.activate with args ('tolist',)\n")
 
     def test_activate(self, monkeypatch, capsys):
         "test met geselecteerd item"
@@ -1096,7 +1090,7 @@ class TestKeywordsDialog:
         def mock_init(self, *args):
             print('called Dialog.__init__')
         def mock_moveitem(self, *args):
-            print('called Dialog.moveitem(`{}`)'.format(args))
+            print('called Dialog.moveitem with args', args)
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
@@ -1106,13 +1100,14 @@ class TestKeywordsDialog:
         testobj.tolist = 'tolist'
         testobj.move_right()
         assert capsys.readouterr().out == ('called Dialog.__init__\n'
-                                           "called Dialog.moveitem(`('fromlist', 'tolist')`)\n")
+                                           "called Dialog.moveitem with args ('fromlist',"
+                                           " 'tolist')\n")
 
     def test_move_left(self, monkeypatch, capsys):
         def mock_init(self, *args):
             print('called Dialog.__init__')
         def mock_moveitem(self, *args):
-            print('called Dialog.moveitem(`{}`)'.format(args))
+            print('called Dialog.moveitem with args', args)
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
@@ -1122,7 +1117,8 @@ class TestKeywordsDialog:
         testobj.tolist = 'tolist'
         testobj.move_left()
         assert capsys.readouterr().out == ('called Dialog.__init__\n'
-                                           "called Dialog.moveitem(`('tolist', 'fromlist')`)\n")
+                                           "called Dialog.moveitem with args ('tolist',"
+                                           " 'fromlist')\n")
 
     def test_moveitem(self, monkeypatch, capsys):
         def mock_init(self, *args):
@@ -1167,7 +1163,7 @@ class TestKeywordsDialog:
             print('called Dialog.__init__')
             self.parent = args[0]
         def mock_gettext(self, *args):
-            print('called InputDialog.getText with args `{}`'.format(args))
+            print('called InputDialog.getText with args', args)
             return 'text', True
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
@@ -1180,7 +1176,7 @@ class TestKeywordsDialog:
         assert capsys.readouterr().out == ('called Dialog.__init__\n'
                                            'called List.__init__\n'
                                            "called InputDialog.getText with args"
-                                           " `('title', 't_newtag')`\n"
+                                           " ('title', 't_newtag')\n"
                                            'called List.addItem with arg `text` on `[]`\n')
 
     def test_add_trefw_2(self, monkeypatch, capsys):
@@ -1189,7 +1185,7 @@ class TestKeywordsDialog:
             print('called Dialog.__init__')
             self.parent = args[0]
         def mock_gettext(self, *args):
-            print('called InputDialog.getText with args `{}`'.format(args))
+            print('called InputDialog.getText with args', args)
             return '', False
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
@@ -1202,7 +1198,7 @@ class TestKeywordsDialog:
         assert capsys.readouterr().out == ('called Dialog.__init__\n'
                                            'called List.__init__\n'
                                            "called InputDialog.getText with args"
-                                           " `('title', 't_newtag')`\n")
+                                           " ('title', 't_newtag')\n")
 
     def test_keys_help(self, monkeypatch, capsys):
         def mock_init(self, *args):
@@ -1211,7 +1207,7 @@ class TestKeywordsDialog:
         def mock_init_dialog(self, *args):
             print('called QDialog.__init__')
         def mock_setWindowTitle(self, *args):
-            print('called Dialog.setWindowTitle with args `{}`'.format(args))
+            print('called Dialog.setWindowTitle with args', args)
         def mock_setLayout(self, *args):
             print('called Dialog.setLayout')
         def mock_exec(self, *args):
@@ -1244,7 +1240,7 @@ class TestKeywordsDialog:
                                            "called Grid.addWidget with arg of type"
                                            " <class 'mockgui.mockqtwidgets.MockLabel'> at (1, 1)\n"
                                            "called Dialog.setWindowTitle with args"
-                                           " `('title t_keys',)`\n"
+                                           " ('title t_keys',)\n"
                                            'called Dialog.setLayout\n'
                                            'called Dialog.exec_\n')
 
@@ -1275,9 +1271,9 @@ class TestKeywordsManager:
         def mock_init(self, *args):
             print('called Dialog.__init__')
         def mock_setWindowTitle(self, *args):
-            print('called Dialog.setWindowTitle with args `{}`'.format(args))
+            print('called Dialog.setWindowTitle with args', args)
         def mock_setWindowIcon(self, *args):
-            print('called Dialog.setWindowIcon with args `{}`'.format(args))
+            print('called Dialog.setWindowIcon with args', args)
         def mock_resize(self, *args):
             print('called Dialog.resize')
         def mock_setLayout(self, *args):
@@ -1300,8 +1296,8 @@ class TestKeywordsManager:
         assert testobj.parent == mockparent
         assert capsys.readouterr().out == ('called Dialog.__init__\n'
                                            "called Dialog.setWindowTitle with args "
-                                           "`('title - t_tagman',)`\n"
-                                           "called Dialog.setWindowIcon with args `('icon',)`\n"
+                                           "('title - t_tagman',)\n"
+                                           "called Dialog.setWindowIcon with args ('icon',)\n"
                                            'called Dialog.resize\n'
                                            'called ComboBox.__init__\n'
                                            'called LineEdit.__init__\n'
@@ -1528,7 +1524,7 @@ class TestKeywordsManager:
             print('called TextDialog.__init__')
             self.parent = args[0]
         def mock_update(self, *args):
-            print('called Dialog.update_items with args `{}`'.format(args))
+            print('called Dialog.update_items with args', args)
         def mock_refresh(*args):
             print('called Dialog.refresh_fields')
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
@@ -1560,7 +1556,7 @@ class TestKeywordsManager:
             print('called TextDialog.__init__')
             self.parent = args[0]
         def mock_update(*args):
-            print('called Dialog.update_items with args `{}`'.format(args))
+            print('called Dialog.update_items with args', args)
         def mock_refresh(*args):
             print('called Dialog.refresh_fields')
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
@@ -1585,7 +1581,7 @@ class TestKeywordsManager:
                                            'called MessageBox.setInformativeText\n'
                                            'called MessageBox.setStandardButtons\n'
                                            'called MessageBox.setDefaultButton with arg `4`\n'
-                                           "called Dialog.update_items with args `('y', 'z')`\n"
+                                           "called Dialog.update_items with args ('y', 'z')\n"
                                            'called Dialog.refresh_fields\n')
 
     def test_change_keyword_3(self, monkeypatch, capsys):
@@ -1594,7 +1590,7 @@ class TestKeywordsManager:
             print('called TextDialog.__init__')
             self.parent = args[0]
         def mock_update(*args):
-            print('called Dialog.update_items with args `{}`'.format(args))
+            print('called Dialog.update_items with args', args)
         def mock_refresh(*args):
             print('called Dialog.refresh_fields')
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
@@ -1619,7 +1615,7 @@ class TestKeywordsManager:
                                            'called MessageBox.setInformativeText\n'
                                            'called MessageBox.setStandardButtons\n'
                                            'called MessageBox.setDefaultButton with arg `4`\n'
-                                           "called Dialog.update_items with args `('y',)`\n"
+                                           "called Dialog.update_items with args ('y',)\n"
                                            'called Dialog.refresh_fields\n')
 
 
@@ -1628,9 +1624,9 @@ class TestGetTextDialog:
         def mock_init(self, *args):
             print('called Dialog.__init__')
         def mock_setWindowTitle(self, *args):
-            print('called Dialog.setWindowTitle with args `{}`'.format(args))
+            print('called Dialog.setWindowTitle with args', args)
         def mock_setWindowIcon(self, *args):
-            print('called Dialog.setWindowIcon with args `{}`'.format(args))
+            print('called Dialog.setWindowIcon with args', args)
         def mock_setLayout(self, *args):
             print('called Dialog.setLayout')
         mockbase = types.SimpleNamespace(app_title='title')
@@ -1648,8 +1644,8 @@ class TestGetTextDialog:
         monkeypatch.setattr(gui.qtw, 'QDialogButtonBox', mockqtw.MockButtonBox)
         testobj = gui.GetTextDialog(mockparent, 0, 'seltext', 'labeltext', True)
         assert capsys.readouterr().out == ('called Dialog.__init__\n'
-                                           "called Dialog.setWindowTitle with args `('title',)`\n"
-                                           "called Dialog.setWindowIcon with args `('icon',)`\n"
+                                           "called Dialog.setWindowTitle with args ('title',)\n"
+                                           "called Dialog.setWindowIcon with args ('icon',)\n"
                                            'called LineEdit.__init__\n'
                                            'called LineEdit.setText with arg `seltext`\n'
                                            'called CheckBox.__init__\n'
@@ -1688,9 +1684,9 @@ class TestGetTextDialog:
         def mock_init(self, *args):
             print('called Dialog.__init__')
         def mock_setWindowTitle(self, *args):
-            print('called Dialog.setWindowTitle with args `{}`'.format(args))
+            print('called Dialog.setWindowTitle with args', args)
         def mock_setWindowIcon(self, *args):
-            print('called Dialog.setWindowIcon with args `{}`'.format(args))
+            print('called Dialog.setWindowIcon with args', args)
         def mock_setLayout(self, *args):
             print('called Dialog.setLayout')
         mockbase = types.SimpleNamespace(app_title='title')
@@ -1708,8 +1704,8 @@ class TestGetTextDialog:
         monkeypatch.setattr(gui.qtw, 'QDialogButtonBox', mockqtw.MockButtonBox)
         testobj = gui.GetTextDialog(mockparent, -1, 'seltext', 'labeltext', False)
         assert capsys.readouterr().out == ('called Dialog.__init__\n'
-                                           "called Dialog.setWindowTitle with args `('title',)`\n"
-                                           "called Dialog.setWindowIcon with args `('icon',)`\n"
+                                           "called Dialog.setWindowTitle with args ('title',)\n"
+                                           "called Dialog.setWindowIcon with args ('icon',)\n"
                                            'called LineEdit.__init__\n'
                                            'called LineEdit.setText with arg `seltext`\n'
                                            'called CheckBox.__init__\n'
@@ -1847,7 +1843,7 @@ class TestGridDialog:
         def mock_init(self, *args):
             print('called Dialog.__init__')
         def mock_setWindowTitle(self, *args):
-            print('called Dialog.setWindowTitle with args `{}`'.format(args))
+            print('called Dialog.setWindowTitle with args', args)
         def mock_translation(*args):
             return 'a - b\nc - d'
         def mock_setLayout(self, *args):
@@ -1873,6 +1869,5 @@ class TestGridDialog:
                                            f"called Label.__init__ with args ('b', {testobj})\n"
                                            "called Grid.addWidget with arg of type"
                                            " <class 'mockgui.mockqtwidgets.MockLabel'> at (1, 1)\n"
-                                           "called Dialog.setWindowTitle with args"
-                                           " `('title',)`\n"
+                                           "called Dialog.setWindowTitle with args ('title',)\n"
                                            'called Dialog.setLayout\n')
