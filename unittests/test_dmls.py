@@ -1,43 +1,68 @@
+"""unittests for ./notetree/sql_dml.py
+"""
 import json
 import pytest
 import notetree.sql_dml as dmls
 
 
 class MockConn:
+    """stub for sqlite3.Connection
+    """
     def cursor(self, *args, **kwargs):
+        """stub
+        """
         return MockCursor()
     def commit(self, *args, **kwargs):
+        """stub
+        """
         print('called commit() on connection')
     def close(self, *args):
-        "needed for context handler"
+        """stub, needed for context handler
+        """
 
 
 class MockCursor:
+    """stub for sqlite3.Cursor
+    """
     lastrowid = 0
     def __iter__(self):
-        pass
+        """stub
+        """
     def execute(self, *args):
+        """stub
+        """
         print(f'execute SQL: `{args[0]}`')
         if len(args) > 1:
             print('  with:', ', '.join([f'`{x}`' for x in args[1]]))
     def executemany(self, *args):
+        """stub
+        """
         print(f'execute SQL: `{args[0]}`')
         if len(args) > 1:
-            print(f'  with:', ', '.join(['`{x}`' for x in args[1]]))
+            print('  with:', ', '.join([f'`{x}`' for x in args[1]]))
     def executescript(self, *args):
+        """stub
+        """
         print(f'execute SQL: `{args[0]}`')
     def commit(self, *args, **kwargs):
+        """stub
+        """
         print('called commit() on cursor')
     def close(self, *args, **kwargs):
+        """stub
+        """
         print('called close()')
     def fetchone(self, *args, **kwargs):
-        pass
+        """stub
+        """
     def fetchall(self, *args, **kwargs):
-        pass
+        """stub
+        """
 
 
-def test_load_1(monkeypatch, capsys, tmp_path):
-    "test file does not exist"
+def test_load_1(capsys, tmp_path):
+    """unittest for sql_dml.load: file does not exist
+    """
     dest = tmp_path / 'load1.sql'
     dest.unlink(missing_ok=True)
     assert dmls.load_file(dest) == {}
@@ -45,10 +70,15 @@ def test_load_1(monkeypatch, capsys, tmp_path):
 
 
 def test_load_2(monkeypatch, capsys, tmp_path):
-    "test file exists but missing Application option"
+    """unittest for sql_dml.load: file exists but missing Application option
+    """
     def mock_connect(*args):
+        """stub
+        """
         return MockConn()
     def mock_iter(*args):
+        """stub
+        """
         return (x for x in [('1', '01-01-0001 00:00:00', 'title_1', 'text_1')])
     dest = tmp_path / 'load2.sql'
     dest.touch()
@@ -61,10 +91,15 @@ def test_load_2(monkeypatch, capsys, tmp_path):
 
 
 def test_load_3(monkeypatch, capsys, tmp_path):
-    "wrong Application option"
+    """unittest for sql_dml.load: wrong Application option
+    """
     def mock_connect(*args):
+        """stub
+        """
         return MockConn()
     def mock_iter(*args):
+        """stub
+        """
         return (x for x in [(0, '', '', '{"Application": "x"}'),
                             (1, '01-01-0001 00:00:00', 'title_1', 'text_1')])
     dest = tmp_path / 'load3.sql'
@@ -78,13 +113,18 @@ def test_load_3(monkeypatch, capsys, tmp_path):
 
 
 def test_load_4(monkeypatch, capsys, tmp_path):
-    "everyting ok, no tags"
+    """unittest for sql_dml.load: everyting ok, no tags
+    """
     conf = {"Application": 'NoteTree', "ScreenSize": (9, 6), "Selection": [10, 1],
             "SashPosition": [55]}
     count = 0
     def mock_connect(*args):
+        """stub
+        """
         return MockConn()
     def mock_iter(*args):
+        """stub
+        """
         nonlocal count
         count += 1
         if count == 1:
@@ -97,7 +137,7 @@ def test_load_4(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(MockCursor, '__iter__', mock_iter)
     # assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'Keywords': []},
     assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'ScreenSize': (9, 6),
-                                       'Selection': (10,1), 'SashPosition': (55,), 'Keywords': []},
+                                        'Selection': (10,1), 'SashPosition': (55,), 'Keywords': []},
                                     '01-01-0001 00:00:00': ('title_1', 'text_1', [])}
     assert capsys.readouterr().out == ('execute SQL:'
                                        ' `SELECT noteid, created, title, text FROM notes`\n'
@@ -106,29 +146,35 @@ def test_load_4(monkeypatch, capsys, tmp_path):
 
 
 def test_load_5(monkeypatch, capsys, tmp_path):
-    "everyting ok, with tags"
-    conf = {'Application': 'NoteTree', 'ScreenSize': (9, 6), 'Selection': [10, 1], 'SashPosition': [55]}
+    """unittest for sql_dml.load: everyting ok, with tags
+    """
+    conf = {'Application': 'NoteTree', 'ScreenSize': (9, 6), 'Selection': [10, 1],
+            'SashPosition': [55]}
     count = 0
     def mock_connect(*args):
+        """stub
+        """
         return MockConn()
     def mock_iter(*args):
+        """stub
+        """
         nonlocal count
         count += 1
         if count == 1:
             return (x for x in [(0, '', '', json.dumps(conf)),
                                 (1, '01-01-0001 00:00:00', 'title_1', 'text_1')])
-        elif count == 2:
+        if count == 2:
             return (x for x in [('tagid_1', 'tag_title_1')])
-        elif count == 3:
-            return (x for x in [(1, 'tagid_1')])
+        # if count == 3:
+        return (x for x in [(1, 'tagid_1')])
     dest = tmp_path / 'load5.sql'
     dest.touch()
     monkeypatch.setattr(dmls.sql, 'connect', mock_connect)
     monkeypatch.setattr(MockCursor, '__iter__', mock_iter)
     # assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'Keywords': ['tag_title_1']},
     assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'ScreenSize': (9, 6),
-                                       'Selection': (10,1), 'SashPosition': (55,),
-                                       'Keywords': ['tag_title_1']},
+                                        'Selection': (10,1), 'SashPosition': (55,),
+                                        'Keywords': ['tag_title_1']},
                                     '01-01-0001 00:00:00': ('title_1', 'text_1', ['tag_title_1'])}
     assert capsys.readouterr().out == ('execute SQL:'
                                        ' `SELECT noteid, created, title, text FROM notes`\n'
@@ -137,8 +183,11 @@ def test_load_5(monkeypatch, capsys, tmp_path):
 
 
 def test_save_1(monkeypatch, capsys, tmp_path):
-    "nt_data is empty (is this possible?)"
+    """unittest for sql_dml.save: nt_data is empty (is this possible?)
+    """
     def mock_connect(*args):
+        """stub
+        """
         return MockConn()
     dest = tmp_path / 'save1.sql'
     data = {}
@@ -149,8 +198,11 @@ def test_save_1(monkeypatch, capsys, tmp_path):
 
 
 def test_save_2(monkeypatch, capsys, tmp_path):
-    "nt_data has no item with created = 0 (also not possible?)"
+    """unittest for sql_dml.save: nt_data has no item with created = 0 (also not possible?)
+    """
     def mock_connect(*args):
+        """stub
+        """
         return MockConn()
     dest = tmp_path / 'save2.sql'
     data = {'01-01-0001 00:00:00': ('title', 'text', ['keyword'])}
@@ -165,8 +217,11 @@ def test_save_2(monkeypatch, capsys, tmp_path):
 
 
 def test_save_3(monkeypatch, capsys, tmp_path):
-    "nt_data is complete"
+    """unittest for sql_dml.save: nt_data is complete
+    """
     def mock_connect(*args):
+        """stub
+        """
         return MockConn()
     dest = tmp_path / 'save2.sql'
     data = {0: {'Application': 'NoteTree', 'Keywords': ['keyword']},
