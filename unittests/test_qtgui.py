@@ -116,11 +116,11 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.nt_icon = 'nt_icon'
         testobj.setup_trayicon()
-        assert capsys.readouterr().out == ('called TrayIcon.__init__\n'
-                                           'called Signal.__init__\n'
-                                           'called TrayIcon.setToolTip\n'
-                                           f'called Signal.connect with args ({testobj.revive},)\n'
-                                           'called TrayIcon.hide\n')
+        assert capsys.readouterr().out == (
+                'called TrayIcon.__init__\n'
+                "called TrayIcon.setToolTip with args ('revive_message',)\n"
+                f'called Signal.connect with args ({testobj.revive},)\n'
+                'called TrayIcon.hide\n')
         assert hasattr(testobj, 'tray_icon')
 
     def test_setup_split_screen(self, monkeypatch, capsys):
@@ -211,9 +211,14 @@ class TestMainWindow:
         assert testobj.seltypes == ["m_selall", "m_seltag", "m_seltxt"]
         assert capsys.readouterr().out == (
                 'called setMenuBar\n'
+                'called MenuBar.__init__\n'
+                'called MenuBar.clear\n'
+                'called MenuBar.addMenu with arg  m_view\n'
+                "called Menu.__init__ with args ('m_view',)\n"
                 f'called Menu.addAction with args `m_revorder` {testobj.base.callback}\n'
                 f"called Action.__init__ with args ('m_revorder', {testobj.base.callback})\n"
                 "called Action.setShortcuts with arg `['F9']`\n"
+                "called Menu.addSeparator\n"
                 "called Action.__init__ with args ('-----', None)\n"
                 f'called Menu.addAction with args `m_selall` {testobj.base.callback}\n'
                 f"called Action.__init__ with args ('m_selall', {testobj.base.callback})\n"
@@ -537,7 +542,6 @@ class TestMainWindow:
         testobj.tray_icon = mockqtw.MockSysTrayIcon()
         testobj.sleep()
         assert capsys.readouterr().out == ('called TrayIcon.__init__\n'
-                                           'called Signal.__init__\n'
                                            'called TrayIcon.show\n'
                                            'called MockMainWindow.hide\n')
 
@@ -554,9 +558,9 @@ class TestMainWindow:
         testobj.base.app_title = ''
         testobj.tray_icon = mockqtw.MockSysTrayIcon()
         testobj.revive(gui.qtw.QSystemTrayIcon.Unknown)
-        assert capsys.readouterr().out == ('called TrayIcon.__init__\n'
-                                           'called Signal.__init__\n'
-                                           'called TrayIcon.showMessage\n')
+        assert capsys.readouterr().out == (
+                'called TrayIcon.__init__\n'
+                "called TrayIcon.showMessage with args ('', 'revive_message')\n")
         testobj.revive(gui.qtw.QSystemTrayIcon.Context)
         assert capsys.readouterr().out == ''
         testobj.revive()
@@ -703,7 +707,8 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.sb = mockqtw.MockStatusBar()
         testobj.show_statusbar_message('text')
-        assert capsys.readouterr().out == 'called StatusBar.showMessage with arg `text`\n'
+        assert capsys.readouterr().out == ('called StatusBar.__init__ with args ()\n'
+                                           'called StatusBar.showMessage with arg `text`\n')
 
     def test_enable_selaction(self, monkeypatch, capsys):
         """unittest for MainWindow.enable_selaction
@@ -765,7 +770,8 @@ class TestMainWindow:
         monkeypatch.setattr(mockqtw.MockDialog, 'exec_', mock_exec)
         testobj = setup_mainwindow(monkeypatch, capsys)
         assert testobj.show_dialog(mockqtw.MockDialog, 'arg') == (True, {'x': 'y'})
-        assert capsys.readouterr().out == "called Dialog.__init__ with args ('arg',)\n"
+        assert capsys.readouterr().out == ("called Dialog.__init__ with args"
+                                           f" {testobj} ('arg',) {{}}\n")
 
     def test_get_text_from_user(self, monkeypatch, capsys):
         """unittest for MainWindow.get_text_from_user
@@ -831,35 +837,30 @@ class TestOptionsDialog:
         assert testobj.parent == 'parent'
         assert len(testobj.controls) == 1
         assert testobj.controls[0][0] == 'text'
-        assert capsys.readouterr().out == ('called Dialog.__init__\n'
-                                           "called Dialog.setWindowTitle with args ('t_sett',)\n"
-                                           'called VBox.__init__\n'
-                                           'called Grid.__init__\n'
-                                           f"called Label.__init__ with args ('text', {testobj})\n"
-                                           "called Grid.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLabel'> at (1, 0)\n"
-                                           'called CheckBox.__init__\n'
-                                           'called CheckBox.setChecked with arg value\n'
-                                           "called Grid.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockCheckBox'> at (1, 1)\n"
-                                           "called VBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockGridLayout'>\n"
-                                           'called HBox.__init__\n'
-                                           'called HBox.addStretch\n'
-                                           "called PushButton.__init__ with args"
-                                           f" ('b_apply', {testobj})\n"
-                                           f'called Signal.connect with args ({testobj.accept},)\n'
-                                           "called HBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           'called PushButton.__init__ with args'
-                                           f" ('b_close', {testobj})\n"
-                                           f'called Signal.connect with args ({testobj.reject},)\n'
-                                           "called HBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           'called HBox.addStretch\n'
-                                           'called VBox.addLayout with arg of type'
-                                           " <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
-                                           'called Dialog.setLayout\n')
+        assert capsys.readouterr().out == (
+            'called Dialog.__init__\n'
+            "called Dialog.setWindowTitle with args ('t_sett',)\n"
+            'called VBox.__init__\n'
+            'called Grid.__init__\n'
+            f"called Label.__init__ with args ('text', {testobj})\n"
+            "called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>"
+            " at (1, 0)\n"
+            'called CheckBox.__init__\n'
+            'called CheckBox.setChecked with arg value\n'
+            "called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockCheckBox'>"
+            " at (1, 1)\n"
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockGridLayout'>\n"
+            'called HBox.__init__\n'
+            'called HBox.addStretch\n'
+            f"called PushButton.__init__ with args ('b_apply', {testobj}) {{}}\n"
+            f'called Signal.connect with args ({testobj.accept},)\n'
+            "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            f"called PushButton.__init__ with args ('b_close', {testobj}) {{}}\n"
+            f'called Signal.connect with args ({testobj.reject},)\n'
+            "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            'called HBox.addStretch\n'
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
+            'called Dialog.setLayout\n')
 
     def test_accept(self, monkeypatch, capsys):
         """unittest for OptionsDialog.accept
@@ -920,33 +921,27 @@ class TestCheckDialog:
         monkeypatch.setattr(gui.qtw, 'QPushButton', mockqtw.MockPushButton)
         testobj = gui.CheckDialog(mockparent, {}, 'message')
         assert testobj.parent == mockparent
-        assert capsys.readouterr().out == ('called Dialog.__init__\n'
-                                           "called Dialog.setWindowTitle with args ('title',)\n"
-                                           "called Dialog.setWindowIcon with args ('icon',)\n"
-                                           f"called Label.__init__ with args ('message', {testobj})\n"
-                                           'called CheckBox.__init__\n'
-                                           "called PushButton.__init__ with args"
-                                           f" ('&Ok', {testobj})\n"
-                                           f"called Signal.connect with args ({testobj.klaar},)\n"
-                                           'called VBox.__init__\n'
-                                           'called HBox.__init__\n'
-                                           "called HBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLabel'>\n"
-                                           "called VBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
-                                           'called HBox.__init__\n'
-                                           "called HBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockCheckBox'>\n"
-                                           "called VBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
-                                           'called HBox.__init__\n'
-                                           "called HBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           'called HBox.insertStretch\n'
-                                           'called HBox.addStretch\n'
-                                           "called VBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
-                                           'called Dialog.setLayout\n')
+        assert capsys.readouterr().out == (
+            'called Dialog.__init__\n'
+            "called Dialog.setWindowTitle with args ('title',)\n"
+            "called Dialog.setWindowIcon with args ('icon',)\n"
+            f"called Label.__init__ with args ('message', {testobj})\n"
+            'called CheckBox.__init__\n'
+            f"called PushButton.__init__ with args ('&Ok', {testobj}) {{}}\n"
+            f"called Signal.connect with args ({testobj.klaar},)\n"
+            'called VBox.__init__\n'
+            'called HBox.__init__\n'
+            "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>\n"
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
+            'called HBox.__init__\n'
+            "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockCheckBox'>\n"
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
+            'called HBox.__init__\n'
+            "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            'called HBox.insertStretch\n'
+            'called HBox.addStretch\n'
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
+            'called Dialog.setLayout\n')
 
     def test_klaar(self, monkeypatch, capsys):
         """unittest for CheckDialog.klaar
@@ -1018,78 +1013,61 @@ class TestKeywordsDialog:
         monkeypatch.setattr(gui.KeywordsDialog, 'create_actions', mock_create_actions)
         testobj = gui.KeywordsDialog(mockparent, '')
         assert testobj.parent == mockparent
-        assert capsys.readouterr().out == ('called Dialog.__init__\n'
-                                           "called Dialog.setWindowTitle with args "
-                                           "('title - w_tags',)\n"
-                                           "called Dialog.setWindowIcon with args ('icon',)\n"
-                                           'called Dialog.resize\n'
-                                           'called List.__init__\n'
-                                           'called List.setSelectionMode\n'
-                                           "called Signal.connect with args"
-                                           f" ({testobj.move_right},)\n"
-                                           f"called Label.__init__ with args ('t_tags', {testobj})\n"
-                                           f"called PushButton.__init__ with args ('b_tag',)\n"
-                                           "called Signal.connect with args"
-                                           f" ({testobj.move_right},)\n"
-                                           f"called PushButton.__init__ with args ('b_untag',)\n"
-                                           f"called Signal.connect with args ({testobj.move_left},)\n"
-                                           f"called PushButton.__init__ with args ('b_newtag',)\n"
-                                           f"called Signal.connect with args ({testobj.add_trefw},)\n"
-                                           f"called PushButton.__init__ with args ('m_keys',)\n"
-                                           f"called Signal.connect with args ({testobj.keys_help},)\n"
-                                           'called List.__init__\n'
-                                           'called List.setSelectionMode\n'
-                                           f"called Signal.connect with args ({testobj.move_left},)\n"
-                                           'called ButtonBox.__init__ with args (3,)\n'
-                                           f"called Signal.connect with args ({testobj.accept},)\n"
-                                           f"called Signal.connect with args ({testobj.reject},)\n"
-                                           'called create_actions\n'
-                                           'called List.addItems with arg `[]`\n'
-                                           "called List.addItems with arg `['x', 'y']`\n"
-                                           'called VBox.__init__\n'
-                                           'called HBox.__init__\n'
-                                           'called VBox.__init__\n'
-                                           f"called Label.__init__ with args ('t_left', {testobj})\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLabel'>\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockListBox'>\n"
-                                           "called HBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
-                                           'called VBox.__init__\n'
-                                           'called VBox.addStretch\n'
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLabel'>\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           'called VBox.addSpacing\n'
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           'called VBox.addStretch\n'
-                                           "called HBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
-                                           'called VBox.__init__\n'
-                                           f"called Label.__init__ with args ('t_right', {testobj})\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLabel'>\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockListBox'>\n"
-                                           "called HBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
-                                           "called VBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
-                                           'called HBox.__init__\n'
-                                           'called HBox.addStretch\n'
-                                           "called HBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockButtonBox'>\n"
-                                           'called HBox.addStretch\n'
-                                           "called VBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
-                                           'called Dialog.setLayout\n')
+        assert capsys.readouterr().out == (
+            'called Dialog.__init__\n'
+            "called Dialog.setWindowTitle with args ('title - w_tags',)\n"
+            "called Dialog.setWindowIcon with args ('icon',)\n"
+            'called Dialog.resize\n'
+            'called List.__init__\n'
+            'called List.setSelectionMode\n'
+            f"called Signal.connect with args ({testobj.move_right},)\n"
+            f"called Label.__init__ with args ('t_tags', {testobj})\n"
+            f"called PushButton.__init__ with args ('b_tag',) {{}}\n"
+            f"called Signal.connect with args ({testobj.move_right},)\n"
+            f"called PushButton.__init__ with args ('b_untag',) {{}}\n"
+            f"called Signal.connect with args ({testobj.move_left},)\n"
+            f"called PushButton.__init__ with args ('b_newtag',) {{}}\n"
+            f"called Signal.connect with args ({testobj.add_trefw},)\n"
+            f"called PushButton.__init__ with args ('m_keys',) {{}}\n"
+            f"called Signal.connect with args ({testobj.keys_help},)\n"
+            'called List.__init__\n'
+            'called List.setSelectionMode\n'
+            f"called Signal.connect with args ({testobj.move_left},)\n"
+            'called ButtonBox.__init__ with args (3,)\n'
+            f"called Signal.connect with args ({testobj.accept},)\n"
+            f"called Signal.connect with args ({testobj.reject},)\n"
+            'called create_actions\n'
+            'called List.addItems with arg `[]`\n'
+            "called List.addItems with arg `['x', 'y']`\n"
+            'called VBox.__init__\n'
+            'called HBox.__init__\n'
+            'called VBox.__init__\n'
+            f"called Label.__init__ with args ('t_left', {testobj})\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockListBox'>\n"
+            "called HBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
+            'called VBox.__init__\n'
+            'called VBox.addStretch\n'
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            'called VBox.addSpacing\n'
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            'called VBox.addStretch\n'
+            "called HBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
+            'called VBox.__init__\n'
+            f"called Label.__init__ with args ('t_right', {testobj})\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockListBox'>\n"
+            "called HBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
+            'called HBox.__init__\n'
+            'called HBox.addStretch\n'
+            "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockButtonBox'>\n"
+            'called HBox.addStretch\n'
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
+            'called Dialog.setLayout\n')
 
     def test_init_2(self, monkeypatch, capsys):
         """unittest for KeywordsDialog.init - start dialoog met keywords parameter
@@ -1134,78 +1112,61 @@ class TestKeywordsDialog:
         monkeypatch.setattr(gui.KeywordsDialog, 'create_actions', mock_create_actions)
         testobj = gui.KeywordsDialog(mockparent, '', keywords=['x'])
         assert testobj.parent == mockparent
-        assert capsys.readouterr().out == ('called Dialog.__init__\n'
-                                           "called Dialog.setWindowTitle with args "
-                                           "('title - w_tags',)\n"
-                                           "called Dialog.setWindowIcon with args ('icon',)\n"
-                                           'called Dialog.resize\n'
-                                           'called List.__init__\n'
-                                           'called List.setSelectionMode\n'
-                                           "called Signal.connect with args"
-                                           f" ({testobj.move_right},)\n"
-                                           f"called Label.__init__ with args ('t_tags', {testobj})\n"
-                                           f"called PushButton.__init__ with args ('b_tag',)\n"
-                                           "called Signal.connect with args"
-                                           f" ({testobj.move_right},)\n"
-                                           f"called PushButton.__init__ with args ('b_untag',)\n"
-                                           f"called Signal.connect with args ({testobj.move_left},)\n"
-                                           f"called PushButton.__init__ with args ('b_newtag',)\n"
-                                           f"called Signal.connect with args ({testobj.add_trefw},)\n"
-                                           f"called PushButton.__init__ with args ('m_keys',)\n"
-                                           f"called Signal.connect with args ({testobj.keys_help},)\n"
-                                           'called List.__init__\n'
-                                           'called List.setSelectionMode\n'
-                                           f"called Signal.connect with args ({testobj.move_left},)\n"
-                                           'called ButtonBox.__init__ with args (3,)\n'
-                                           f"called Signal.connect with args ({testobj.accept},)\n"
-                                           f"called Signal.connect with args ({testobj.reject},)\n"
-                                           'called create_actions\n'
-                                           "called List.addItems with arg `['x']`\n"
-                                           "called List.addItems with arg `['y']`\n"
-                                           'called VBox.__init__\n'
-                                           'called HBox.__init__\n'
-                                           'called VBox.__init__\n'
-                                           f"called Label.__init__ with args ('t_left', {testobj})\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLabel'>\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockListBox'>\n"
-                                           "called HBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
-                                           'called VBox.__init__\n'
-                                           'called VBox.addStretch\n'
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLabel'>\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           'called VBox.addSpacing\n'
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           'called VBox.addStretch\n'
-                                           "called HBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
-                                           'called VBox.__init__\n'
-                                           f"called Label.__init__ with args ('t_right', {testobj})\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLabel'>\n"
-                                           "called VBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockListBox'>\n"
-                                           "called HBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
-                                           "called VBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
-                                           'called HBox.__init__\n'
-                                           'called HBox.addStretch\n'
-                                           "called HBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockButtonBox'>\n"
-                                           'called HBox.addStretch\n'
-                                           "called VBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
-                                           'called Dialog.setLayout\n')
+        assert capsys.readouterr().out == (
+            'called Dialog.__init__\n'
+            "called Dialog.setWindowTitle with args ('title - w_tags',)\n"
+            "called Dialog.setWindowIcon with args ('icon',)\n"
+            'called Dialog.resize\n'
+            'called List.__init__\n'
+            'called List.setSelectionMode\n'
+            f"called Signal.connect with args ({testobj.move_right},)\n"
+            f"called Label.__init__ with args ('t_tags', {testobj})\n"
+            f"called PushButton.__init__ with args ('b_tag',) {{}}\n"
+            f"called Signal.connect with args ({testobj.move_right},)\n"
+            f"called PushButton.__init__ with args ('b_untag',) {{}}\n"
+            f"called Signal.connect with args ({testobj.move_left},)\n"
+            f"called PushButton.__init__ with args ('b_newtag',) {{}}\n"
+            f"called Signal.connect with args ({testobj.add_trefw},)\n"
+            f"called PushButton.__init__ with args ('m_keys',) {{}}\n"
+            f"called Signal.connect with args ({testobj.keys_help},)\n"
+            'called List.__init__\n'
+            'called List.setSelectionMode\n'
+            f"called Signal.connect with args ({testobj.move_left},)\n"
+            'called ButtonBox.__init__ with args (3,)\n'
+            f"called Signal.connect with args ({testobj.accept},)\n"
+            f"called Signal.connect with args ({testobj.reject},)\n"
+            'called create_actions\n'
+            "called List.addItems with arg `['x']`\n"
+            "called List.addItems with arg `['y']`\n"
+            'called VBox.__init__\n'
+            'called HBox.__init__\n'
+            'called VBox.__init__\n'
+            f"called Label.__init__ with args ('t_left', {testobj})\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockListBox'>\n"
+            "called HBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
+            'called VBox.__init__\n'
+            'called VBox.addStretch\n'
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            'called VBox.addSpacing\n'
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            'called VBox.addStretch\n'
+            "called HBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
+            'called VBox.__init__\n'
+            f"called Label.__init__ with args ('t_right', {testobj})\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>\n"
+            "called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockListBox'>\n"
+            "called HBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>\n"
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
+            'called HBox.__init__\n'
+            'called HBox.addStretch\n'
+            "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockButtonBox'>\n"
+            'called HBox.addStretch\n'
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
+            'called Dialog.setLayout\n')
 
     def test_create_actions(self, monkeypatch, capsys):
         """unittest for KeywordsDialog.create_actions
@@ -1609,62 +1570,51 @@ class TestKeywordsManager:
         monkeypatch.setattr(gui.qtw, 'QPushButton', mockqtw.MockPushButton)
         testobj = gui.KeywordsManager(mockparent)
         assert testobj.parent == mockparent
-        assert capsys.readouterr().out == ('called Dialog.__init__\n'
-                                           "called Dialog.setWindowTitle with args "
-                                           "('title - t_tagman',)\n"
-                                           "called Dialog.setWindowIcon with args ('icon',)\n"
-                                           'called Dialog.resize\n'
-                                           'called ComboBox.__init__\n'
-                                           'called LineEdit.__init__\n'
-                                           'called LineEdit.setMinimumHeight with arg `100`\n'
-                                           'called ComboBox.clear\n'
-                                           "called ComboBox.addItems with arg ['x', 'y']\n"
-                                           'called ComboBox.clearEditText\n'
-                                           'called LineEdit.clear\n'
-                                           "called PushButton.__init__ with args"
-                                           f" ('b_remtag', {testobj})\n"
-                                           "called Signal.connect with args"
-                                           f" ({testobj.remove_keyword},)\n"
-                                           "called PushButton.__init__ with args"
-                                           f" ('b_addtag', {testobj})\n"
-                                           "called Signal.connect with args"
-                                           f" ({testobj.add_keyword},)\n"
-                                           "called PushButton.__init__ with args"
-                                           f" ('b_done', {testobj})\n"
-                                           "called Signal.connect with args"
-                                           f" ({testobj.accept},)\n"
-                                           'called VBox.__init__\n'
-                                           'called Grid.__init__\n'
-                                           "called Label.__init__ with args ('l_oldval',)\n"
-                                           "called Grid.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLabel'> at (0, 0)\n"
-                                           "called Grid.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockComboBox'> at (0, 1)\n"
-                                           "called Grid.addWidget with arg of type <class"
-                                           " 'mockgui.mockqtwidgets.MockPushButton'> at (0, 2)\n"
-                                           "called Label.__init__ with args ('l_newval',)\n"
-                                           "called Grid.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLabel'> at (1, 0)\n"
-                                           "called Grid.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLineEdit'> at (1, 1)\n"
-                                           "called Grid.addWidget with arg of type <class"
-                                           " 'mockgui.mockqtwidgets.MockPushButton'> at (1, 2)\n"
-                                           "called VBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockGridLayout'>\n"
-                                           'called HBox.__init__\n'
-                                           "called Label.__init__ with args ('t_applied',)\n"
-                                           "called HBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockLabel'>\n"
-                                           "called VBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
-                                           'called HBox.__init__\n'
-                                           'called HBox.addStretch\n'
-                                           "called HBox.addWidget with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-                                           'called HBox.addStretch\n'
-                                           "called VBox.addLayout with arg of type"
-                                           " <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
-                                           'called Dialog.setLayout\n')
+        assert capsys.readouterr().out == (
+            'called Dialog.__init__\n'
+            "called Dialog.setWindowTitle with args ('title - t_tagman',)\n"
+            "called Dialog.setWindowIcon with args ('icon',)\n"
+            'called Dialog.resize\n'
+            'called ComboBox.__init__\n'
+            'called LineEdit.__init__\n'
+            'called LineEdit.setMinimumHeight with arg `100`\n'
+            'called ComboBox.clear\n'
+            "called ComboBox.addItems with arg ['x', 'y']\n"
+            'called ComboBox.clearEditText\n'
+            'called LineEdit.clear\n'
+            f"called PushButton.__init__ with args ('b_remtag', {testobj}) {{}}\n"
+            f"called Signal.connect with args ({testobj.remove_keyword},)\n"
+            f"called PushButton.__init__ with args ('b_addtag', {testobj}) {{}}\n"
+            f"called Signal.connect with args ({testobj.add_keyword},)\n"
+            f"called PushButton.__init__ with args ('b_done', {testobj}) {{}}\n"
+            f"called Signal.connect with args ({testobj.accept},)\n"
+            'called VBox.__init__\n'
+            'called Grid.__init__\n'
+            "called Label.__init__ with args ('l_oldval',)\n"
+            "called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>"
+            " at (0, 0)\n"
+            "called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>"
+            " at (0, 1)\n"
+            "called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>"
+            " at (0, 2)\n"
+            "called Label.__init__ with args ('l_newval',)\n"
+            "called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>"
+            " at (1, 0)\n"
+            "called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLineEdit'>"
+            " at (1, 1)\n"
+            "called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>"
+            " at (1, 2)\n"
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockGridLayout'>\n"
+            'called HBox.__init__\n'
+            "called Label.__init__ with args ('t_applied',)\n"
+            "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>\n"
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
+            'called HBox.__init__\n'
+            'called HBox.addStretch\n'
+            "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            'called HBox.addStretch\n'
+            "called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>\n"
+            'called Dialog.setLayout\n')
 
     def _test_refresh_fields(self):
         """unittest for Keywordsmanager.refresh_fields
@@ -1896,14 +1846,15 @@ class TestKeywordsManager:
         monkeypatch.setattr(testobj, 'refresh_fields', mock_refresh)
         testobj.add_keyword()
         assert testobj.parent.base.opts == {'Keywords': ['x', 'y']}
-        assert capsys.readouterr().out == ('called TextDialog.__init__\n'
-                                           'called ComboBox.__init__\n'
-                                           'called LineEdit.__init__\n'
-                                           'called MessageBox.__init__ with args () {}\n'
-                                           'called MessageBox.setText with arg `t_repltag`\n'
-                                           'called MessageBox.setInformativeText\n'
-                                           'called MessageBox.setStandardButtons\n'
-                                           'called MessageBox.setDefaultButton with arg `4`\n')
+        assert capsys.readouterr().out == (
+                'called TextDialog.__init__\n'
+                'called ComboBox.__init__\n'
+                'called LineEdit.__init__\n'
+                'called MessageBox.__init__ with args () {}\n'
+                'called MessageBox.setText with arg `t_repltag`\n'
+                'called MessageBox.setInformativeText with arg `t_repltag2`\n'
+                'called MessageBox.setStandardButtons\n'
+                'called MessageBox.setDefaultButton with arg `4`\n')
 
     def test_change_keyword_2(self, monkeypatch, capsys):
         """unittest for KeywordsManager.change_keyword: wijzigen met vervangen in treeitems
@@ -1935,16 +1886,17 @@ class TestKeywordsManager:
         monkeypatch.setattr(testobj, 'refresh_fields', mock_refresh)
         testobj.add_keyword()
         assert testobj.parent.base.opts == {'Keywords': ['x', 'z']}
-        assert capsys.readouterr().out == ('called TextDialog.__init__\n'
-                                           'called ComboBox.__init__\n'
-                                           'called LineEdit.__init__\n'
-                                           'called MessageBox.__init__ with args () {}\n'
-                                           'called MessageBox.setText with arg `t_repltag`\n'
-                                           'called MessageBox.setInformativeText\n'
-                                           'called MessageBox.setStandardButtons\n'
-                                           'called MessageBox.setDefaultButton with arg `4`\n'
-                                           "called Dialog.update_items with args ('y', 'z')\n"
-                                           'called Dialog.refresh_fields\n')
+        assert capsys.readouterr().out == (
+                'called TextDialog.__init__\n'
+                'called ComboBox.__init__\n'
+                'called LineEdit.__init__\n'
+                'called MessageBox.__init__ with args () {}\n'
+                'called MessageBox.setText with arg `t_repltag`\n'
+                'called MessageBox.setInformativeText with arg `t_repltag2`\n'
+                'called MessageBox.setStandardButtons\n'
+                'called MessageBox.setDefaultButton with arg `4`\n'
+                "called Dialog.update_items with args ('y', 'z')\n"
+                'called Dialog.refresh_fields\n')
 
     def test_change_keyword_3(self, monkeypatch, capsys):
         """unittest for KeywordsManager.change_keyword: wijzigen zonder vervangen in treeitems
@@ -1976,16 +1928,17 @@ class TestKeywordsManager:
         monkeypatch.setattr(testobj, 'refresh_fields', mock_refresh)
         testobj.add_keyword()
         assert testobj.parent.base.opts == {'Keywords': ['x', 'z']}
-        assert capsys.readouterr().out == ('called TextDialog.__init__\n'
-                                           'called ComboBox.__init__\n'
-                                           'called LineEdit.__init__\n'
-                                           'called MessageBox.__init__ with args () {}\n'
-                                           'called MessageBox.setText with arg `t_repltag`\n'
-                                           'called MessageBox.setInformativeText\n'
-                                           'called MessageBox.setStandardButtons\n'
-                                           'called MessageBox.setDefaultButton with arg `4`\n'
-                                           "called Dialog.update_items with args ('y',)\n"
-                                           'called Dialog.refresh_fields\n')
+        assert capsys.readouterr().out == (
+                'called TextDialog.__init__\n'
+                'called ComboBox.__init__\n'
+                'called LineEdit.__init__\n'
+                'called MessageBox.__init__ with args () {}\n'
+                'called MessageBox.setText with arg `t_repltag`\n'
+                'called MessageBox.setInformativeText with arg `t_repltag2`\n'
+                'called MessageBox.setStandardButtons\n'
+                'called MessageBox.setDefaultButton with arg `4`\n'
+                "called Dialog.update_items with args ('y',)\n"
+                'called Dialog.refresh_fields\n')
 
 
 class TestGetTextDialog:
