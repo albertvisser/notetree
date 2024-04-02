@@ -1416,7 +1416,7 @@ class TestKeywordsDialog:
                                            'called List.__init__\n'
                                            "called InputDialog.getText with args"
                                            " ('title', 't_newtag')\n"
-                                           'called List.addItem with arg `text` on `[]`\n')
+                                           'called List.addItem with arg `text`\n')
 
     def test_add_trefw_2(self, monkeypatch, capsys):
         """unittest for KeywordsDialog.add_trefw: test doorvoeren trefwoord afbreken
