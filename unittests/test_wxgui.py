@@ -1755,23 +1755,19 @@ class TestKeywordsDialog:
                                            'called gridsizer.Add()\n'
                                            'called StaticText.__init__()\n'
                                            'called gridsizer.Add()\n'
-                                           # bij gebruik als contextmanager komt dit er niet meer uit?
-                                           # of komt het door het apart zetten van de mockwidgets?
-                                           # moet wel haast, laatste wijziging in dit stuk is van 2021
-                                           # 'called dialog.SetTitle()\n'
-                                           # 'called BoxSizer.__init__(`vert`)\n'
-                                           # 'called vert sizer.Add()\n'
-                                           # 'called Button.__init__()\n'
-                                           # 'called Button.GetId()\n'
-                                           # 'called dialog.SetAffirmativeId()\n'
-                                           # 'called vert sizer.Add()\n'
-                                           # 'called dialog.SetSizer()\n'
-                                           # 'called dialog.SetAutoLayout()\n'
-                                           # 'called vert sizer.Fit()\n'
-                                           # 'called vert sizer.SetSizeHints()\n'
-                                           # 'called dialog.Layout()\n'
-                                           # 'called dialog.ShowModal()\n'
-                                           )
+                                           "called dialog.SetTitle with arg 'title t_keys'\n"
+                                           'called BoxSizer.__init__(`vert`)\n'
+                                           'called vert sizer.Add()\n'
+                                           'called Button.__init__()\n'
+                                           'called Button.GetId()\n'
+                                           'called dialog.SetAffirmativeId\n'
+                                           'called vert sizer.Add()\n'
+                                           'called dialog.SetSizer\n'
+                                           'called dialog.SetAutoLayout\n'
+                                           'called vert sizer.Fit()\n'
+                                           'called vert sizer.SetSizeHints()\n'
+                                           'called dialog.Layout\n'
+                                           'called dialog.ShowModal()\n')
 
     def test_confirm(self, monkeypatch):    # def accept(self):
         """unittest for KeywordsDialog.confirm
