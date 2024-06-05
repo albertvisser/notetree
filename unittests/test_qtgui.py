@@ -169,19 +169,21 @@ class TestMainWindow:
         """
         monkeypatch.setattr(gui.qsc, 'QsciScintilla', mockqtw.MockEditorWidget)
         monkeypatch.setattr(gui.qsc, 'QsciLexerMarkdown', lambda: 'dummy lexer')
+        monkeypatch.setattr(gui.gui, 'QColor', mockqtw.MockColor)
         testobj = setup_mainwindow(monkeypatch, capsys)
         newstuff = testobj.setup_editor()
         assert newstuff == testobj.editor
-        assert capsys.readouterr().out == (f'called Editor.__init__ with args ({testobj},)\n'
-                                           'called Editor.setFont\n'
-                                           'called Editor.setWrapMode\n'
-                                           'called Editor.setBraceMatching\n'
-                                           'called Editor.setAutoIndent\n'
-                                           'called Editor.setFolding\n'
-                                           'called Editor.setCaretLineVisible\n'
-                                           'called Editor.setCaretLineBackgroundColor\n'
-                                           'called Editor.setLexer\n'
-                                           'called Editor.setEnabled with arg False\n')
+        assert capsys.readouterr().out == (
+                f'called Editor.__init__ with args ({testobj},)\n'
+                'called Editor.setFont\n'
+                'called Editor.setWrapMode with arg `1`\n'
+                'called Editor.setBraceMatching with arg `2`\n'
+                'called Editor.setAutoIndent with arg `True`\n'
+                'called Editor.setFolding with arg `3`\n'
+                'called Editor.setCaretLineVisible with arg `True`\n'
+                "called Editor.setCaretLineBackgroundColor with arg 'color #ffe4e4'\n"
+                'called Editor.setLexer\n'
+                'called Editor.setEnabled with arg False\n')
 
     def test_create_menu(self, monkeypatch, capsys):
         """unittest for MainWindow.create_menu
@@ -491,7 +493,7 @@ class TestMainWindow:
                                            "called TreeItem.setText with arg `text` for col 1\n"
                                            "called TreeItem.setData to `keywords` with role 256"
                                            " for col 1\n"
-                                           'called TreeItem.insertChild\n')
+                                           'called TreeItem.insertChild at pos 0\n')
 
     def test_get_treeitems(self, monkeypatch, capsys):
         """unittest for MainWindow.get_treeitems
@@ -1651,10 +1653,13 @@ class TestKeywordsManager:
         assert testobj.parent.root.subitems[0]._data[1] == ['keywords1', 'newtext']
         assert testobj.parent.root.subitems[1]._data[1] == ['keywords2']
         assert testobj.parent.root.subitems[2]._data[1] == ['keywords3', 'newtext']
-        assert capsys.readouterr().out == ("called TreeItem.data for col 1 role 256\n"
+        assert capsys.readouterr().out == ("called TreeItem.child with arg 0\n"
+                                           "called TreeItem.data for col 1 role 256\n"
                                            "called TreeItem.setData to `['keywords1', 'newtext']`"
                                            " with role 256 for col 1\n"
+                                           "called TreeItem.child with arg 1\n"
                                            "called TreeItem.data for col 1 role 256\n"
+                                           "called TreeItem.child with arg 2\n"
                                            "called TreeItem.data for col 1 role 256\n"
                                            "called TreeItem.setData to `['keywords3', 'newtext']`"
                                            " with role 256 for col 1\n")
@@ -1683,9 +1688,11 @@ class TestKeywordsManager:
         testobj.update_items('oldtext')
         assert testobj.parent.root.subitems[0]._data[1] == ['keywords1']
         assert testobj.parent.root.subitems[1]._data[1] == ['keywords2']
-        assert capsys.readouterr().out == ("called TreeItem.data for col 1 role 256\n"
+        assert capsys.readouterr().out == ("called TreeItem.child with arg 0\n"
+                                           "called TreeItem.data for col 1 role 256\n"
                                            "called TreeItem.setData to `['keywords1']`"
                                            " with role 256 for col 1\n"
+                                           "called TreeItem.child with arg 1\n"
                                            "called TreeItem.data for col 1 role 256\n"
                                            "called TreeItem.setData to `['keywords2']`"
                                            " with role 256 for col 1\n")
