@@ -227,7 +227,13 @@ class TestMainWindow:
                 f'called Menu.addAction with args `m_seltag` {testobj.base.callback}\n'
                 f"called Action.__init__ with args ('m_seltag', {testobj.base.callback})\n"
                 f'called Menu.addAction with args `m_seltxt` {testobj.base.callback}\n'
-                f"called Action.__init__ with args ('m_seltxt', {testobj.base.callback})\n")
+                f"called Action.__init__ with args ('m_seltxt', {testobj.base.callback})\n"
+                "called Action.setChecked with arg `False`\n"
+                "called Action.setChecked with arg `False`\n"
+                "called Action.setChecked with arg `False`\n"
+                "called Action.setChecked with arg `False`\n"
+                "called Action.setChecked with arg `True`\n"
+                "called Action.setChecked with arg `True`\n")
 
     def test_changeselection(self, monkeypatch, capsys):
         """unittest for MainWindow.changeselection
@@ -720,7 +726,8 @@ class TestMainWindow:
         testobj.selactions = {'actiontext': action}
         testobj.enable_selaction('actiontext')
         assert action.checked
-        assert capsys.readouterr().out == "called Action.__init__ with args ('text', 'action')\n"
+        assert capsys.readouterr().out == ("called Action.__init__ with args ('text', 'action')\n"
+                                           "called Action.setChecked with arg `True`\n")
 
     def test_disable_selaction(self, monkeypatch, capsys):
         """unittest for MainWindow.disable_selaction
