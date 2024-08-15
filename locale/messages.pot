@@ -1,401 +1,446 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR ORGANIZATION
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Translations template for PROJECT.
+# Copyright (C) 2024 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
 #
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-01-08 09:55+CET\n"
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2024-08-12 16:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
-"Content-Transfer-Encoding: ENCODING\n"
-"Generated-By: pygettext.py 1.5\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.14.0\n"
 
-
-#: ./notetree/main.py:19
+#: /home/albert/projects/notetree/notetree/main.py:19
 msgid "t_nl"
 msgstr ""
 
-#: ./notetree/main.py:20
+#: /home/albert/projects/notetree/notetree/main.py:20
 msgid "t_en"
 msgstr ""
 
-#: ./notetree/main.py:46
-msgid "t_hide"
-msgstr ""
-
-#: ./notetree/main.py:47
-msgid "t_load"
-msgstr ""
-
-#: ./notetree/main.py:48
-msgid "t_save"
-msgstr ""
-
-#: ./notetree/main.py:65
+#: /home/albert/projects/notetree/notetree/main.py:76
 msgid "m_main"
 msgstr ""
 
-#: ./notetree/main.py:66
-msgid "h_reload"
-msgstr ""
-
-#: ./notetree/main.py:66
+#: /home/albert/projects/notetree/notetree/main.py:77
 msgid "m_reload"
 msgstr ""
 
-#: ./notetree/main.py:67
-msgid "h_save"
+#: /home/albert/projects/notetree/notetree/main.py:77
+msgid "h_reload"
 msgstr ""
 
-#: ./notetree/main.py:67
+#: /home/albert/projects/notetree/notetree/main.py:78
 msgid "m_save"
 msgstr ""
 
-#: ./notetree/main.py:69
-msgid "h_root"
+#: /home/albert/projects/notetree/notetree/main.py:78
+msgid "h_save"
 msgstr ""
 
-#: ./notetree/main.py:69
+#: /home/albert/projects/notetree/notetree/main.py:80
 msgid "m_root"
 msgstr ""
 
-#: ./notetree/main.py:70
-msgid "h_tagman"
+#: /home/albert/projects/notetree/notetree/main.py:80
+msgid "h_root"
 msgstr ""
 
-#: ./notetree/main.py:70
+#: /home/albert/projects/notetree/notetree/main.py:81
 msgid "m_tagman"
 msgstr ""
 
-#: ./notetree/main.py:72
-msgid "h_hide"
+#: /home/albert/projects/notetree/notetree/main.py:81
+msgid "h_tagman"
 msgstr ""
 
-#: ./notetree/main.py:72
+#: /home/albert/projects/notetree/notetree/main.py:83
 msgid "m_hide"
 msgstr ""
 
-#: ./notetree/main.py:73
-msgid "h_lang"
+#: /home/albert/projects/notetree/notetree/main.py:83
+msgid "h_hide"
 msgstr ""
 
-#: ./notetree/main.py:73
+#: /home/albert/projects/notetree/notetree/main.py:84
 msgid "m_lang"
 msgstr ""
 
-#: ./notetree/main.py:74
-msgid "h_opts"
+#: /home/albert/projects/notetree/notetree/main.py:84
+msgid "h_lang"
 msgstr ""
 
-#: ./notetree/main.py:74
+#: /home/albert/projects/notetree/notetree/main.py:85
 msgid "m_opts"
 msgstr ""
 
-#: ./notetree/main.py:76
-msgid "h_exit"
+#: /home/albert/projects/notetree/notetree/main.py:85
+msgid "h_opts"
 msgstr ""
 
-#: ./notetree/main.py:76
+#: /home/albert/projects/notetree/notetree/main.py:87
 msgid "m_exit"
 msgstr ""
 
-#: ./notetree/main.py:77
+#: /home/albert/projects/notetree/notetree/main.py:87
+msgid "h_exit"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:88
 msgid "m_note"
 msgstr ""
 
-#: ./notetree/main.py:78
-msgid "h_new"
-msgstr ""
-
-#: ./notetree/main.py:78
+#: /home/albert/projects/notetree/notetree/main.py:89
 msgid "m_new"
 msgstr ""
 
-#: ./notetree/main.py:79
-msgid "h_delete"
+#: /home/albert/projects/notetree/notetree/main.py:89
+msgid "h_new"
 msgstr ""
 
-#: ./notetree/main.py:79
+#: /home/albert/projects/notetree/notetree/main.py:90
 msgid "m_delete"
 msgstr ""
 
-#: ./notetree/main.py:80
-msgid "h_name"
+#: /home/albert/projects/notetree/notetree/main.py:90
+msgid "h_delete"
 msgstr ""
 
-#: ./notetree/main.py:80
+#: /home/albert/projects/notetree/notetree/main.py:91
 msgid "m_name"
 msgstr ""
 
-#: ./notetree/main.py:82
-msgid "h_tags"
+#: /home/albert/projects/notetree/notetree/main.py:91
+msgid "h_name"
 msgstr ""
 
-#: ./notetree/main.py:82
+#: /home/albert/projects/notetree/notetree/main.py:93
 msgid "m_tags"
 msgstr ""
 
-#: ./notetree/main.py:84
-msgid "h_forward"
+#: /home/albert/projects/notetree/notetree/main.py:93
+msgid "h_tags"
 msgstr ""
 
-#: ./notetree/main.py:84 ./notetree/wx_gui.py:101
+#: /home/albert/projects/notetree/notetree/main.py:95
+#: /home/albert/projects/notetree/notetree/wx_gui.py:199
 msgid "m_forward"
 msgstr ""
 
-#: ./notetree/main.py:85
-msgid "h_back"
+#: /home/albert/projects/notetree/notetree/main.py:95
+msgid "h_forward"
 msgstr ""
 
-#: ./notetree/main.py:85 ./notetree/wx_gui.py:101
+#: /home/albert/projects/notetree/notetree/main.py:96
+#: /home/albert/projects/notetree/notetree/wx_gui.py:199
 msgid "m_back"
 msgstr ""
 
-#: ./notetree/main.py:86 ./notetree/qt_gui.py:73 ./notetree/wx_gui.py:90
+#: /home/albert/projects/notetree/notetree/main.py:96
+msgid "h_back"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:97
+#: /home/albert/projects/notetree/notetree/qt_gui.py:94
+#: /home/albert/projects/notetree/notetree/wx_gui.py:187
 msgid "m_view"
 msgstr ""
 
-#: ./notetree/main.py:87
-msgid "h_revorder"
-msgstr ""
-
-#: ./notetree/main.py:87 ./notetree/qt_gui.py:74 ./notetree/qt_gui.py:85
-#: ./notetree/wx_gui.py:91 ./notetree/wx_gui.py:123
+#: /home/albert/projects/notetree/notetree/main.py:98
+#: /home/albert/projects/notetree/notetree/qt_gui.py:95
+#: /home/albert/projects/notetree/notetree/qt_gui.py:106
+#: /home/albert/projects/notetree/notetree/wx_gui.py:188
+#: /home/albert/projects/notetree/notetree/wx_gui.py:222
 msgid "m_revorder"
 msgstr ""
 
-#: ./notetree/main.py:89 ./notetree/main.py:221
-msgid "h_selall"
+#: /home/albert/projects/notetree/notetree/main.py:98
+msgid "h_revorder"
 msgstr ""
 
-#: ./notetree/main.py:89 ./notetree/main.py:424
+#: /home/albert/projects/notetree/notetree/main.py:100
+#: /home/albert/projects/notetree/notetree/main.py:246
 msgid "m_selall"
 msgstr ""
 
-#: ./notetree/main.py:90 ./notetree/main.py:236 ./notetree/main.py:237
-msgid "h_seltag"
+#: /home/albert/projects/notetree/notetree/main.py:100
+#: /home/albert/projects/notetree/notetree/main.py:247
+msgid "h_selall"
 msgstr ""
 
-#: ./notetree/main.py:90 ./notetree/main.py:240 ./notetree/main.py:424
+#: /home/albert/projects/notetree/notetree/main.py:101
+#: /home/albert/projects/notetree/notetree/main.py:269
+#: /home/albert/projects/notetree/notetree/main.py:276
 msgid "m_seltag"
 msgstr ""
 
-#: ./notetree/main.py:91 ./notetree/main.py:260 ./notetree/main.py:261
-msgid "h_seltxt"
+#: /home/albert/projects/notetree/notetree/main.py:101
+#: /home/albert/projects/notetree/notetree/main.py:277
+msgid "h_seltag"
 msgstr ""
 
-#: ./notetree/main.py:91 ./notetree/main.py:264 ./notetree/main.py:424
+#: /home/albert/projects/notetree/notetree/main.py:102
+#: /home/albert/projects/notetree/notetree/main.py:297
+#: /home/albert/projects/notetree/notetree/main.py:301
 msgid "m_seltxt"
 msgstr ""
 
-#: ./notetree/main.py:92
+#: /home/albert/projects/notetree/notetree/main.py:102
+#: /home/albert/projects/notetree/notetree/main.py:298
+msgid "h_seltxt"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:103
 msgid "m_help"
 msgstr ""
 
-#: ./notetree/main.py:93
-msgid "h_about"
-msgstr ""
-
-#: ./notetree/main.py:93
+#: /home/albert/projects/notetree/notetree/main.py:104
 msgid "m_about"
 msgstr ""
 
-#: ./notetree/main.py:94
-msgid "h_keys"
+#: /home/albert/projects/notetree/notetree/main.py:104
+msgid "h_about"
 msgstr ""
 
-#: ./notetree/main.py:94 ./notetree/qt_gui.py:442 ./notetree/wx_gui.py:482
+#: /home/albert/projects/notetree/notetree/main.py:105
+#: /home/albert/projects/notetree/notetree/qt_gui.py:464
+#: /home/albert/projects/notetree/notetree/wx_gui.py:575
 msgid "m_keys"
 msgstr ""
 
-#: ./notetree/main.py:99
+#: /home/albert/projects/notetree/notetree/main.py:105
+msgid "h_keys"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:110
 msgid "ask_reload"
 msgstr ""
 
-#: ./notetree/main.py:116
+#: /home/albert/projects/notetree/notetree/main.py:131
 msgid "t_root"
 msgstr ""
 
-#: ./notetree/main.py:130
+#: /home/albert/projects/notetree/notetree/main.py:145
 msgid "sleep_message"
 msgstr ""
 
-#: ./notetree/main.py:138
+#: /home/albert/projects/notetree/notetree/main.py:155
 msgid "t_lang"
 msgstr ""
 
-#: ./notetree/main.py:154
+#: /home/albert/projects/notetree/notetree/main.py:176
 msgid "t_new"
 msgstr ""
 
-#: ./notetree/main.py:172
+#: /home/albert/projects/notetree/notetree/main.py:194
 msgid "no_delete_root"
 msgstr ""
 
-#: ./notetree/main.py:177
+#: /home/albert/projects/notetree/notetree/main.py:199
 msgid "t_name"
 msgstr ""
 
-#: ./notetree/main.py:200
-msgid "no_next_item"
-msgstr ""
-
-#: ./notetree/main.py:209
-msgid "no_prev_item"
-msgstr ""
-
-#: ./notetree/main.py:229
-msgid "i_seltag"
-msgstr ""
-
-#: ./notetree/main.py:253
-msgid "i_seltxt"
-msgstr ""
-
-#: ./notetree/main.py:269
-msgid "info_text"
-msgstr ""
-
-#: ./notetree/main.py:274 ./notetree/qt_gui.py:556 ./notetree/wx_gui.py:615
-msgid "t_keys"
-msgstr ""
-
-#: ./notetree/main.py:289
-msgid "ask_create"
-msgstr ""
-
-#: ./notetree/main.py:292
-msgid "404_message"
-msgstr ""
-
-#: ./notetree/main.py:308
-msgid "m_ignore"
-msgstr ""
-
-#: ./notetree/main.py:315
-msgid "load_message"
-msgstr ""
-
-#: ./notetree/main.py:413
-msgid "save_message"
-msgstr ""
-
-#: ./notetree/qt_gui.py:38 ./notetree/qt_gui.py:229 ./notetree/wx_gui.py:860
-msgid "revive_message"
-msgstr ""
-
-#: ./notetree/qt_gui.py:340 ./notetree/wx_gui.py:388
-msgid "t_sett"
-msgstr ""
-
-#: ./notetree/qt_gui.py:360 ./notetree/wx_gui.py:403
-msgid "b_apply"
-msgstr ""
-
-#: ./notetree/qt_gui.py:363 ./notetree/wx_gui.py:406
-msgid "b_close"
-msgstr ""
-
-#: ./notetree/qt_gui.py:390 ./notetree/wx_gui.py:437
-msgid "hide_message"
-msgstr ""
-
-#: ./notetree/qt_gui.py:428 ./notetree/wx_gui.py:470
-msgid "w_tags"
-msgstr ""
-
-#: ./notetree/qt_gui.py:435 ./notetree/wx_gui.py:475
-msgid "t_tags"
-msgstr ""
-
-#: ./notetree/qt_gui.py:436 ./notetree/qt_gui.py:490 ./notetree/wx_gui.py:476
-#: ./notetree/wx_gui.py:533
-msgid "b_tag"
-msgstr ""
-
-#: ./notetree/qt_gui.py:438 ./notetree/qt_gui.py:492 ./notetree/wx_gui.py:478
-#: ./notetree/wx_gui.py:535
-msgid "b_untag"
-msgstr ""
-
-#: ./notetree/qt_gui.py:440 ./notetree/qt_gui.py:493 ./notetree/wx_gui.py:480
-#: ./notetree/wx_gui.py:536
-msgid "b_newtag"
-msgstr ""
-
-#: ./notetree/qt_gui.py:461 ./notetree/wx_gui.py:499
-msgid "t_left"
-msgstr ""
-
-#: ./notetree/qt_gui.py:475 ./notetree/wx_gui.py:513
-msgid "t_right"
-msgstr ""
-
-#: ./notetree/qt_gui.py:489 ./notetree/wx_gui.py:532
-msgid "a_from"
-msgstr ""
-
-#: ./notetree/qt_gui.py:491 ./notetree/wx_gui.py:534
-msgid "a_to"
-msgstr ""
-
-#: ./notetree/qt_gui.py:540 ./notetree/wx_gui.py:597
-msgid "t_newtag"
-msgstr ""
-
-#: ./notetree/qt_gui.py:549 ./notetree/wx_gui.py:608
+#: /home/albert/projects/notetree/notetree/main.py:211
 msgid "tag_help"
 msgstr ""
 
-#: ./notetree/qt_gui.py:573 ./notetree/wx_gui.py:641
+#: /home/albert/projects/notetree/notetree/main.py:223
+msgid "no_next_item"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:232
+msgid "no_prev_item"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:263
+msgid "i_seltag"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:289
+msgid "i_seltxt"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:306
+msgid "info_text"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:311
+msgid "help_text"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:312
+#: /home/albert/projects/notetree/notetree/qt_gui.py:577
+#: /home/albert/projects/notetree/notetree/wx_gui.py:707
+msgid "t_keys"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:326
+msgid "ask_create"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:329
+msgid "404_message"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:345
+msgid "m_ignore"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:351
+msgid "load_message"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:351
+#: /home/albert/projects/notetree/notetree/main.py:431
+msgid "hide_me"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/main.py:431
+msgid "save_message"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:43
+#: /home/albert/projects/notetree/notetree/qt_gui.py:256
+#: /home/albert/projects/notetree/notetree/wx_gui.py:950
+msgid "revive_message"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:363
+#: /home/albert/projects/notetree/notetree/wx_gui.py:480
+msgid "t_sett"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:383
+#: /home/albert/projects/notetree/notetree/wx_gui.py:494
+msgid "b_apply"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:386
+#: /home/albert/projects/notetree/notetree/wx_gui.py:497
+msgid "b_close"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:412
+#: /home/albert/projects/notetree/notetree/wx_gui.py:527
+msgid "hide_message"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:450
+#: /home/albert/projects/notetree/notetree/wx_gui.py:563
+msgid "w_tags"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:457
+#: /home/albert/projects/notetree/notetree/wx_gui.py:568
+msgid "t_tags"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:458
+#: /home/albert/projects/notetree/notetree/qt_gui.py:512
+#: /home/albert/projects/notetree/notetree/wx_gui.py:569
+#: /home/albert/projects/notetree/notetree/wx_gui.py:626
+msgid "b_tag"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:460
+#: /home/albert/projects/notetree/notetree/qt_gui.py:514
+#: /home/albert/projects/notetree/notetree/wx_gui.py:571
+#: /home/albert/projects/notetree/notetree/wx_gui.py:628
+msgid "b_untag"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:462
+#: /home/albert/projects/notetree/notetree/qt_gui.py:515
+#: /home/albert/projects/notetree/notetree/wx_gui.py:573
+#: /home/albert/projects/notetree/notetree/wx_gui.py:629
+msgid "b_newtag"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:483
+#: /home/albert/projects/notetree/notetree/wx_gui.py:592
+msgid "t_left"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:497
+#: /home/albert/projects/notetree/notetree/wx_gui.py:606
+msgid "t_right"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:511
+#: /home/albert/projects/notetree/notetree/wx_gui.py:625
+msgid "a_from"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:513
+#: /home/albert/projects/notetree/notetree/wx_gui.py:627
+msgid "a_to"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:562
+#: /home/albert/projects/notetree/notetree/wx_gui.py:690
+msgid "t_newtag"
+msgstr ""
+
+#: /home/albert/projects/notetree/notetree/qt_gui.py:594
+#: /home/albert/projects/notetree/notetree/wx_gui.py:733
 msgid "t_tagman"
 msgstr ""
 
-#: ./notetree/qt_gui.py:580 ./notetree/wx_gui.py:647
+#: /home/albert/projects/notetree/notetree/qt_gui.py:601
+#: /home/albert/projects/notetree/notetree/wx_gui.py:739
 msgid "b_remtag"
 msgstr ""
 
-#: ./notetree/qt_gui.py:582 ./notetree/wx_gui.py:649
+#: /home/albert/projects/notetree/notetree/qt_gui.py:603
+#: /home/albert/projects/notetree/notetree/wx_gui.py:741
 msgid "b_addtag"
 msgstr ""
 
-#: ./notetree/qt_gui.py:584 ./notetree/wx_gui.py:618 ./notetree/wx_gui.py:651
+#: /home/albert/projects/notetree/notetree/qt_gui.py:605
+#: /home/albert/projects/notetree/notetree/wx_gui.py:710
+#: /home/albert/projects/notetree/notetree/wx_gui.py:743
 msgid "b_done"
 msgstr ""
 
-#: ./notetree/qt_gui.py:588 ./notetree/wx_gui.py:655
+#: /home/albert/projects/notetree/notetree/qt_gui.py:609
+#: /home/albert/projects/notetree/notetree/wx_gui.py:747
 msgid "l_oldval"
 msgstr ""
 
-#: ./notetree/qt_gui.py:591 ./notetree/wx_gui.py:658
+#: /home/albert/projects/notetree/notetree/qt_gui.py:612
+#: /home/albert/projects/notetree/notetree/wx_gui.py:750
 msgid "l_newval"
 msgstr ""
 
-#: ./notetree/qt_gui.py:597 ./notetree/wx_gui.py:664
+#: /home/albert/projects/notetree/notetree/qt_gui.py:618
+#: /home/albert/projects/notetree/notetree/wx_gui.py:756
 msgid "t_applied"
 msgstr ""
 
-#: ./notetree/qt_gui.py:634 ./notetree/wx_gui.py:707
+#: /home/albert/projects/notetree/notetree/qt_gui.py:655
+#: /home/albert/projects/notetree/notetree/wx_gui.py:799
 msgid "t_remtag"
 msgstr ""
 
-#: ./notetree/qt_gui.py:649 ./notetree/wx_gui.py:721
+#: /home/albert/projects/notetree/notetree/qt_gui.py:670
+#: /home/albert/projects/notetree/notetree/wx_gui.py:813
 msgid "t_repltag"
 msgstr ""
 
-#: ./notetree/qt_gui.py:650 ./notetree/wx_gui.py:723
+#: /home/albert/projects/notetree/notetree/qt_gui.py:671
+#: /home/albert/projects/notetree/notetree/wx_gui.py:815
 msgid "t_repltag2"
 msgstr ""
 
-#: ./notetree/qt_gui.py:665 ./notetree/wx_gui.py:736
+#: /home/albert/projects/notetree/notetree/qt_gui.py:686
+#: /home/albert/projects/notetree/notetree/wx_gui.py:828
 msgid "t_addtag"
-msgstr ""
-
-#: ./notetree/qt_gui.py:752 ./notetree/wx_gui.py:823
-msgid "help_text"
 msgstr ""
 

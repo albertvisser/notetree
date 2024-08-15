@@ -25,6 +25,18 @@ msgstr "Dutch"
 msgid "t_en"
 msgstr "English"
 
+#: notetree/main.py:46
+msgid "t_hide"
+msgstr "Notify that the application will be hidden in the system tray"
+
+#: notetree/main.py:47
+msgid "t_load"
+msgstr "Notify that the data has been reloaded"
+
+#: notetree/main.py:48
+msgid "t_save"
+msgstr "Notify that the data has been saved"
+
 #: notetree/main.py:75
 msgid "m_main"
 msgstr "&Main"
@@ -425,15 +437,6 @@ msgstr "Also replace where used (if not, entries are removed)?"
 #: notetree/qt_gui.py:682 notetree/wx_gui.py:828
 msgid "t_addtag"
 msgstr "About to add new keyword \"{}\" - continue?"
-
-#~ msgid "t_hide"
-#~ msgstr "Notify that the application will be hidden in the system tray"
-
-#~ msgid "t_load"
-#~ msgstr "Notify that the data has been reloaded"
-
-#~ msgid "t_save"
-#~ msgstr "Notify that the data has been saved"
 
 #~ msgid "no_nt_file"
 #~ msgstr "{} is not a NoteTree file"
