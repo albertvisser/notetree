@@ -37,7 +37,7 @@ sett2text = {'AskBeforeHide': 't_hide',
              'NotifyOnLoad': 't_load',
              'NotifyOnSave': 't_save'}
              # 'SaveOnEsc': 't_svex'}
-selectionmodes = (_("m_selall"), _("m_seltag"), _("m_seltxt"))
+selectionmodes = ("m_selall", "m_seltag", "m_seltxt")
 
 
 # Main screen
@@ -455,20 +455,20 @@ class NoteTree:
         """determine if item should be added to the selection
         """
         exclude = -1
-        if seltype == selectionmodes.index(_("m_selall")):  # 0:
+        if seltype == selectionmodes.index("m_selall"):  # 0:
             return True
-        if seltype == selectionmodes.index(_("m_seltag")):  # 1:
+        if seltype == selectionmodes.index("m_seltag"):  # 1:
             if seldata in keywords:
                 return True
-        elif seltype == exclude * selectionmodes.index(_("m_seltag")):  # -1:
+        elif seltype == exclude * selectionmodes.index("m_seltag"):  # -1:
             if seldata not in keywords:
                 return True
-        elif seltype == selectionmodes.index(_("m_seltxt")):  # 2:
+        elif seltype == selectionmodes.index("m_seltxt"):  # 2:
             if use_case and seldata in text:
                 return True
             if not use_case and seldata.upper() in text.upper():
                 return True
-        elif seltype == exclude * selectionmodes.index(_("m_seltxt")):  # -2:
+        elif seltype == exclude * selectionmodes.index("m_seltxt"):  # -2:
             if use_case and seldata not in text:
                 return True
             if not use_case and seldata.upper() not in text.upper():
