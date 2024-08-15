@@ -438,7 +438,7 @@ class NoteTree:
         self.gui.set_item_expanded(self.gui.root)
         self.gui.open_editor()
         for actiontext in selectionmodes:
-            if actiontext == seltext:
+            if _(actiontext) == seltext:
                 self.gui.enable_selaction(actiontext)
             else:
                 self.gui.disable_selaction(actiontext)
