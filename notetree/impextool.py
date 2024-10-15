@@ -13,9 +13,9 @@ import sys
 import os
 import pprint
 import collections
-import PyQt5.QtWidgets as qtw
-## import PyQt5.QtGui as gui
-## import PyQt5.QtCore as core
+import PyQt6.QtWidgets as qtw
+## import PyQt6.QtGui as gui
+## import PyQt6.QtCore as core
 from .main import initial_opts
 from .dml import load_file, save_file
 mrufile = os.path.join(os.path.dirname(__file__), 'mrudata')
@@ -66,7 +66,7 @@ def ok_to_overwrite(filename):
     ok = True
     if os.path.exists(filename):
         ok = qtw.QMessageBox.question(None, '', msg)
-        ok = ok == qtw.QMessageBox.Yes
+        ok = ok == qtw.QMessageBox.StandardButton.Yes
     return ok
 
 
@@ -194,7 +194,7 @@ class FileBrowseButton(qtw.QFrame):
             items = []
         self.mrulist = items
         super().__init__(parent)
-        self.setFrameStyle(qtw.QFrame.Panel | qtw.QFrame.Raised)
+        self.setFrameStyle(qtw.QFrame.Shape.Panel | qtw.QFrame.Shadow.Raised)
         vbox = qtw.QVBoxLayout()
         box = qtw.QHBoxLayout()
         self.input = qtw.QComboBox(self)
@@ -324,4 +324,4 @@ def main(fname=''):
     """
     app = qtw.QApplication(sys.argv)
     MainWidget(fname)
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

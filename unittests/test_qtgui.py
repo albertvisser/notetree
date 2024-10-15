@@ -65,7 +65,7 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch, capsys)
         with pytest.raises(SystemExit):
             testobj.start()
-        assert capsys.readouterr().out == 'called Application.exec_\n'
+        assert capsys.readouterr().out == 'called Application.exec\n'
 
     def test_init_screen(self, monkeypatch, capsys):
         """unittest for MainWindow.init_screen
@@ -565,11 +565,11 @@ class TestMainWindow:
         assert capsys.readouterr().out == ''
         testobj.base.app_title = ''
         testobj.tray_icon = mockqtw.MockSysTrayIcon()
-        testobj.revive(gui.qtw.QSystemTrayIcon.Unknown)
+        testobj.revive(gui.qtw.QSystemTrayIcon.ActivationReason.Unknown)
         assert capsys.readouterr().out == (
                 'called TrayIcon.__init__\n'
                 "called TrayIcon.showMessage with args ('', 'revive_message')\n")
-        testobj.revive(gui.qtw.QSystemTrayIcon.Context)
+        testobj.revive(gui.qtw.QSystemTrayIcon.ActivationReason.Context)
         assert capsys.readouterr().out == ''
         testobj.revive()
         assert capsys.readouterr().out == ('called MainWindow.show\n'
@@ -775,8 +775,8 @@ class TestMainWindow:
             """stub
             """
             self.parent.dialog_data = {'x': 'y'}
-            return gui.qtw.QDialog.Accepted
-        monkeypatch.setattr(mockqtw.MockDialog, 'exec_', mock_exec)
+            return gui.qtw.QDialog.DialogCode.Accepted
+        monkeypatch.setattr(mockqtw.MockDialog, 'exec', mock_exec)
         testobj = setup_mainwindow(monkeypatch, capsys)
         assert testobj.show_dialog(mockqtw.MockDialog, 'arg') == (True, {'x': 'y'})
         assert capsys.readouterr().out == ("called Dialog.__init__ with args"
@@ -785,16 +785,16 @@ class TestMainWindow:
     def test_get_text_from_user(self, monkeypatch, capsys):
         """unittest for MainWindow.get_text_from_user
         """
-        def mock_gettext(self, *args):
+        def mock_gettext(self, *args, **kwargs):
             """stub
             """
-            print('called InputDialog.getText with args', args)
+            print('called InputDialog.getText with args', args, kwargs)
         monkeypatch.setattr(gui.qtw.QInputDialog, 'getText', mock_gettext)
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.base.app_title = 'app_title'
         testobj.get_text_from_user('prompt', 'default')
         assert capsys.readouterr().out == ("called InputDialog.getText with args"
-                                           " ('app_title', 'prompt', 0, 'default')\n")
+                                           " ('app_title', 'prompt') {'text': 'default'}\n")
 
     def test_get_choice_from_user(self, monkeypatch, capsys):
         """unittest for MainWindow.get_choice_from_user
@@ -1191,7 +1191,7 @@ class TestKeywordsDialog:
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
-        monkeypatch.setattr(gui.qtw, 'QAction', mockqtw.MockAction)
+        monkeypatch.setattr(gui.gui, 'QAction', mockqtw.MockAction)
         monkeypatch.setattr(gui.KeywordsDialog, 'addAction', mock_addAction)
         testobj = gui.KeywordsDialog(mockparent, '')
         testobj.create_actions()
@@ -1232,7 +1232,7 @@ class TestKeywordsDialog:
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
-        monkeypatch.setattr(gui.qtw, 'QAction', mockqtw.MockAction)
+        monkeypatch.setattr(gui.gui, 'QAction', mockqtw.MockAction)
         monkeypatch.setattr(gui.KeywordsDialog, '_activate', mock_activate)
         testobj = gui.KeywordsDialog(mockparent, '')
         testobj.fromlist = 'fromlist'
@@ -1254,7 +1254,7 @@ class TestKeywordsDialog:
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
-        monkeypatch.setattr(gui.qtw, 'QAction', mockqtw.MockAction)
+        monkeypatch.setattr(gui.gui, 'QAction', mockqtw.MockAction)
         monkeypatch.setattr(gui.KeywordsDialog, '_activate', mock_activate)
         testobj = gui.KeywordsDialog(mockparent, '')
         testobj.tolist = 'tolist'
@@ -1476,14 +1476,14 @@ class TestKeywordsDialog:
         def mock_exec(self, *args):
             """stub
             """
-            print('called Dialog.exec_')
+            print('called Dialog.exec')
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.qtw.QDialog, '__init__', mock_init_dialog)
         monkeypatch.setattr(gui.qtw.QDialog, 'setWindowTitle', mock_setWindowTitle)
         monkeypatch.setattr(gui.qtw.QDialog, 'setLayout', mock_setLayout)
-        monkeypatch.setattr(gui.qtw.QDialog, 'exec_', mock_exec)
+        monkeypatch.setattr(gui.qtw.QDialog, 'exec', mock_exec)
         monkeypatch.setattr(gui.qtw, 'QGridLayout', mockqtw.MockGridLayout)
         monkeypatch.setattr(gui.qtw, 'QLabel', mockqtw.MockLabel)
         testobj = gui.KeywordsDialog(mockparent, '')
@@ -1507,7 +1507,7 @@ class TestKeywordsDialog:
                                            "called Dialog.setWindowTitle with args"
                                            " ('title t_keys',)\n"
                                            'called Dialog.setLayout\n'
-                                           'called Dialog.exec_\n')
+                                           'called Dialog.exec\n')
 
     def test_accept(self, monkeypatch, capsys):
         """unittest for KeywordsDialog.accept
@@ -1728,7 +1728,7 @@ class TestKeywordsManager:
         monkeypatch.setattr(mockqtw.MockComboBox, 'currentText', lambda x: 'y')
         # testobj.newtag = MockLineEdit()
         monkeypatch.setattr(gui.qtw.QMessageBox, 'question',
-                            lambda x, y, z: gui.qtw.QMessageBox.No)
+                            lambda x, y, z: gui.qtw.QMessageBox.StandardButton.No)
         monkeypatch.setattr(testobj, 'update_items', mock_update)
         monkeypatch.setattr(testobj, 'refresh_fields', mock_refresh)
         testobj.remove_keyword()
@@ -1760,7 +1760,7 @@ class TestKeywordsManager:
         monkeypatch.setattr(mockqtw.MockComboBox, 'currentText', lambda x: 'y')
         # testobj.newtag = MockLineEdit()
         monkeypatch.setattr(gui.qtw.QMessageBox, 'question',
-                            lambda x, y, z: gui.qtw.QMessageBox.Yes)
+                            lambda x, y, z: gui.qtw.QMessageBox.StandardButton.Yes)
         monkeypatch.setattr(testobj, 'update_items', mock_update)
         monkeypatch.setattr(testobj, 'refresh_fields', mock_refresh)
         testobj.remove_keyword()
@@ -1791,7 +1791,7 @@ class TestKeywordsManager:
         testobj.newtag = mockqtw.MockLineEdit()
         monkeypatch.setattr(mockqtw.MockLineEdit, 'text', lambda x: 'z')
         monkeypatch.setattr(gui.qtw.QMessageBox, 'question',
-                            lambda x, y, z: gui.qtw.QMessageBox.No)
+                            lambda x, y, z: gui.qtw.QMessageBox.StandardButton.No)
         monkeypatch.setattr(testobj, 'refresh_fields', mock_refresh)
         testobj.add_keyword()
         assert testobj.parent.base.opts == {'Keywords': ['x', 'y']}
@@ -1820,7 +1820,7 @@ class TestKeywordsManager:
         testobj.newtag = mockqtw.MockLineEdit()
         monkeypatch.setattr(mockqtw.MockLineEdit, 'text', lambda x: 'z')
         monkeypatch.setattr(gui.qtw.QMessageBox, 'question',
-                            lambda x, y, z: gui.qtw.QMessageBox.Yes)
+                            lambda x, y, z: gui.qtw.QMessageBox.StandardButton.Yes)
         monkeypatch.setattr(testobj, 'refresh_fields', mock_refresh)
         testobj.add_keyword()
         assert testobj.parent.base.opts == {'Keywords': ['x', 'y', 'z']}
@@ -1855,7 +1855,8 @@ class TestKeywordsManager:
         testobj.newtag = mockqtw.MockLineEdit()
         monkeypatch.setattr(mockqtw.MockLineEdit, 'text', lambda x: 'z')
         monkeypatch.setattr(gui.qtw, 'QMessageBox', mockqtw.MockMessageBox)
-        monkeypatch.setattr(gui.qtw.QMessageBox, 'exec_', lambda x: gui.qtw.QMessageBox.Cancel)
+        monkeypatch.setattr(gui.qtw.QMessageBox, 'exec',
+                            lambda x: gui.qtw.QMessageBox.StandardButton.Cancel)
         monkeypatch.setattr(testobj, 'update_items', mock_update)
         monkeypatch.setattr(testobj, 'refresh_fields', mock_refresh)
         testobj.add_keyword()
@@ -1895,7 +1896,8 @@ class TestKeywordsManager:
         testobj.newtag = mockqtw.MockLineEdit()
         monkeypatch.setattr(mockqtw.MockLineEdit, 'text', lambda x: 'z')
         monkeypatch.setattr(gui.qtw, 'QMessageBox', mockqtw.MockMessageBox)
-        monkeypatch.setattr(gui.qtw.QMessageBox, 'exec_', lambda x: gui.qtw.QMessageBox.Yes)
+        monkeypatch.setattr(gui.qtw.QMessageBox, 'exec',
+                            lambda x: gui.qtw.QMessageBox.StandardButton.Yes)
         monkeypatch.setattr(testobj, 'update_items', mock_update)
         monkeypatch.setattr(testobj, 'refresh_fields', mock_refresh)
         testobj.add_keyword()
@@ -1937,7 +1939,8 @@ class TestKeywordsManager:
         testobj.newtag = mockqtw.MockLineEdit()
         monkeypatch.setattr(mockqtw.MockLineEdit, 'text', lambda x: 'z')
         monkeypatch.setattr(gui.qtw, 'QMessageBox', mockqtw.MockMessageBox)
-        monkeypatch.setattr(gui.qtw.QMessageBox, 'exec_', lambda x: gui.qtw.QMessageBox.No)
+        monkeypatch.setattr(gui.qtw.QMessageBox, 'exec',
+                            lambda x: gui.qtw.QMessageBox.StandardButton.No)
         monkeypatch.setattr(testobj, 'update_items', mock_update)
         monkeypatch.setattr(testobj, 'refresh_fields', mock_refresh)
         testobj.add_keyword()

@@ -5,10 +5,10 @@ van een ibm site afgeplukt
 import os
 import sys
 import gettext
-import PyQt5.QtWidgets as qtw
-import PyQt5.QtGui as gui
-import PyQt5.QtCore as core
-import PyQt5.Qsci as qsc  # scintilla
+import PyQt6.QtWidgets as qtw
+import PyQt6.QtGui as gui
+import PyQt6.QtCore as core
+import PyQt6.Qsci as qsc  # scintilla
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 gettext.install("NoteTree", os.path.join(HERE, 'locale'))
 
@@ -23,7 +23,7 @@ class MainWindow(qtw.QMainWindow):
 
     def start(self):
         "start the GUI"
-        sys.exit(self.app.exec_())
+        sys.exit(self.app.exec())
 
     def init_screen(self, title, iconame):
         "setup screen"
@@ -58,7 +58,7 @@ class MainWindow(qtw.QMainWindow):
         self.tree.setColumnCount(2)
         self.tree.hideColumn(1)
         self.tree.headerItem().setHidden(True)
-        self.tree.setSelectionMode(qtw.QTreeWidget.SingleSelection)
+        self.tree.setSelectionMode(qtw.QTreeWidget.SelectionMode.SingleSelection)
         self.tree.itemSelectionChanged.connect(self.changeselection)
         return self.tree
 
@@ -68,10 +68,10 @@ class MainWindow(qtw.QMainWindow):
         self.editor = qsc.QsciScintilla(self)
         font = gui.QFont()
         self.editor.setFont(font)
-        self.editor.setWrapMode(qsc.QsciScintilla.WrapWord)
-        self.editor.setBraceMatching(qsc.QsciScintilla.SloppyBraceMatch)
+        self.editor.setWrapMode(qsc.QsciScintilla.WrapMode.WrapWord)
+        self.editor.setBraceMatching(qsc.QsciScintilla.BraceMatch.SloppyBraceMatch)
         self.editor.setAutoIndent(True)
-        self.editor.setFolding(qsc.QsciScintilla.PlainFoldStyle)
+        self.editor.setFolding(qsc.QsciScintilla.FoldStyle.PlainFoldStyle)
         self.editor.setCaretLineVisible(True)
         self.editor.setCaretLineBackgroundColor(gui.QColor("#ffe4e4"))
         self.editor.setLexer(qsc.QsciLexerMarkdown())
@@ -188,7 +188,7 @@ class MainWindow(qtw.QMainWindow):
 
     def get_key_from_item(self, item):
         "return the data dictionary's key for this item"
-        return item.data(0, core.Qt.UserRole)
+        return item.data(0, core.Qt.ItemDataRole.UserRole)
 
     def get_activeitem_title(self):
         "return the selected item's title"
@@ -210,9 +210,9 @@ class MainWindow(qtw.QMainWindow):
         "add an item to the tree and return it"
         item = qtw.QTreeWidgetItem()
         item.setText(0, tag)
-        item.setData(0, core.Qt.UserRole, key)
+        item.setData(0, core.Qt.ItemDataRole.UserRole, key)
         item.setText(1, text)
-        item.setData(1, core.Qt.UserRole, keywords)
+        item.setData(1, core.Qt.ItemDataRole.UserRole, keywords)
         if self.base.opts['RevOrder']:
             self.root.insertChild(0, item)
         else:
@@ -222,17 +222,17 @@ class MainWindow(qtw.QMainWindow):
     def get_treeitems(self):
         "return a list with the items in the tree"
         treeitemlist, activeitem = [], 0
-        # activeitemky = self.activeitem.data(0, core.Qt.UserRole)
+        # activeitemky = self.activeitem.data(0, core.Qt.ItemDataRole.UserRole)
         for num in range(self.root.childCount()):
             tag = self.root.child(num).text(0)
-            ky = self.root.child(num).data(0, core.Qt.UserRole)
+            ky = self.root.child(num).data(0, core.Qt.ItemDataRole.UserRole)
             # print('                  ky is', ky)
             # print('                  child is', self.root.child(num))
             # if ky == activeitemky:
             if self.root.child(num) == self.activeitem:
                 activeitem = ky
             text = self.root.child(num).text(1)
-            trefw = self.root.child(num).data(1, core.Qt.UserRole)
+            trefw = self.root.child(num).data(1, core.Qt.ItemDataRole.UserRole)
             treeitemlist.append((ky, tag, text, trefw))
         return treeitemlist, activeitem
 
@@ -252,9 +252,9 @@ class MainWindow(qtw.QMainWindow):
     def revive(self, event=None):
         """make application visible again
         """
-        if event == qtw.QSystemTrayIcon.Unknown:
+        if event == qtw.QSystemTrayIcon.ActivationReason.Unknown:
             self.tray_icon.showMessage(self.base.app_title, _("revive_message"))
-        elif event == qtw.QSystemTrayIcon.Context:
+        elif event == qtw.QSystemTrayIcon.ActivationReason.Context:
             pass
         else:
             self.show()
@@ -308,11 +308,11 @@ class MainWindow(qtw.QMainWindow):
 
     def get_item_keywords(self, item):
         "return the keywords for an item in a list"
-        return item.data(1, core.Qt.UserRole)
+        return item.data(1, core.Qt.ItemDataRole.UserRole)
 
     def set_item_keywords(self, item, keyword_list):
         "set the keywords for an item in the tree"
-        item.setData(1, core.Qt.UserRole, keyword_list)
+        item.setData(1, core.Qt.ItemDataRole.UserRole, keyword_list)
 
     def show_statusbar_message(self, text):
         "display a message in the application's status bar"
@@ -334,19 +334,18 @@ class MainWindow(qtw.QMainWindow):
     def ask_question(self, question):
         """ask a question in a standard box with a standard title"""
         answer = qtw.QMessageBox.question(self, self.base.app_title, question)
-        return answer == qtw.QMessageBox.Yes
+        return answer == qtw.QMessageBox.StandardButton.Yes
 
     def show_dialog(self, cls, *args):
         "pop up a dialog and return if confirmed"
         self.dialog_data = {}
-        ok = cls(self, *args).exec_() == qtw.QDialog.Accepted
+        ok = cls(self, *args).exec() == qtw.QDialog.DialogCode.Accepted
         data = self.dialog_data if ok else None
         return ok, data
 
     def get_text_from_user(self, prompt, default):
         "ask for text in a popup"
-        return qtw.QInputDialog.getText(self, self.base.app_title, prompt,
-                                        qtw.QLineEdit.Normal, default)
+        return qtw.QInputDialog.getText(self, self.base.app_title, prompt, text=default)
 
     def get_choice_from_user(self, prompt, choices, choice=0):
         "pop up a selection list"
@@ -450,7 +449,7 @@ class KeywordsDialog(qtw.QDialog):
         self.resize(400, 256)
         # define widgets
         self.fromlist = qtw.QListWidget(self)
-        self.fromlist.setSelectionMode(qtw.QAbstractItemView.ExtendedSelection)
+        self.fromlist.setSelectionMode(qtw.QAbstractItemView.SelectionMode.ExtendedSelection)
         self.fromlist.itemDoubleClicked.connect(self.move_right)
         text = qtw.QLabel(_("t_tags"), self)
         fromto_button = qtw.QPushButton(_("b_tag"))
@@ -462,16 +461,17 @@ class KeywordsDialog(qtw.QDialog):
         help_button = qtw.QPushButton(_("m_keys"))
         help_button.clicked.connect(self.keys_help)
         self.tolist = qtw.QListWidget(self)
-        self.tolist.setSelectionMode(qtw.QAbstractItemView.ExtendedSelection)
+        self.tolist.setSelectionMode(qtw.QAbstractItemView.SelectionMode.ExtendedSelection)
         self.tolist.itemDoubleClicked.connect(self.move_left)
-        bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.Ok | qtw.QDialogButtonBox.Cancel)
+        bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.StandardButton.Ok
+                                    | qtw.QDialogButtonBox.StandardButton.Cancel)
         bbox.accepted.connect(self.accept)
         bbox.rejected.connect(self.reject)
         self.create_actions()
         # get data from parent
         all_trefw = self.parent.base.opts['Keywords']
         # self.data = self.parent.activeitem
-        curr_trefw = keywords  # self.data.data(1, core.Qt.UserRole)
+        curr_trefw = keywords  # self.data.data(1, core.Qt.ItemDataRole.UserRole)
         self.tolist.addItems(curr_trefw)
         self.fromlist.addItems([x for x in all_trefw if x not in curr_trefw])
         # do layout and show
@@ -512,7 +512,7 @@ class KeywordsDialog(qtw.QDialog):
                            (_('b_untag'), 'Ctrl+Left', self.move_left),
                            (_('b_newtag'), 'Ctrl+N', self.add_trefw))
         for name, shortcut, callback in self.actionlist:
-            act = qtw.QAction(name, self)
+            act = gui.QAction(name, self)
             act.setShortcut(shortcut)
             act.triggered.connect(callback)
             self.addAction(act)
@@ -574,7 +574,7 @@ class KeywordsDialog(qtw.QDialog):
             line += 1
         dlg.setWindowTitle(self.parent.base.app_title + " " + _("t_keys"))  # ' keys'
         dlg.setLayout(gbox)
-        dlg.exec_()
+        dlg.exec()
 
     def accept(self):
         """geef de geselecteerde trefwoorden aan het hoofdprogramma
@@ -635,7 +635,7 @@ class KeywordsManager(qtw.QDialog):
         """
         for itemindex in range(self.parent.root.childCount()):
             item = self.parent.root.child(itemindex)
-            keywords = item.data(1, core.Qt.UserRole)
+            keywords = item.data(1, core.Qt.ItemDataRole.UserRole)
             try:
                 keywordindex = keywords.index(oldtext)
             except ValueError:
@@ -644,7 +644,7 @@ class KeywordsManager(qtw.QDialog):
                 keywords[keywordindex] = newtext
             else:
                 keywords.pop(keywordindex)
-            item.setData(1, core.Qt.UserRole, keywords)
+            item.setData(1, core.Qt.ItemDataRole.UserRole, keywords)
 
     def remove_keyword(self):
         """delete a keyword after selecting from the dropdown
@@ -652,7 +652,7 @@ class KeywordsManager(qtw.QDialog):
         oldtext = self.oldtag.currentText()
         msg = _('t_remtag').format(oldtext)
         ask = qtw.QMessageBox.question(self, self.parent.base.app_title, msg)
-        if ask != qtw.QMessageBox.Yes:
+        if ask != qtw.QMessageBox.StandardButton.Yes:
             return
         self.parent.base.opts['Keywords'].remove(oldtext)
         self.update_items(oldtext)
@@ -667,23 +667,24 @@ class KeywordsManager(qtw.QDialog):
             prompter = qtw.QMessageBox()
             prompter.setText(_('t_repltag').format(oldtext, newtext))
             prompter.setInformativeText(_('t_repltag2'))
-            prompter.setStandardButtons(qtw.QMessageBox.Yes | qtw.QMessageBox.No |
-                                        qtw.QMessageBox.Cancel)
-            prompter.setDefaultButton(qtw.QMessageBox.Yes)
-            ## prompter.setEscapeButton(qtw.MessageBox.Cancel)
-            ask = prompter.exec_()
-            if ask == qtw.QMessageBox.Cancel:
+            prompter.setStandardButtons(qtw.QMessageBox.StandardButton.Yes
+                                        | qtw.QMessageBox.StandardButton.No
+                                        | qtw.QMessageBox.StandardButton.Cancel)
+            prompter.setDefaultButton(qtw.QMessageBox.StandardButton.Yes)
+            ## prompter.setEscapeButton(qtw.MessageBox.StandardButton.Cancel)
+            ask = prompter.exec()
+            if ask == qtw.QMessageBox.StandardButton.Cancel:
                 return
             ix = self.parent.base.opts['Keywords'].index(oldtext)
             self.parent.base.opts['Keywords'][ix] = newtext
-            if ask == qtw.QMessageBox.Yes:
+            if ask == qtw.QMessageBox.StandardButton.Yes:
                 self.update_items(oldtext, newtext)
             else:
                 self.update_items(oldtext)
         else:
             msg = _('t_addtag').format(newtext)
             ask = qtw.QMessageBox.question(self, self.parent.base.app_title, msg)
-            if ask != qtw.QMessageBox.Yes:
+            if ask != qtw.QMessageBox.StandardButton.Yes:
                 return
             self.parent.base.opts['Keywords'].append(newtext)
         self.refresh_fields()
@@ -719,7 +720,8 @@ class GetTextDialog(qtw.QDialog):
             if use_case:
                 self.use_case.setChecked(True)
         vbox.addLayout(hbox)
-        bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.Ok | qtw.QDialogButtonBox.Cancel)
+        bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.StandardButton.Ok
+                                    | qtw.QDialogButtonBox.StandardButton.Cancel)
         bbox.accepted.connect(self.accept)
         bbox.rejected.connect(self.reject)
         vbox.addWidget(bbox)
