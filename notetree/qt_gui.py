@@ -97,7 +97,7 @@ class MainWindow(qtw.QMainWindow):
                         action.setCheckable(True)
                         self.selactions[label] = action
                     if key:
-                        action.setShortcuts([x for x in key.split(",")])
+                        action.setShortcuts(list(key.split(",")))
                     action.setStatusTip(info)
                 else:
                     submenu.addSeparator()
@@ -444,7 +444,7 @@ class KeywordsDialog(qtw.QDialog):
         if keywords is None:
             keywords = []
         super().__init__(parent)
-        self.setWindowTitle('{} - {}'.format(self.parent.base.app_title, _("w_tags")))
+        self.setWindowTitle(f'{self.parent.base.app_title} - {_("w_tags")}')
         self.setWindowIcon(self.parent.nt_icon)
         self.resize(400, 256)
         # define widgets
@@ -589,7 +589,7 @@ class KeywordsManager(qtw.QDialog):
     def __init__(self, parent):
         self.parent = parent
         super().__init__(parent)
-        self.setWindowTitle('{} - {}'.format(self.parent.base.app_title, _("t_tagman")))
+        self.setWindowTitle(f'{self.parent.base.app_title} - {_("t_tagman")}')
         self.setWindowIcon(self.parent.nt_icon)
         self.resize(400, 0)
         self.oldtag = qtw.QComboBox(self, editable=True)
@@ -693,12 +693,13 @@ class KeywordsManager(qtw.QDialog):
 class GetTextDialog(qtw.QDialog):
     """Dialog to get search string (with options)
     """
-    def __init__(self, parent, seltype, seltext, labeltext='', use_case=None):
+    def __init__(self, parent, seltype, seltext, labeltext='', use_case=False):
         self.parent = parent
         super().__init__(parent)
         self.setWindowTitle(self.parent.base.app_title)
         self.setWindowIcon(self.parent.nt_icon)
 
+        self.use_case = None
         self.create_inputwin(seltext)
 
         self.in_exclude = qtw.QCheckBox('exclude', self)
@@ -715,7 +716,7 @@ class GetTextDialog(qtw.QDialog):
         vbox.addLayout(hbox)
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(self.in_exclude)
-        if hasattr(self, 'use_case'):
+        if self.use_case:
             hbox.addWidget(self.use_case)
             if use_case:
                 self.use_case.setChecked(True)

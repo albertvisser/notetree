@@ -243,10 +243,20 @@ class TestMainWindow:
                                    (_("m_selall"), self.callback, _("h_selall"), None),
                                    (_("m_seltag"), self.callback, _("h_seltag"), None),
                                    (_("m_seltxt"), self.callback, _("h_seltxt"), None), ), ), )
+        def mock_get_menudata_2(*args):
+            """stub
+            """
+            self = args[0]
+            return (('any', ((_('m_forward'), self.callback, 'forward', ''),
+                             (_('m_back'), self.callback, 'back', ''),
+                             ('other', self.callback, 'other', 'ding,invalid'), ), ), )
         def mock_set_accel(*args):
             """stub
             """
             print('called mainwindow.SetAcceleratorTable()')
+        def mock_fromstring(self, *args):
+            print('called MockAcceleratorEntry.FromString()')
+            return False
         monkeypatch.setattr(MockNoteTree, 'get_menudata', mock_get_menudata)
         monkeypatch.setattr(gui.wx, 'Menu', mockwx.MockMenu)
         monkeypatch.setattr(gui.wx, 'MenuItem', mockwx.MockMenuItem)
@@ -317,6 +327,38 @@ class TestMainWindow:
                                            'called menuitem.Check(`False`)\n'
                                            'called menuitem.Check(`True`)\n'
                                            'called menuitem.Check(`True`)\n')
+        testobj.selactions = {}
+        testobj.seltypes = []
+        monkeypatch.setattr(MockNoteTree, 'get_menudata', mock_get_menudata_2)
+        monkeypatch.setattr(mockwx.MockAcceleratorEntry, 'FromString', mock_fromstring)
+        testobj.create_menu()
+        assert not testobj.selactions
+        assert not testobj.seltypes
+        assert capsys.readouterr().out == ('called MenuBar.__init__()\n'
+                                           'called Menu.__init__()\n'
+                                           'called MenuItem.__init__()\n'
+                                           'called menuitem.Bind()\n'
+                                           'called menu.Append()\n'
+                                           'called menuitem.GetId()\n'
+                                           'called AcceleratorEntry.__init__()\n'
+                                           'called MockAcceleratorEntry.FromString()\n'
+                                           'called MenuItem.__init__()\n'
+                                           'called menuitem.Bind()\n'
+                                           'called menu.Append()\n'
+                                           'called menuitem.GetId()\n'
+                                           'called AcceleratorEntry.__init__()\n'
+                                           'called MockAcceleratorEntry.FromString()\n'
+                                           'called MenuItem.__init__()\n'
+                                           'called menuitem.Bind()\n'
+                                           'called menu.Append()\n'
+                                           'called MenuItem.__init__()\n'
+                                           'called menuitem.Bind()\n'
+                                           'called menuitem.GetId()\n'
+                                           'called AcceleratorEntry.__init__()\n'
+                                           'called MockAcceleratorEntry.FromString()\n'
+                                           'called menubar.Append()\n'
+                                           'called AcceleratorTable.__init__()\n'
+                                           'called mainwindow.SetAcceleratorTable()\n')
 
     def test_create_menu_2(self, monkeypatch, capsys):
         """unittest for MainWindow.create_menu: recreation of menubar
@@ -1186,10 +1228,10 @@ class TestKeywordsDialog:
             """stub
             """
             print('called dialog.createbuttons()')
-        def mock_setaffirmativeid(self, *args):
-            """stub
-            """
-            print('called dialog.SetAffirmativeId()')
+        # def mock_setaffirmativeid(self, *args):
+        #     """stub
+        #     """
+        #     print('called dialog.SetAffirmativeId()')
         def mock_setsizer(self, *args):
             """stub
             """
@@ -1230,7 +1272,10 @@ class TestKeywordsDialog:
         # monkeypatch.setattr(gui.wx, 'TextCtrl', mockwx.MockTextCtrl)
         monkeypatch.setattr(gui.KeywordsDialog, 'create_actions', mock_create_actions)
         testobj = gui.KeywordsDialog(mockparent, '')
-        assert hasattr(testobj, 'helptext')
+        assert testobj.parent == mockparent
+        assert testobj.helptext == ''  # hasattr(testobj, 'helptext')
+        assert isinstance(testobj.fromlist, gui.wx.ListBox)
+        assert isinstance(testobj.tolist, gui.wx.ListBox)
         # testobj = gui.KeywordsDialog(mockparent, keywords)
         assert capsys.readouterr().out == ('called wxDialog.__init__()\n'
                                            "called dialog.SetTitle() with args ('title - w_tags',)\n"
@@ -1249,8 +1294,67 @@ class TestKeywordsDialog:
                                            'called ListBox.__init__()\n'
                                            'called listbox.bind()\n'
                                            'called dialog.create_actions()\n'
-                                           'called listbox.append() with arg `x`\n'
-                                           'called listbox.append() with arg `y`\n'
+                                           'called ListBox.InsertItems with args ([],)\n'
+                                           "called ListBox.InsertItems with args (['x', 'y'],)\n"
+                                           'called BoxSizer.__init__(`vert`)\n'
+                                           'called BoxSizer.__init__(`hori`)\n'
+                                           'called BoxSizer.__init__(`vert`)\n'
+                                           'called StaticText.__init__()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called hori sizer.Add()\n'
+                                           'called BoxSizer.__init__(`vert`)\n'
+                                           'called vert sizer.AddStretchSpacer()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called vert sizer.AddSpacer()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called vert sizer.AddStretchSpacer()\n'
+                                           'called hori sizer.Add()\n'
+                                           'called BoxSizer.__init__(`vert`)\n'
+                                           'called StaticText.__init__()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called hori sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called BoxSizer.__init__(`hori`)\n'
+                                           'called dialog.createbuttons()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called dialog.SetSizer()\n'
+                                           'called dialog.SetAutoLayout()\n'
+                                           'called vert sizer.Fit()\n'
+                                           'called vert sizer.SetSizeHints()\n'
+                                           'called dialog.Layout()\n'
+                                           'called dialog.SetSize()\n')
+        testobj.parent.base.opts['Keywords'] = []
+        testobj = gui.KeywordsDialog(mockparent, 'qqqq', ['aa', 'bb'])
+        assert testobj.parent == mockparent
+        assert testobj.helptext == 'qqqq'  # hasattr(testobj, 'helptext')
+        assert isinstance(testobj.fromlist, gui.wx.ListBox)
+        assert isinstance(testobj.tolist, gui.wx.ListBox)
+        # testobj = gui.KeywordsDialog(mockparent, keywords)
+        assert capsys.readouterr().out == ('called wxDialog.__init__()\n'
+                                           "called dialog.SetTitle() with args ('title - w_tags',)\n"
+                                           "called dialog.SetIcon() with args ('icon',)\n"
+                                           'called ListBox.__init__()\n'
+                                           'called listbox.bind()\n'
+                                           'called StaticText.__init__()\n'
+                                           'called Button.__init__()\n'
+                                           'called Button.Bind()\n'
+                                           'called Button.__init__()\n'
+                                           'called Button.Bind()\n'
+                                           'called Button.__init__()\n'
+                                           'called Button.Bind()\n'
+                                           'called Button.__init__()\n'
+                                           'called Button.Bind()\n'
+                                           'called ListBox.__init__()\n'
+                                           'called listbox.bind()\n'
+                                           'called dialog.create_actions()\n'
+                                           "called ListBox.InsertItems with args (['aa', 'bb'],)\n"
+                                           'called ListBox.InsertItems with args ([],)\n'
                                            'called BoxSizer.__init__(`vert`)\n'
                                            'called BoxSizer.__init__(`hori`)\n'
                                            'called BoxSizer.__init__(`vert`)\n'
@@ -1304,10 +1408,10 @@ class TestKeywordsDialog:
             """stub
             """
             print('called dialog.createbuttons()')
-        def mock_setaffirmativeid(self, *args):
-            """stub
-            """
-            print('called dialog.SetAffirmativeId()')
+        # def mock_setaffirmativeid(self, *args):
+        #     """stub
+        #     """
+        #     print('called dialog.SetAffirmativeId()')
         def mock_setsizer(self, *args):
             """stub
             """
@@ -1366,8 +1470,8 @@ class TestKeywordsDialog:
                                            'called ListBox.__init__()\n'
                                            'called listbox.bind()\n'
                                            'called dialog.create_actions()\n'
-                                           'called listbox.append() with arg `y`\n'
-                                           'called listbox.append() with arg `x`\n'
+                                           "called ListBox.InsertItems with args (['y'],)\n"
+                                           "called ListBox.InsertItems with args (['x'],)\n"
                                            'called BoxSizer.__init__(`vert`)\n'
                                            'called BoxSizer.__init__(`hori`)\n'
                                            'called BoxSizer.__init__(`vert`)\n'
@@ -1413,6 +1517,9 @@ class TestKeywordsDialog:
             """stub
             """
             print('called dialog.SetAcceleratorTable()')
+        def mock_fromstring(self, *args):
+            print('called MockAcceleratorEntry.FromString()')
+            return False
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         monkeypatch.setattr(gui.KeywordsDialog, 'SetAcceleratorTable', mock_set_accels)
         monkeypatch.setattr(gui.wx, 'MenuItem', mockwx.MockMenuItem)
@@ -1421,9 +1528,38 @@ class TestKeywordsDialog:
         mockbase = types.SimpleNamespace(app_title='title', opts={'Keywords': ['x', 'y']})
         mockparent = types.SimpleNamespace(nt_icon='icon', base=mockbase)
         testobj = gui.KeywordsDialog(mockparent, '')
+        assert capsys.readouterr().out == 'called dialog.__init__()\n'
         testobj.create_actions()
-        assert capsys.readouterr().out == ('called dialog.__init__()\n'
+        assert capsys.readouterr().out == ('called MenuItem.__init__()\n'
+                                           'called menuitem.Bind()\n'
+                                           'called menuitem.GetId()\n'
+                                           'called AcceleratorEntry.__init__()\n'
+                                           'called MockAcceleratorEntry.FromString()\n'
                                            'called MenuItem.__init__()\n'
+                                           'called menuitem.Bind()\n'
+                                           'called menuitem.GetId()\n'
+                                           'called AcceleratorEntry.__init__()\n'
+                                           'called MockAcceleratorEntry.FromString()\n'
+                                           'called MenuItem.__init__()\n'
+                                           'called menuitem.Bind()\n'
+                                           'called menuitem.GetId()\n'
+                                           'called AcceleratorEntry.__init__()\n'
+                                           'called MockAcceleratorEntry.FromString()\n'
+                                           'called MenuItem.__init__()\n'
+                                           'called menuitem.Bind()\n'
+                                           'called menuitem.GetId()\n'
+                                           'called AcceleratorEntry.__init__()\n'
+                                           'called MockAcceleratorEntry.FromString()\n'
+                                           'called MenuItem.__init__()\n'
+                                           'called menuitem.Bind()\n'
+                                           'called menuitem.GetId()\n'
+                                           'called AcceleratorEntry.__init__()\n'
+                                           'called MockAcceleratorEntry.FromString()\n'
+                                           'called AcceleratorTable.__init__()\n'
+                                           'called dialog.SetAcceleratorTable()\n')
+        monkeypatch.setattr(mockwx.MockAcceleratorEntry, 'FromString', mock_fromstring)
+        testobj.create_actions()
+        assert capsys.readouterr().out == ('called MenuItem.__init__()\n'
                                            'called menuitem.Bind()\n'
                                            'called menuitem.GetId()\n'
                                            'called AcceleratorEntry.__init__()\n'
@@ -1631,6 +1767,8 @@ class TestKeywordsDialog:
             """stub
             """
             print('called dialog.__init__()')
+        def mock_sel():
+            return []
         monkeypatch.setattr(gui.KeywordsDialog, '__init__', mock_init)
         testobj = gui.KeywordsDialog('parent', '')
         from_ = mockwx.MockListBox()
@@ -1642,6 +1780,9 @@ class TestKeywordsDialog:
                                            'delete item 1 from listbox\n'
                                            'called listbox.GetCount()\n'
                                            "insert `['value 1 from listbox']` into listbox\n")
+        from_.GetSelections = mock_sel
+        testobj._moveitem(from_, to)
+        assert capsys.readouterr().out == ""
 
     def test_add_trefw(self, monkeypatch, capsys):
         """unittest for KeywordsDialog.add_trefw: adding new keyword
@@ -2299,6 +2440,11 @@ class TestGetTextDialog:
             print('called dialog.create_inputwin()')
             self.inputwin = mockwx.MockTextCtrl()
             self.use_case = mockwx.MockCheckBox()
+        def mock_inputwin_2(self, *args):
+            """stub
+            """
+            print('called dialog.create_inputwin()')
+            self.inputwin = mockwx.MockTextCtrl()
         monkeypatch.setattr(gui.wx.Dialog, '__init__', mock_init)
         monkeypatch.setattr(gui.wx.Dialog, 'SetTitle', mock_settitle)
         monkeypatch.setattr(gui.wx.Dialog, 'SetIcon', mock_seticon)
@@ -2326,7 +2472,6 @@ class TestGetTextDialog:
                                            'called dialog.create_inputwin()\n'
                                            'called TextCtrl.__init__()\n'
                                            'called CheckBox.__init__()\n'
-                                           # 'called checkbox.SetValue(`False`)\n'
                                            'called CheckBox.__init__()\n'
                                            'called checkbox.SetValue(`False`)\n'
                                            'called BoxSizer.__init__(`vert`)\n'
@@ -2341,6 +2486,69 @@ class TestGetTextDialog:
                                            'called hori sizer.Add()\n'
                                            'called hori sizer.Add()\n'
                                            'called checkbox.SetValue(`True`)\n'
+                                           'called vert sizer.Add()\n'
+                                           'called dialog.CreateButtonSizer()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called dialog.SetSizer()\n'
+                                           'called dialog.SetAutoLayout()\n'
+                                           'called vert sizer.Fit()\n'
+                                           'called vert sizer.SetSizeHints()\n'
+                                           'called dialog.Layout()\n')
+        testobj = gui.GetTextDialog(mockparent, 0, 'seltext', 'labeltext')
+        assert testobj.parent == mockparent
+        assert hasattr(testobj, 'in_exclude')
+        assert hasattr(testobj, 'inputwin')
+        assert hasattr(testobj, 'use_case')
+        assert capsys.readouterr().out == ('called wxDialog.__init__()\n'
+                                           'called dialog.SetTitle()\n'
+                                           'called dialog.SetIcon()\n'
+                                           'called dialog.create_inputwin()\n'
+                                           'called TextCtrl.__init__()\n'
+                                           'called CheckBox.__init__()\n'
+                                           'called CheckBox.__init__()\n'
+                                           'called checkbox.SetValue(`False`)\n'
+                                           'called BoxSizer.__init__(`vert`)\n'
+                                           'called BoxSizer.__init__(`hori`)\n'
+                                           'called StaticText.__init__()\n'
+                                           'called hori sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called BoxSizer.__init__(`hori`)\n'
+                                           'called hori sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called BoxSizer.__init__(`hori`)\n'
+                                           'called hori sizer.Add()\n'
+                                           'called hori sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called dialog.CreateButtonSizer()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called dialog.SetSizer()\n'
+                                           'called dialog.SetAutoLayout()\n'
+                                           'called vert sizer.Fit()\n'
+                                           'called vert sizer.SetSizeHints()\n'
+                                           'called dialog.Layout()\n')
+        monkeypatch.setattr(gui.GetTextDialog, 'create_inputwin', mock_inputwin_2)
+        testobj = gui.GetTextDialog(mockparent, 0, 'seltext', 'labeltext')
+        assert testobj.parent == mockparent
+        assert hasattr(testobj, 'in_exclude')
+        assert hasattr(testobj, 'inputwin')
+        assert hasattr(testobj, 'use_case')
+        assert capsys.readouterr().out == ('called wxDialog.__init__()\n'
+                                           'called dialog.SetTitle()\n'
+                                           'called dialog.SetIcon()\n'
+                                           'called dialog.create_inputwin()\n'
+                                           'called TextCtrl.__init__()\n'
+                                           'called CheckBox.__init__()\n'
+                                           'called checkbox.SetValue(`False`)\n'
+                                           'called BoxSizer.__init__(`vert`)\n'
+                                           'called BoxSizer.__init__(`hori`)\n'
+                                           'called StaticText.__init__()\n'
+                                           'called hori sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called BoxSizer.__init__(`hori`)\n'
+                                           'called hori sizer.Add()\n'
+                                           'called vert sizer.Add()\n'
+                                           'called BoxSizer.__init__(`hori`)\n'
+                                           'called hori sizer.Add()\n'
                                            'called vert sizer.Add()\n'
                                            'called dialog.CreateButtonSizer()\n'
                                            'called vert sizer.Add()\n'

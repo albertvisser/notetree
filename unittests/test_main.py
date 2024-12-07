@@ -586,13 +586,6 @@ class TestNoteTree:
             # return 'English', True
             return "t_en", True
 
-        def mock_gettext(*args):
-            """stub
-            """
-            text = args[0]
-            print(f"called gettext('{text}')")
-            return text
-
         testsubj = setup_notetree_class(monkeypatch)
         testsubj.opts = {"Language": "nl"}
         testsubj.choose_language()
@@ -1519,3 +1512,6 @@ class TestNoteTree:
         assert testsubj.selection_contains_item("text", ["key", "word"], -2, "Ex", True)
         assert not testsubj.selection_contains_item("tExt", ["key", "word"], -2, "Ex", True)
         assert testsubj.selection_contains_item("text", ["key", "word"], -2, "oink", False)
+        # niet zeker of dit wel kan voorkomen:
+        assert not testsubj.selection_contains_item("text", ["key", "word"], 3, "xxx", "yyy")
+        assert not testsubj.selection_contains_item("text", ["key", "word"], -3, "xxx", "yyy")

@@ -5,6 +5,7 @@ van een ibm site afgeplukt
 import os
 # import sys
 import gettext
+import contextlib
 import wx
 import wx.adv
 from wx import stc
@@ -219,8 +220,9 @@ class MainWindow(wx.Frame):
         self.SetAcceleratorTable(wx.AcceleratorTable(accel_list))
         for item in self.selactions.values():
             item.Check(False)
-        self.selactions[_('m_revorder')].Check(self.base.opts['RevOrder'])
-        self.selactions[self.seltypes[abs(self.base.opts['Selection'][0])]].Check(True)
+        with contextlib.suppress(KeyError):
+            self.selactions[_('m_revorder')].Check(self.base.opts['RevOrder'])
+            self.selactions[self.seltypes[abs(self.base.opts['Selection'][0])]].Check(True)
 
     def OnEvtText(self, event):
         """reimplemented event handler
@@ -560,7 +562,7 @@ class KeywordsDialog(wx.Dialog):
         if keywords is None:
             keywords = []
         super().__init__(parent)
-        self.SetTitle('{} - {}'.format(self.parent.base.app_title, _("w_tags")))
+        self.SetTitle(f'{self.parent.base.app_title} - {_("w_tags")}')
         self.SetIcon(self.parent.nt_icon)
         # define widgets
         self.fromlist = wx.ListBox(self, size=(120, 150), style=wx.LB_EXTENDED)
@@ -581,15 +583,20 @@ class KeywordsDialog(wx.Dialog):
         all_trefw = self.parent.base.opts['Keywords']
         # self.data = self.parent.activeitem
         curr_trefw = keywords  # self.parent.tree.GetItemData(self.data)[2]
-        if curr_trefw:
-            [self.tolist.Append(x) for x in curr_trefw]
-        if all_trefw:
-            [self.fromlist.Append(x) for x in all_trefw if x not in curr_trefw]
+        # if curr_trefw:
+        #     for x in curr_trefw:
+        #         self.tolist.Append(x)
+        self.tolist.InsertItems(curr_trefw)
+        # if all_trefw:
+        #     for x in all_trefw:
+        #         if x not in curr_trefw:
+        #             self.fromlist.Append(x)
+        self.fromlist.InsertItems([x for x in all_trefw if x not in curr_trefw])
         # do layout and show
         vbox = wx.BoxSizer(wx.VERTICAL)
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         vbox2 = wx.BoxSizer(wx.VERTICAL)
-        vbox2.Add(wx.StaticText(self, label=(_("t_left"))))
+        vbox2.Add(wx.StaticText(self, label=_("t_left")))
         vbox2.Add(self.fromlist)
         hbox.Add(vbox2)
         vbox2 = wx.BoxSizer(wx.VERTICAL)
@@ -603,7 +610,7 @@ class KeywordsDialog(wx.Dialog):
         vbox2.AddStretchSpacer()
         hbox.Add(vbox2)
         vbox2 = wx.BoxSizer(wx.VERTICAL)
-        vbox2.Add(wx.StaticText(self, label=(_("t_right"))))
+        vbox2.Add(wx.StaticText(self, label=_("t_right")))
         vbox2.Add(self.tolist)
         hbox.Add(vbox2)
         vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
@@ -730,7 +737,7 @@ class KeywordsManager(wx.Dialog):
     def __init__(self, parent):
         self.parent = parent
         super().__init__(parent)
-        self.SetTitle('{} - {}'.format(self.parent.base.app_title, _("t_tagman")))
+        self.SetTitle(f'{self.parent.base.app_title} - {_("t_tagman")}')
         self.SetIcon(self.parent.nt_icon)
         self.oldtag = wx.ComboBox(self)
         self.newtag = wx.TextCtrl(self)
@@ -839,12 +846,13 @@ class KeywordsManager(wx.Dialog):
 class GetTextDialog(wx.Dialog):
     """Dialog to get search string (with options)
     """
-    def __init__(self, parent, seltype, seltext, labeltext='', use_case=None):
+    def __init__(self, parent, seltype, seltext, labeltext='', use_case=False):
         self.parent = parent
         super().__init__(parent)
         self.SetTitle(self.parent.base.app_title)
         self.SetIcon(self.parent.nt_icon)
 
+        self.use_case = None
         self.create_inputwin(seltext)
 
         self.in_exclude = wx.CheckBox(self, label='exclude')
