@@ -15,9 +15,13 @@ locale = os.path.join(HERE, 'locale')
 gettext.install(app_title, locale)
 languages = {'nl': gettext.translation(app_title, locale, languages=['nl']),
              'en': gettext.translation(app_title, locale, languages=['en'])}
-# dynamically built translatable string symbols resolved so that they can be recognized
+# dynamically built translatable string symbols resolved so that they can be recognized:
 _('t_nl')
 _('t_en')
+# these ones aren't recognized the way they are defined in the code (sett2text dict):
+_('t_hide')
+_('t_load')
+_('t_save')
 
 root_title = "MyNotes"
 initial_opts = {"Application": "NoteTree",
