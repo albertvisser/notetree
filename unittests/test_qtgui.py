@@ -161,6 +161,7 @@ class TestMainWindow:
         assert capsys.readouterr().out == ('called Tree.__init__\n'
                                            'called Tree.setColumnCount with arg `2`\n'
                                            'called Tree.hideColumn\n'
+                                           'called Tree.headerItem\n'
                                            'called TreeItem.__init__ with args ()\n'
                                            "called TreeItem.setHidden with arg `True`\n"
                                            'called Tree.setSelectionMode\n'
@@ -221,19 +222,28 @@ class TestMainWindow:
                 "called Menu.__init__ with args ('m_view',)\n"
                 f'called Menu.addAction with args `m_revorder` {testobj.base.callback}\n'
                 f"called Action.__init__ with args ('m_revorder', {testobj.base.callback})\n"
+                "called Action.setCheckable with arg 'True'\n"
                 "called Action.setShortcuts with arg `['F9']`\n"
+                "called Action.setStatusTip with arg 'h_revorder'\n"
                 "called Menu.addSeparator\n"
                 "called Action.__init__ with args ('-----', None)\n"
                 f'called Menu.addAction with args `m_selall` {testobj.base.callback}\n'
                 f"called Action.__init__ with args ('m_selall', {testobj.base.callback})\n"
+                "called Action.setCheckable with arg 'True'\n"
+                "called Action.setStatusTip with arg 'h_selall'\n"
                 f'called Menu.addAction with args `m_seltag` {testobj.base.callback}\n'
                 f"called Action.__init__ with args ('m_seltag', {testobj.base.callback})\n"
+                "called Action.setCheckable with arg 'True'\n"
+                "called Action.setStatusTip with arg 'h_seltag'\n"
                 f'called Menu.addAction with args `m_seltxt` {testobj.base.callback}\n'
                 f"called Action.__init__ with args ('m_seltxt', {testobj.base.callback})\n"
+                "called Action.setCheckable with arg 'True'\n"
+                "called Action.setStatusTip with arg 'h_seltxt'\n"
                 'called MenuBar.addMenu with arg  xxx\n'
                 "called Menu.__init__ with args ('xxx',)\n"
                 f'called Menu.addAction with args `yy` {testobj.base.callback}\n'
                 f"called Action.__init__ with args ('yy', {testobj.base.callback})\n"
+                "called Action.setStatusTip with arg 'yyyy'\n"
                 "called Action.setChecked with arg `False`\n"
                 "called Action.setChecked with arg `False`\n"
                 "called Action.setChecked with arg `False`\n"
