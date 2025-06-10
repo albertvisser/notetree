@@ -485,7 +485,7 @@ class OptionsDialog(wx.Dialog):
         sizer1 = wx.FlexGridSizer(cols=2)
         self.controls = []
         for labeltext, value in text2valuedict.items():
-            print(labeltext, value)
+            # print(labeltext, value)
             sizer1.Add(wx.StaticText(pnl, -1, _(labeltext)), 1, wx.ALL, 5)
             chk = wx.CheckBox(self, -1, '')
             chk.SetValue(value)
