@@ -25,13 +25,12 @@ class MainWindow(wx.Frame):
         "start the GUI"
         self.app.MainLoop()
 
-    def init_screen(self, parent=None, title='', iconame=''):
+    def init_screen(self, title, iconame):
         "setup screen"
-        super().__init__(parent, title=title, size=(800, 500),
+        super().__init__(None, title=title, size=(800, 500),
                          style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
-        if iconame:
-            self.nt_icon = wx.Icon(iconame, wx.BITMAP_TYPE_ICO)
-            self.SetIcon(self.nt_icon)
+        self.nt_icon = wx.Icon(iconame, wx.BITMAP_TYPE_ICO)
+        self.SetIcon(self.nt_icon)
         self.SetMenuBar(wx.MenuBar())
 
     def setup_statusbar(self):
@@ -44,7 +43,7 @@ class MainWindow(wx.Frame):
 
     def setup_split_screen(self):
         "define the main splitter widget and place its components"
-        self.splitter = wx.SplitterWindow(self, -1)
+        self.splitter = wx.SplitterWindow(self)
         self.splitter.SetMinimumPaneSize(1)
         self.splitter.SplitVertically(self.setup_tree(), self.setup_editor())
         self.splitter.SetSashPosition(180, True)
@@ -63,8 +62,8 @@ class MainWindow(wx.Frame):
 
     def setup_editor(self):
         "define the editor panel"
-        # self.editor = wx.TextCtrl(self.splitter, -1, style=wx.TE_MULTILINE)
-        self.editor = stc.StyledTextCtrl(self.splitter)  # , -1, style=wx.TE_MULTILINE)
+        # self.editor = wx.TextCtrl(self.splitter, style=wx.TE_MULTILINE)
+        self.editor = stc.StyledTextCtrl(self.splitter)  # , style=wx.TE_MULTILINE)
         self.editor.Enable(False)
         self.setup_text()
         self.editor.Bind(wx.EVT_TEXT, self.OnEvtText)
@@ -172,45 +171,16 @@ class MainWindow(wx.Frame):
             menu_label = item
             submenu = wx.Menu()
             for label, handler, info, keydef in data:
+                # breakpoint()
                 if keydef:
                     test = keydef.split(',')
-                    primary = test[0]
-                    keydef = test[1:]
+                    primary, extra = test[0], test[1:]
                 else:
-                    primary = None
-                    keydef = []
-                if label != "":
-                    label_ = label
-                    if primary:
-                        if primary == 'Ctrl+PgDown':
-                            primary = 'Ctrl+PgDn'
-                        label = f'{label}\t{primary}'
-                    if menu_label == _('m_view'):
-                        if label_ != _('m_revorder'):
-                            self.seltypes.append(label_)
-                        menu_item = wx.MenuItem(submenu, -1, label, info, wx.ITEM_CHECK)
-                        self.selactions[label_] = menu_item
-                    else:
-                        menu_item = wx.MenuItem(submenu, -1, label, info)
-                    # self.Bind(wx.EVT_MENU, handler, menu_item)
-                    menu_item.Bind(wx.EVT_MENU, handler)
-                else:
-                    menu_item = wx.MenuItem(submenu, wx.ID_SEPARATOR)
-                submenu.Append(menu_item)
-                if label_ in (_('m_forward'), _('m_back')):
-                    accel = wx.AcceleratorEntry(cmd=menu_item.GetId())
-                    if accel.FromString(primary):
-                        accel_list.append(accel)
-                for key in keydef:  # define extra keydefs via accelerator table
-                    menu_item = wx.MenuItem(text=label)
-                    # self.Bind(wx.EVT_MENU, handler, menu_item)
-                    menu_item.Bind(wx.EVT_MENU, handler)
-                    accel = wx.AcceleratorEntry(cmd=menu_item.GetId())
-                    if accel.FromString(key):
-                        if key == 'Delete':
-                            self.tree.SetAcceleratorTable(wx.AcceleratorTable([accel]))
-                        else:
-                            accel_list.append(accel)
+                    primary, extra = None, []
+                menuitem, label, primary = self.create_menuitem(
+                    label, menu_label, submenu, primary, info, handler)
+                submenu.Append(menuitem)
+                accel_list.extend(self.create_accelerators(label, primary, extra, menuitem, handler))
             if has_items:
                 menu_bar.Replace(ix, submenu, menu_label)
                 menuitems[ix][0].Destroy()
@@ -223,6 +193,46 @@ class MainWindow(wx.Frame):
         with contextlib.suppress(KeyError):
             self.selactions[_('m_revorder')].Check(self.base.opts['RevOrder'])
             self.selactions[self.seltypes[abs(self.base.opts['Selection'][0])]].Check(True)
+
+    def create_menuitem(self, label, menu_label, submenu, primary, info, handler):
+        if label != "":
+            orig_label = label
+            if primary:
+                if primary == 'Ctrl+PgDown':
+                    primary = 'Ctrl+PgDn'
+                label = f'{label}\t{primary}'
+            if menu_label == _('m_view'):
+                if orig_label != _('m_revorder'):
+                    self.seltypes.append(label)
+                menu_item = wx.MenuItem(submenu, wx.ID_ANY, label, info, wx.ITEM_CHECK)
+                self.selactions[orig_label] = menu_item
+            else:
+                menu_item = wx.MenuItem(submenu, wx.ID_ANY, label, info)
+            self.Bind(wx.EVT_MENU, handler, menu_item)
+            # menu_item.Bind(wx.EVT_MENU, handler)
+        else:
+            menu_item = wx.MenuItem(submenu, wx.ID_SEPARATOR)
+        return menu_item, label, primary
+
+    def create_accelerators(self, label, primary, extra, menu_item, handler):
+        "build keyboard shortcut and bind to menu of return in list"
+        accel_list = []
+        # if label in (_('m_forward'), _('m_back')):
+        if label.startswith((_('m_forward'), _('m_back'))):
+            accel = wx.AcceleratorEntry(cmd=menu_item.GetId())
+            if accel.FromString(primary):
+                accel_list.append(accel)
+        for key in extra:  # define extra keydefs via accelerator table
+            menu_item = wx.MenuItem(text=label)
+            self.Bind(wx.EVT_MENU, handler, menu_item)
+            # menu_item.Bind(wx.EVT_MENU, handler)
+            accel = wx.AcceleratorEntry(cmd=menu_item.GetId())
+            if accel.FromString(key):
+                if key == 'Delete':
+                    self.tree.SetAcceleratorTable(wx.AcceleratorTable([accel]))
+                else:
+                    accel_list.append(accel)
+        return accel_list
 
     def OnEvtText(self, event):
         """reimplemented event handler
@@ -451,9 +461,10 @@ class MainWindow(wx.Frame):
 
     def show_dialog(self, cls, *args):
         "pop up a dialog and return if confirmed"
-        with cls(self, *args) as dlg:
+        dialog = cls(self, *args)
+        with dialog.gui as dlg:
             ok = dlg.ShowModal() == wx.ID_OK
-            data = dlg.confirm() if ok else None
+            data = dialog.confirm() if ok else None
         return ok, data
 
     def get_text_from_user(self, prompt, default):
@@ -477,40 +488,42 @@ class MainWindow(wx.Frame):
 class OptionsDialog(wx.Dialog):
     """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
     """
-    def __init__(self, parent, text2valuedict):
+    def __init__(self, master, parent, title):
+        self.master = master
         self.parent = parent
-        super().__init__(parent, title=_('t_sett'))
-        pnl = self  # wx.Panel(self, -1)
-        sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer1 = wx.FlexGridSizer(cols=2)
-        self.controls = []
-        for labeltext, value in text2valuedict.items():
-            # print(labeltext, value)
-            sizer1.Add(wx.StaticText(pnl, -1, _(labeltext)), 1, wx.ALL, 5)
-            chk = wx.CheckBox(self, -1, '')
-            chk.SetValue(value)
-            sizer1.Add(chk, 1, wx.ALL, 5)
-            self.controls.append((labeltext, chk))
-        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        btn = wx.Button(pnl, id=wx.ID_OK, label=_('b_apply'))
-        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
+        super().__init__(parent, title)
+        # pnl = self  # wx.Panel(self, -1)
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        self.gsizer = wx.FlexGridSizer(cols=2)
+        self.vsizer.Add(self.gsizer, 0,
+                        wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
+        self.SetSizer(self.vsizer)
+        self.SetAutoLayout(True)
+        self.vsizer.Fit(self)
+        self.vsizer.SetSizeHints(self)
+        self.Layout()
+
+    def add_checkbox_line_to_grid(self, row, labeltext, value):
+        # FlexGridsizer heeft row / col niet nodig
+        self.gsizer.Add(wx.StaticText(self, label=labeltext), 1, wx.ALL, 5)
+        chk = wx.CheckBox(self)
+        chk.SetValue(value)
+        self.gsizer.Add(chk, 1, wx.ALL, 5)
+
+    def add_buttonbox(self, okvalue, cancelvalue):
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        btn = wx.Button(self, id=wx.ID_OK, label=okvalue)
+        hsizer.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
         # self.SetAffirmativeId(wx.ID_APPLY)
-        btn = wx.Button(pnl, id=wx.ID_CLOSE, label=_('b_close'))
-        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
+        btn = wx.Button(self, id=wx.ID_CLOSE, label=cancelvalue)
+        hsizer.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
         self.SetEscapeId(wx.ID_CLOSE)
         # sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
-        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
-        pnl.SetSizer(sizer0)
-        pnl.SetAutoLayout(True)
-        sizer0.Fit(pnl)
-        sizer0.SetSizeHints(pnl)
-        pnl.Layout()
+        self.vsizer.Add(hsizer, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
 
-    def confirm(self):
-        """exchange data with caller
-        """
-        return {text: control.GetValue() for text, control in self.controls}
+    def get_checkbox_value(self, check):
+        "dialoog afsluiten"
+        return check.GetValue()
 
 
 class CheckDialog(wx.Dialog):
@@ -519,124 +532,104 @@ class CheckDialog(wx.Dialog):
 
     Eventueel ook te implementeren m.b.v. wx.RichMessageDialog
     """
-    def __init__(self, parent, option, message):
-        wx.Dialog.__init__(self, parent, title=parent.base.app_title, size=(-1, 120),
-                           pos=wx.DefaultPosition, style=wx.DEFAULT_DIALOG_STYLE)
-        # pnl = wx.Panel(self, -1)
-        sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer0.Add(wx.StaticText(self, -1, message), 1, wx.ALL, 5)
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.check = wx.CheckBox(self, -1, _("hide_message"))
-        sizer1.Add(self.check, 0, wx.EXPAND)
-        sizer0.Add(sizer1, 0, wx.ALIGN_CENTER_HORIZONTAL)
-        # sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        # self.bOk = wx.Button(pnl, id=wx.ID_OK)
-        ## self.bOk.Bind(wx.EVT_BUTTON, self.on_ok)
-        # sizer1.Add(self.bOk, 0, wx.EXPAND | wx.ALL, 2)
-        # sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
-        sizer0.Add(self.CreateButtonSizer(wx.OK))
-        # pnl.SetSizer(sizer0)
+    def __init__(self, master, parent, title):
+        self.master = master
+        self.parent = parent
+        wx.Dialog.__init__(self, parent, title=title, size=(-1, 120))
+        self.SetIcon(wx.Icon(parent.nt_icon))
+        # pnl = wx.Panel(self)
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        # pnl.SetSizer(self.vsizer)
         # pnl.SetAutoLayout(True)
-        # sizer0.Fit(pnl)
-        # sizer0.SetSizeHints(pnl)
+        # self.vsizer.Fit(pnl)
+        # self.vsizer.SetSizeHints(pnl)
         # pnl.Layout()
-        self.SetSizer(sizer0)
+        self.SetSizer(self.vsizer)
         self.SetAutoLayout(True)
-        sizer0.Fit(self)
-        sizer0.SetSizeHints(self)
+        self.vsizer.Fit(self)
+        self.vsizer.SetSizeHints(self)
         self.Layout()
 
-    def confirm(self):
+    def add_label(self, labeltext):
+        self.vsizer.Add(wx.StaticText(self, label=labeltext), 1, wx.ALL, 5)
+
+    def add_checkbox(self, caption):
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        check = wx.CheckBox(self, label=caption)
+        hsizer.Add(check, 0, wx.EXPAND)
+        self.vsizer.Add(hsizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
+        return check
+
+    def add_ok_buttonbox(self):
+        self.vsizer.Add(self.CreateButtonSizer(wx.OK), 0, wx.ALIGN_CENTER_HORIZONTAL)
+
+    def get_checkbox_value(self, check):
         "dialoog afsluiten"
-        # if self.check.GetValue():
-        #     self.parent.base.opts[self.option] = False
-        return self.check.GetValue()
+        return check.GetValue()
 
 
 class KeywordsDialog(wx.Dialog):
     """Dialoog voor het koppelen van trefwoorden
     """
-    def __init__(self, parent, helptext, keywords=None):
+    def __init__(self, master, parent, title):
+        self.master = master
         self.parent = parent
-        self.helptext = helptext
-        if keywords is None:
-            keywords = []
         super().__init__(parent)
-        self.SetTitle(f'{self.parent.base.app_title} - {_("w_tags")}')
+        self.SetTitle(title)
         self.SetIcon(self.parent.nt_icon)
-        # define widgets
-        self.fromlist = wx.ListBox(self, size=(120, 150), style=wx.LB_EXTENDED)
-        self.fromlist.Bind(wx.EVT_LISTBOX_DCLICK, self.move_right)
-        text = wx.StaticText(self, label=_("t_tags"))
-        fromto_button = wx.Button(self, label=_("b_tag"))
-        fromto_button.Bind(wx.EVT_BUTTON, self.move_right)
-        tofrom_button = wx.Button(self, label=_("b_untag"))
-        tofrom_button.Bind(wx.EVT_BUTTON, self.move_left)
-        addtrefw_button = wx.Button(self, label=_("b_newtag"))
-        addtrefw_button.Bind(wx.EVT_BUTTON, self.add_trefw)
-        help_button = wx.Button(self, label=_("m_keys"))
-        help_button.Bind(wx.EVT_BUTTON, self.keys_help)
-        self.tolist = wx.ListBox(self, size=(120, 150), style=wx.LB_EXTENDED)
-        self.tolist.Bind(wx.EVT_LISTBOX_DCLICK, self.move_left)
-        self.create_actions()
-        # get data from parent
-        all_trefw = self.parent.base.opts['Keywords']
-        # self.data = self.parent.activeitem
-        curr_trefw = keywords  # self.parent.tree.GetItemData(self.data)[2]
-        # if curr_trefw:
-        #     for x in curr_trefw:
-        #         self.tolist.Append(x)
-        self.tolist.InsertItems(curr_trefw)
-        # if all_trefw:
-        #     for x in all_trefw:
-        #         if x not in curr_trefw:
-        #             self.fromlist.Append(x)
-        self.fromlist.InsertItems([x for x in all_trefw if x not in curr_trefw])
-        # do layout and show
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        vbox2 = wx.BoxSizer(wx.VERTICAL)
-        vbox2.Add(wx.StaticText(self, label=_("t_left")))
-        vbox2.Add(self.fromlist)
-        hbox.Add(vbox2)
-        vbox2 = wx.BoxSizer(wx.VERTICAL)
-        vbox2.AddStretchSpacer()
-        vbox2.Add(text)
-        vbox2.Add(fromto_button)
-        vbox2.Add(tofrom_button)
-        vbox2.AddSpacer(10)
-        vbox2.Add(addtrefw_button)
-        vbox2.Add(help_button)
-        vbox2.AddStretchSpacer()
-        hbox.Add(vbox2)
-        vbox2 = wx.BoxSizer(wx.VERTICAL)
-        vbox2.Add(wx.StaticText(self, label=_("t_right")))
-        vbox2.Add(self.tolist)
-        hbox.Add(vbox2)
-        vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        vbox.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0,
-                 wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
-        vbox.Add(hbox)
-        self.SetSizer(vbox)
+        self.vbox = wx.BoxSizer(wx.VERTICAL)
+        self.hbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.vbox.Add(self.hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+        self.SetSizer(self.vbox)
         self.SetAutoLayout(True)
-        vbox.Fit(self)
-        vbox.SetSizeHints(self)
+        self.vbox.Fit(self)
+        self.vbox.SetSizeHints(self)
         self.Layout()
-        self.SetSize(400, 256)
+        self.SetSize(400, 264)
 
-    def create_actions(self):
+    def add_list(self, title, items, callback, first=False, last=False):
+        if first:
+            self.hbox.AddStretchSpacer()
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(wx.StaticText(self, label=title))
+        lst = wx.ListBox(self, size=(120, 156), style=wx.LB_EXTENDED)
+        lst.Bind(wx.EVT_LISTBOX_DCLICK, callback)
+        lst.Append(items)
+        # lst.InsertItems(items, 0)
+        vbox.Add(lst)
+        self.hbox.Add(vbox)
+        if last:
+            self.hbox.AddStretchSpacer()
+        return lst
+
+    def add_buttons(self, buttondefs):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.AddStretchSpacer()
+        buttons = []
+        for text, callback in buttondefs:
+            if callback is None:
+                vbox.Add(wx.StaticText(self, label=text))
+            else:
+                button = wx.Button(self, label=text)
+                button.Bind(wx.EVT_BUTTON, callback)
+                vbox.Add(button)
+                buttons.append(button)
+        vbox.AddStretchSpacer()
+        self.hbox.Add(vbox)
+        return buttons
+
+    def create_buttonbox(self):
+        self.vbox.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0,
+                      wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+
+    def create_actions(self, actionlist):
         """define what can be done in this screen
         """
         accel_list = []
-        self.actionlist = ((_('a_from'), 'Ctrl+L', self.activate_left),
-                           (_('b_tag'), 'Ctrl+Right', self.move_right),
-                           (_('a_to'), 'Ctrl+R', self.activate_right),
-                           (_('b_untag'), 'Ctrl+Left', self.move_left),
-                           (_('b_newtag'), 'Ctrl+N', self.add_trefw))
-        for name, shortcut, callback in self.actionlist:
+        for name, shortcut, callback in actionlist:
             act = wx.MenuItem(text=name)
-            act.Bind(wx.EVT_MENU, callback)
+            # act.Bind(wx.EVT_MENU, callback)
+            self.Bind(wx.EVT_MENU, callback, act)
             accel = wx.AcceleratorEntry(cmd=act.GetId())
             ok = accel.FromString(shortcut)
             if ok:
@@ -644,295 +637,235 @@ class KeywordsDialog(wx.Dialog):
         accel_table = wx.AcceleratorTable(accel_list)
         self.SetAcceleratorTable(accel_table)
 
-    def activate_left(self, event):
-        """activate "from" list
-        """
-        self._activate(self.fromlist)
-
-    def activate_right(self, event):
-        """activate "to" list
-        """
-        self._activate(self.tolist)
-
-    def _activate(self, win):
+    def activate(self, win):
         """set focus to list
         """
         item = win.GetSelections()  # currentItem()
         if not item:
             item = [0]  # win.item(0)
-        try:
-            win.SetSelection(item[0])  # ed(True)
-        except wx._core.wxAssertionError:
-            if win == self.fromlist:
-                self.activate_right()
-            else:
-                self.activate_left()
-            return
+        # try:
+        win.SetSelection(item[0])  # ed(True)
+        # except wx._core.wxAssertionError:
+        #     if win == self.fromlist:
+        #         self.activate_right()
+        #     else:
+        #         self.activate_left()
+        #     return
         win.SetFocus()
 
-    def move_right(self, event):
-        """trefwoord selecteren
-        """
-        self._moveitem(self.fromlist, self.tolist)
-
-    def move_left(self, event):
-        """trefwoord on-selecteren
-        """
-        self._moveitem(self.tolist, self.fromlist)
-
-    def _moveitem(self, from_, to):
+    def moveitem(self, fromlist, tolist):
         """trefwoord verplaatsen van de ene lijst naar de andere
         """
-        selected = from_.GetSelections()  # selectedItems()
+        selected = fromlist.GetSelections()  # selectedItems()
         if selected:
-            selection = [from_.GetString(i) for i in selected]
+            selection = [fromlist.GetString(i) for i in selected]
             for indx in reversed(selected):
-                from_.Delete(indx)
-                to.Insert(selection, to.GetCount())
+                fromlist.Delete(indx)
+                tolist.Insert(selection, tolist.GetCount())
 
-    def add_trefw(self, event):
-        """nieuwe trefwoorden opgeven en direct in de linkerlijst zetten
-        """
-        with wx.TextEntryDialog(self, caption=self.parent.base.app_title,
-                                message=_('t_newtag')) as dlg:
-            ok = dlg.ShowModal()
-            if ok == wx.ID_OK:
-                text = dlg.GetValue()
-                self.parent.base.opts["Keywords"].append(text)
-                self.tolist.Append(text)
+    def ask_for_tag(self, caption, message):
+        with wx.TextEntryDialog(self, message, caption) as dlg:
+            ok = dlg.ShowModal() == wx.ID_OK
+            text = dlg.GetValue() if ok else ''
+        return text, ok
 
-    def keys_help(self, event):
-        """Show possible actions and accelerator keys
-        """
-        with wx.Dialog(self) as dlg:
-            gbox = wx.FlexGridSizer(cols=2, vgap=2, hgap=25)
-            line = 0
-            for left, right in self.helptext:
-                gbox.Add(wx.StaticText(dlg, label=left), 0)
-                gbox.Add(wx.StaticText(dlg, label=right), 0)
-                line += 1
-            dlg.SetTitle(self.parent.base.app_title + " " + _("t_keys"))
-            vbox = wx.BoxSizer(wx.VERTICAL)
-            vbox.Add(gbox, 0, wx.ALL, 10)
-            done_button = wx.Button(dlg, label=_("b_done"))
-            dlg.SetAffirmativeId(done_button.GetId())
-            vbox.Add(done_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
-            # dlg.SetSize(400, 800)
-            dlg.SetSizer(vbox)
-            dlg.SetAutoLayout(True)
-            vbox.Fit(dlg)
-            vbox.SetSizeHints(dlg)
-            dlg.Layout()
-            dlg.ShowModal()
+    def add_tag_to_list(self, text, listwidget):
+        listwidget.Append(text)
 
-    def confirm(self):    # def accept(self):
+    def get_listvalues(self, listwidget):    # def accept(self):
         """geef de geselecteerde trefwoorden aan het hoofdprogramma
         """
-        return self.tolist.GetItems()
+        return listwidget.GetItems()
 
 
 class KeywordsManager(wx.Dialog):
     """Dialoog voor het wijzigen van trefwoorden
     """
-    def __init__(self, parent):
+    def __init__(self, master, parent, title, donetext):
+        self.master = master
         self.parent = parent
-        super().__init__(parent)
-        self.SetTitle(f'{self.parent.base.app_title} - {_("t_tagman")}')
+        super().__init__(parent, title=title)
         self.SetIcon(self.parent.nt_icon)
-        self.oldtag = wx.ComboBox(self)
-        self.newtag = wx.TextCtrl(self)
-        # self.newtag.setMinimumHeight(self.oldtag.height())
-        self.refresh_fields()
-        remove_button = wx.Button(self, label=_("b_remtag"))
-        remove_button.Bind(wx.EVT_BUTTON, self.remove_keyword)
-        add_button = wx.Button(self, label=_('b_addtag'))
-        add_button.Bind(wx.EVT_BUTTON, self.add_keyword)
-        done_button = wx.Button(self, label=_("b_done"))
-        self.SetAffirmativeId(done_button.GetId())  # done_button.Bind(wx.EVT_BUTTON, self.accept)
         vbox = wx.BoxSizer(wx.VERTICAL)
-        gbox = wx.FlexGridSizer(cols=3)
-        gbox.Add(wx.StaticText(self, label=_('l_oldval')), 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
-        gbox.Add(self.oldtag, 0, wx.ALL, 5)
-        gbox.Add(remove_button, 0, wx.ALL, 5)
-        gbox.Add(wx.StaticText(self, label=_('l_newval')), 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
-        gbox.Add(self.newtag, 0, wx.ALL, 5)
-        gbox.Add(add_button, 0, wx.ALL, 5)
-        vbox.Add(gbox, wx.ALL, 5)
+        self.gbox = wx.GridBagSizer()
+        vbox.Add(self.gbox, 1, wx.ALL, 5)
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        ## hbox.addWidget(wxStaticText('Changes are applied immediately'))
-        hbox.Add(wx.StaticText(self, label=_('t_applied')), 0, wx.ALL, 5)
-        vbox.Add(hbox, 0, wx.ALL, 5)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(done_button, 0)
-        vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+        button = wx.Button(self, label=donetext)
+        self.SetAffirmativeId(button.GetId())
+        hbox.Add(button)
+        vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 10)
         self.SetSizer(vbox)
         self.SetAutoLayout(True)
         vbox.Fit(self)
         vbox.SetSizeHints(self)
         self.Layout()
-        self.SetSize(400, -1)
+        self.SetSize(408, 200)
 
-    def refresh_fields(self):
+    def add_label(self, text, row, col):
+        if col == -1:
+            self.gbox.Add(wx.StaticText(self, label=text), (row, 0), (1, 3), wx.ALL, 5)
+            # self.gbox.Add(wx.StaticText(self, label=text), (row, 0), (1, 3), wx.HORIZONTAL, 5)
+        else:
+            self.gbox.Add(wx.StaticText(self, label=text), (row, col),
+                          flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL,
+                          border=5)
+
+    def add_combobox(self, row, col):
+        combo = wx.ComboBox(self)
+        self.gbox.Add(combo, (row, col), flag=wx.ALL, border=5)
+        # self.gbox.Add(combo, (row, col), flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL, border=5)
+        return combo
+
+    def add_lineinput(self, row, col):
+        editor = wx.TextCtrl(self, size=(180, -1))
+        # self.gbox.Add(editor, (row, col), flag=wx.ALL, border=5)
+        self.gbox.Add(editor, (row, col), flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL, border=5)
+        return editor
+
+    def add_button(self, text, callback, row, col):
+        button = wx.Button(self, label=text)
+        button.Bind(wx.EVT_BUTTON, callback)
+        self.gbox.Add(button, (row, col), flag=wx.ALL, border=5)
+
+    def reset_combobox(self, widget, items):
         """initialize items on screen
         """
-        self.oldtag.Clear()
-        self.oldtag.AppendItems(self.parent.base.opts['Keywords'])
-        self.oldtag.SetValue('')  # self.oldtag.clearEditText()
-        self.newtag.Clear()
+        widget.Clear()
+        widget.AppendItems(items)
+        widget.SetValue('')
 
-    def update_items(self, oldtext, newtext=''):
-        """refresh list of associated keywords
+    def reset_lineinput(self, widget):
+        """initialize items on screen
         """
-        tag, cookie = self.parent.tree.GetFirstChild(self.parent.root)
-        while tag.IsOk():
-            key, text, keywords = self.parent.tree.GetItemData(tag)
-            try:
-                ix = keywords.index(oldtext)
-                has_keyword = True
-            except ValueError:
-                has_keyword = False
-            if has_keyword:
-                if newtext:
-                    keywords[ix] = newtext
-                else:
-                    keywords.pop(ix)
-                self.parent.tree.SetItemData(tag, (key, text, keywords))
-            tag, cookie = self.parent.tree.GetNextChild(self.parent.root, cookie)
+        widget.Clear()
 
-    def remove_keyword(self, event):
-        """delete a keyword after selecting from the dropdown
-        """
-        oldtext = self.oldtag.GetValue()
-        msg = _('t_remtag').format(oldtext)
-        ask = wx.MessageBox(msg, self.parent.base.app_title, wx.YES_NO | wx.ICON_QUESTION, self)
-        if ask != wx.YES:
-            return
-        self.parent.base.opts['Keywords'].remove(oldtext)
-        self.update_items(oldtext)
-        self.refresh_fields()
+    def get_combobox_value(self, widget):
+        return widget.GetValue()
 
-    def add_keyword(self, event):
-        """Add a new keyword or change an existing one after selecting from the dropdown
-        """
-        oldtext = self.oldtag.GetValue()
-        newtext = self.newtag.GetValue()
-        if oldtext:
-            with wx.MessageDialog(self, _('t_repltag').format(oldtext, newtext),
-                                  style=wx.YES_NO | wx.CANCEL) as prompter:
-                prompter.SetExtendedMessage(_('t_repltag2'))
-                # prompter.setDefaultButton(wxMessageBox.Yes)
-                ## prompter.setEscapeButton(wdg.MessageBox.Cancel)
-                ask = prompter.ShowModal()
-            if ask == wx.ID_CANCEL:
-                return
-            ix = self.parent.base.opts['Keywords'].index(oldtext)
-            self.parent.base.opts['Keywords'][ix] = newtext
-            if ask == wx.ID_YES:
-                self.update_items(oldtext, newtext)
-            else:
-                self.update_items(oldtext)
-        else:
-            msg = _('t_addtag').format(newtext)
-            ask = wx.MessageBox(msg, self.parent.base.app_title, wx.YES_NO | wx.ICON_QUESTION, self)
-            if ask != wx.YES:
-                return
-            self.parent.base.opts['Keywords'].append(newtext)
-        self.refresh_fields()
+    def ask_question(self, title, text):
+        ask = wx.MessageBox(text, title, wx.YES_NO | wx.ICON_QUESTION, self)
+        return ask == wx.YES
 
-    def confirm(self):
-        "finish the dialog"
+    def get_lineinput_text(self, widget):
+        return widget.GetValue()
+
+    def ask_question_w_cancel(self, text, extratext):
+        with wx.MessageDialog(self, text, style=wx.YES_NO | wx.CANCEL) as prompter:
+            prompter.SetExtendedMessage(extratext)
+            ask = prompter.ShowModal()
+        return ask == wx.ID_YES, ask == wx.ID_CANCEL
 
 
 class GetTextDialog(wx.Dialog):
     """Dialog to get search string (with options)
     """
-    def __init__(self, parent, seltype, seltext, labeltext='', use_case=False):
+    def __init__(self, master, parent, title):
+        self.master = master
         self.parent = parent
         super().__init__(parent)
-        self.SetTitle(self.parent.base.app_title)
-        self.SetIcon(self.parent.nt_icon)
-
-        self.use_case = None
-        self.create_inputwin(seltext)
-
-        self.in_exclude = wx.CheckBox(self, label='exclude')
-        self.in_exclude.SetValue(False)
-        if seltype < 0:
-            self.in_exclude.SetValue(True)
-
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(wx.StaticText(self, label=labeltext), 0, wx.ALL, 5)
-        vbox.Add(hbox, 0, wx.ALL, 5)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.inputwin, 1, wx.ALL, 5)
-        vbox.Add(hbox, 1, wx.ALL, 5)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(self.in_exclude, 0, wx.ALL, 5)
-        if self.use_case:
-            hbox.Add(self.use_case, 0, wx.ALL, 5)
-            if use_case:
-                self.use_case.SetValue(True)
-        vbox.Add(hbox, 0, wx.ALL, 5)
-        vbox.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0,
-                 wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
-        self.SetSizer(vbox)
+        self.SetTitle(title)
+        self.SetIcon(parent.nt_icon)
+        self.vbox = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.vbox)
         self.SetAutoLayout(True)
-        vbox.Fit(self)
-        vbox.SetSizeHints(self)
+        self.vbox.Fit(self)
+        self.vbox.SetSizeHints(self)
         self.Layout()
 
-    def create_inputwin(self, seltext):
-        """define the widgets to use
-        """
-        self.inputwin = wx.TextCtrl(self, value=seltext)
-        self.use_case = wx.CheckBox(self, label='case sensitive')
-        self.use_case.SetValue(False)
+    def add_label(self, labeltext):
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(wx.StaticText(self, label=labeltext), 0, wx.ALL, 5)
+        self.vbox.Add(hbox, 0, wx.ALL, 5)
 
-    def confirm(self):
-        """confirm data changes and communicate to parent window
-        """
-        data = [self.in_exclude.GetValue(), self.inputwin.GetValue(), self.use_case.GetValue()]
-        return data
+    def add_lineinput(self, seltext):
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        inputwin = wx.TextCtrl(self, value=seltext)
+        hbox.Add(inputwin, 1, wx.ALL, 5)
+        self.vbox.Add(hbox, 1, wx.ALL, 5)
+        return inputwin
+
+    def add_checkbox_line(self, checkdefs):
+        result = []
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        for text, value in checkdefs:
+            check = wx.CheckBox(self, label=text)
+            check.SetValue(value)
+            hbox.Add(check, 0, wx.ALL, 5)
+            result.append(check)
+        self.vbox.Add(hbox, 0, wx.ALL, 5)
+        return result
+
+    def add_okcancel_buttonbox(self):
+        self.vbox.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0,
+                      wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+
+    def get_checkbox_value(self, widget):
+        return widget.GetValue()
+
+    def get_lineinput_value(self, widget):
+        return widget.GetValue()
 
 
-class GetItemDialog(GetTextDialog):
+class GetItemDialog(wx.Dialog):
     """Dialog to select a keyword from a list
     """
-    def create_inputwin(self, seldata):
-        """define the widgets to use
-        """
-        selection_list, selindex = seldata
-        self.inputwin = wx.ComboBox(self, choices=selection_list)
-        self.inputwin.SetSelection(selindex)
+    def __init__(self, master, parent, title):
+        self.master = master
+        self.parent = parent
+        super().__init__(parent)
+        self.SetTitle(title)
+        self.SetIcon(parent.nt_icon)
+        self.vbox = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.vbox)
+        self.SetAutoLayout(True)
+        self.vbox.Fit(self)
+        self.vbox.SetSizeHints(self)
+        self.Layout()
 
-    def confirm(self):
-        """confirm data changes and communicate to parent window
-        """
-        data = [self.in_exclude.GetValue(), self.inputwin.GetValue()]
-        return data
+    def add_label(self, labeltext):
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(wx.StaticText(self, label=labeltext), 0, wx.ALL, 5)
+        self.vbox.Add(hbox, 0, wx.ALL, 5)
+
+    def add_combobox(self, selection_list, selvalue):
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        inputwin = wx.ComboBox(self, choices=selection_list)
+        inputwin.SetSelection(selvalue)
+        hbox.Add(inputwin, 1, wx.ALL, 5)
+        self.vbox.Add(hbox, 1, wx.ALL, 5)
+        return inputwin
+
+    def add_checkbox(self, text, value):
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        check = wx.CheckBox(self, label=text)
+        check.SetValue(value)
+        hbox.Add(check, 0, wx.ALL, 5)
+        self.vbox.Add(hbox, 0, wx.ALL, 5)
+        return check
+
+    def add_okcancel_buttonbox(self):
+        self.vbox.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0,
+                      wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+
+    def get_checkbox_value(self, widget):
+        return widget.GetValue()
+
+    def get_combobox_value(self, widget):
+        return widget.GetValue()
 
 
 class GridDialog(wx.Dialog):
     """dialog showing texts in a grid layout
     """
-    def __init__(self, parent, data, title):
-        super().__init__(parent, title=title, size=(-1, 320), style=wx.DEFAULT_DIALOG_STYLE)
+    def __init__(self, parent, title, donetext):
+        super().__init__(parent, title=title, size=(-1, 320))
         # pnl = wx.Panel(self)
-        lines = data  # [x.split(' - ', 1) for x in _("help_text").split('\n')]
         sizer0 = wx.BoxSizer(wx.VERTICAL)
-        gbox = wx.FlexGridSizer(cols=2)  # , rows = len(lines))
-        line = 0
-        for left, right in lines:
-            gbox.Add(wx.StaticText(self, label=left))
-            gbox.Add(wx.StaticText(self, label=right))
-            line += 1
-        sizer0.Add(gbox, 0, wx.GROW | wx.ALL, 5)
-        # sizer1 = wx.BoxSizer(wx.VERTICAL)
-        # self.bOk = wx.Button(pnl, id=wx.ID_OK)
-        # sizer1.Add(self.bOk, 0, wx.EXPAND | wx.ALL, 2)
-        # sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL)
-        sizer0.Add(self.CreateButtonSizer(wx.OK))
+        self.gbox = wx.FlexGridSizer(cols=2, vgap=2, hgap=25)
+        sizer0.Add(self.gbox, 0, wx.GROW | wx.ALL, 5)
+        done_button = wx.Button(self, label=donetext)
+        self.SetAffirmativeId(done_button.GetId())
+        sizer0.Add(done_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
         # pnl.SetSizer(sizer0)
         # pnl.SetAutoLayout(True)
         # sizer0.Fit(pnl)
@@ -944,8 +877,13 @@ class GridDialog(wx.Dialog):
         # pnl.Layout()
         self.Layout()
 
-    def confirm(self):
-        "finish the dialog (no data to exchange)"
+    def add_label(self, row, col, text):
+        # row / col niet nodig bij FlexGridSizer
+        self.gbox.Add(wx.StaticText(self, label=text))
+
+    def send(self):
+        with self as dlg:
+            dlg.ShowModal()
 
 
 class TaskbarIcon(wx.adv.TaskBarIcon):

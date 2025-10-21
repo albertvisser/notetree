@@ -338,8 +338,9 @@ class MainWindow(qtw.QMainWindow):
 
     def show_dialog(self, cls, *args):
         "pop up a dialog and return if confirmed"
+        dlg = cls(self, *args)
         self.dialog_data = {}
-        ok = cls(self, *args).exec() == qtw.QDialog.DialogCode.Accepted
+        ok = dlg.gui.exec() == qtw.QDialog.DialogCode.Accepted
         data = self.dialog_data if ok else None
         return ok, data
 
@@ -356,178 +357,159 @@ class MainWindow(qtw.QMainWindow):
 class OptionsDialog(qtw.QDialog):
     """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
     """
-    def __init__(self, parent, text2valuedict):
+    def __init__(self, master, parent, title):
+        self.master = master
         self.parent = parent
         super().__init__(parent)
-        self.setWindowTitle(_('t_sett'))
-        vbox = qtw.QVBoxLayout()
-        self.controls = []
+        self.setWindowTitle(title)
+        self.vbox = qtw.QVBoxLayout()
+        self.gbox = qtw.QGridLayout()
+        self.vbox.addLayout(self.gbox)
+        self.setLayout(self.vbox)
 
-        gbox = qtw.QGridLayout()
-        col = 0
-        for labeltext, value in text2valuedict.items():
-            col += 1
-            lbl = qtw.QLabel(_(labeltext), self)
-            gbox.addWidget(lbl, col, 0)
-            chk = qtw.QCheckBox('', self)
-            chk.setChecked(value)
-            gbox.addWidget(chk, col, 1)
-            self.controls.append((labeltext, chk))
-        vbox.addLayout(gbox)
+    def add_checkbox_line_to_grid(self, row, labeltext, value):
+        lbl = qtw.QLabel(labeltext, self)
+        self.gbox.addWidget(lbl, row, 0)
+        chk = qtw.QCheckBox('', self)
+        chk.setChecked(value)
+        self.gbox.addWidget(chk, row, 1)
+        return chk
 
+    def add_buttonbox(self, okvalue, cancelvalue):
         hbox = qtw.QHBoxLayout()
         hbox.addStretch(1)
-        ok_button = qtw.QPushButton(_("b_apply"), self)
+        ok_button = qtw.QPushButton(okvalue, self)
         ok_button.clicked.connect(self.accept)
         hbox.addWidget(ok_button)
-        cancel_button = qtw.QPushButton(_("b_close"), self)
+        cancel_button = qtw.QPushButton(cancelvalue, self)
         cancel_button.clicked.connect(self.reject)
         hbox.addWidget(cancel_button)
         hbox.addStretch(1)
-        vbox.addLayout(hbox)
+        self.vbox.addLayout(hbox)
 
-        self.setLayout(vbox)
+    def get_checkbox_value(self, check):
+        return check.isChecked()
 
     def accept(self):
         """exchange data with caller (overridden event handler)
         """
-        self.parent.dialog_data = {text: control.isChecked() for text, control in self.controls}
+        self.parent.dialog_data = self.master.confirm()
         super().accept()
 
 
 class CheckDialog(qtw.QDialog):
     """Generieke dialoog om iets te melden en te vragen of deze melding in het vervolg
     nog getoond moet worden
+
+    Evetueel ook te implementeren d.m.v. QErrorMessage
     """
-    def __init__(self, parent, option, message):
+    def __init__(self, master, parent, title):
+        self.master = master
         self.parent = parent
         super().__init__(parent)
-        # self.option = option
-        self.setWindowTitle(self.parent.base.app_title)
-        self.setWindowIcon(self.parent.nt_icon)
-        txt = qtw.QLabel(message, self)
-        self.check = qtw.QCheckBox(_("hide_message"), self)
+        self.setWindowTitle(title)
+        self.setWindowIcon(parent.nt_icon)
+        self.vbox = qtw.QVBoxLayout()
+        self.setLayout(self.vbox)
+        # self.resize(574 + breedte, 480)
+
+    def add_label(self, labeltext):
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(qtw.QLabel(labeltext, self))
+        self.vbox.addLayout(hbox)
+
+    def add_checkbox(self, message):
+        hbox = qtw.QHBoxLayout()
+        check = qtw.QCheckBox(message, self)
+        hbox.addWidget(check)
+        self.vbox.addLayout(hbox)
+        return check
+
+    def add_ok_buttonbox(self):
+        hbox = qtw.QHBoxLayout()
+        hbox.addStretch(1)
         ok_button = qtw.QPushButton("&Ok", self)
         ok_button.clicked.connect(self.klaar)
-
-        vbox = qtw.QVBoxLayout()
-
-        hbox = qtw.QHBoxLayout()
-        hbox.addWidget(txt)
-        vbox.addLayout(hbox)
-
-        hbox = qtw.QHBoxLayout()
-        hbox.addWidget(self.check)
-        vbox.addLayout(hbox)
-
-        hbox = qtw.QHBoxLayout()
         hbox.addWidget(ok_button)
-        hbox.insertStretch(0, 1)
         hbox.addStretch(1)
-        vbox.addLayout(hbox)
+        self.vbox.addLayout(hbox)
 
-        self.setLayout(vbox)
-        ## self.resize(574 + breedte, 480)
+    def get_checkbox_value(self, check):
+        return check.isChecked()
 
     def klaar(self):
         "dialoog afsluiten"
-        self.parent.dialog_data = self.check.isChecked()
+        self.parent.dialog_data = self.master.confirm()
         super().accept()
 
 
 class KeywordsDialog(qtw.QDialog):
     """Dialoog voor het koppelen van trefwoorden
     """
-    def __init__(self, parent, helptext, keywords=None):
+    def __init__(self, master, parent, title):
         self.parent = parent
-        self.helptext = helptext
-        if keywords is None:
-            keywords = []
+        self.master = master
         super().__init__(parent)
-        self.setWindowTitle(f'{self.parent.base.app_title} - {_("w_tags")}')
+        self.setWindowTitle(title)
         self.setWindowIcon(self.parent.nt_icon)
         self.resize(400, 256)
-        # define widgets
-        self.fromlist = qtw.QListWidget(self)
-        self.fromlist.setSelectionMode(qtw.QAbstractItemView.SelectionMode.ExtendedSelection)
-        self.fromlist.itemDoubleClicked.connect(self.move_right)
-        text = qtw.QLabel(_("t_tags"), self)
-        fromto_button = qtw.QPushButton(_("b_tag"))
-        fromto_button.clicked.connect(self.move_right)
-        tofrom_button = qtw.QPushButton(_("b_untag"))
-        tofrom_button.clicked.connect(self.move_left)
-        addtrefw_button = qtw.QPushButton(_("b_newtag"))
-        addtrefw_button.clicked.connect(self.add_trefw)
-        help_button = qtw.QPushButton(_("m_keys"))
-        help_button.clicked.connect(self.keys_help)
-        self.tolist = qtw.QListWidget(self)
-        self.tolist.setSelectionMode(qtw.QAbstractItemView.SelectionMode.ExtendedSelection)
-        self.tolist.itemDoubleClicked.connect(self.move_left)
+        self.vbox = qtw.QVBoxLayout()
+        self.hbox = qtw.QHBoxLayout()
+        self.vbox.addLayout(self.hbox)
+        self.setLayout(self.vbox)
+
+    def add_list(self, title, items, callback, first=False, last=False):
+        if first:
+            self.hbox.addStretch()
+        vbox2 = qtw.QVBoxLayout()
+        vbox2.addWidget(qtw.QLabel(title, self))
+        lst = qtw.QListWidget(self)
+        lst.setSelectionMode(qtw.QAbstractItemView.SelectionMode.ExtendedSelection)
+        lst.itemDoubleClicked.connect(callback)
+        lst.addItems(items)
+        vbox2.addWidget(lst)
+        self.hbox.addLayout(vbox2)
+        if last:
+            self.hbox.addStretch()
+        return lst
+
+    def add_buttons(self, buttondefs):
+        vbox = qtw.QVBoxLayout()
+        vbox.addStretch()
+        buttons = []
+        for text, callback in buttondefs:
+            if callback is None:
+                vbox.addWidget(qtw.QLabel(text, self))
+            else:
+                button = qtw.QPushButton(text, self)
+                button.clicked.connect(callback)
+                buttons.append(button)
+                vbox.addWidget(button)
+        vbox.addStretch()
+        self.hbox.addLayout(vbox)
+        return buttons
+
+    def create_buttonbox(self):
+        hbox = qtw.QHBoxLayout()
+        hbox.addStretch()
         bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.StandardButton.Ok
                                     | qtw.QDialogButtonBox.StandardButton.Cancel)
         bbox.accepted.connect(self.accept)
         bbox.rejected.connect(self.reject)
-        self.create_actions()
-        # get data from parent
-        all_trefw = self.parent.base.opts['Keywords']
-        # self.data = self.parent.activeitem
-        curr_trefw = keywords  # self.data.data(1, core.Qt.ItemDataRole.UserRole)
-        self.tolist.addItems(curr_trefw)
-        self.fromlist.addItems([x for x in all_trefw if x not in curr_trefw])
-        # do layout and show
-        vbox = qtw.QVBoxLayout()
-        hbox = qtw.QHBoxLayout()
-        vbox2 = qtw.QVBoxLayout()
-        vbox2.addWidget(qtw.QLabel(_("t_left"), self))
-        vbox2.addWidget(self.fromlist)
-        hbox.addLayout(vbox2)
-        vbox2 = qtw.QVBoxLayout()
-        vbox2.addStretch()
-        vbox2.addWidget(text)
-        vbox2.addWidget(fromto_button)
-        vbox2.addWidget(tofrom_button)
-        vbox2.addSpacing(10)
-        vbox2.addWidget(addtrefw_button)
-        vbox2.addWidget(help_button)
-        vbox2.addStretch()
-        hbox.addLayout(vbox2)
-        vbox2 = qtw.QVBoxLayout()
-        vbox2.addWidget(qtw.QLabel(_("t_right"), self))
-        vbox2.addWidget(self.tolist)
-        hbox.addLayout(vbox2)
-        vbox.addLayout(hbox)
-        hbox = qtw.QHBoxLayout()
-        hbox.addStretch()
         hbox.addWidget(bbox)
         hbox.addStretch()
-        vbox.addLayout(hbox)
-        self.setLayout(vbox)
+        self.vbox.addLayout(hbox)
 
-    def create_actions(self):
+    def create_actions(self, actionlist):
         """define what can be done in this screen
         """
-        self.actionlist = ((_('a_from'), 'Ctrl+L', self.activate_left),
-                           (_('b_tag'), 'Ctrl+Right', self.move_right),
-                           (_('a_to'), 'Ctrl+R', self.activate_right),
-                           (_('b_untag'), 'Ctrl+Left', self.move_left),
-                           (_('b_newtag'), 'Ctrl+N', self.add_trefw))
-        for name, shortcut, callback in self.actionlist:
+        for name, shortcut, callback in actionlist:
             act = gui.QAction(name, self)
             act.setShortcut(shortcut)
             act.triggered.connect(callback)
             self.addAction(act)
 
-    def activate_left(self):
-        """activate "from" list
-        """
-        self._activate(self.fromlist)
-
-    def activate_right(self):
-        """activate "to" list
-        """
-        self._activate(self.tolist)
-
-    def _activate(self, win):
+    def activate(self, win):
         """set focus to list
         """
         item = win.currentItem()
@@ -536,247 +518,237 @@ class KeywordsDialog(qtw.QDialog):
         item.setSelected(True)
         win.setFocus(True)
 
-    def move_right(self):
-        """trefwoord selecteren
-        """
-        self._moveitem(self.fromlist, self.tolist)
-
-    def move_left(self):
-        """trefwoord on-selecteren
-        """
-        self._moveitem(self.tolist, self.fromlist)
-
-    def _moveitem(self, from_, to):
+    def moveitem(self, fromlist, tolist):
         """trefwoord verplaatsen van de ene lijst naar de andere
         """
-        selected = from_.selectedItems()
+        selected = fromlist.selectedItems()
         for item in selected:
-            from_.takeItem(from_.row(item))
-            to.addItem(item)
+            fromlist.takeItem(fromlist.row(item))
+            tolist.addItem(item)
 
-    def add_trefw(self):
-        """nieuwe trefwoorden opgeven en direct in de linkerlijst zetten
-        """
-        text, ok = qtw.QInputDialog.getText(self, self.parent.base.app_title, _('t_newtag'))
-        if ok:
-            self.parent.base.opts["Keywords"].append(text)
-            self.tolist.addItem(text)
+    def ask_for_tag(self, caption, message):
+        return qtw.QInputDialog.getText(self, caption, message)
 
-    def keys_help(self):
-        """Show possible actions and accelerator keys
-        """
-        dlg = qtw.QDialog(self)
-        gbox = qtw.QGridLayout()
-        line = 0
-        for left, right in self.helptext:
-            gbox.addWidget(qtw.QLabel(left, self), line, 0)
-            gbox.addWidget(qtw.QLabel(right, self), line, 1)
-            line += 1
-        dlg.setWindowTitle(self.parent.base.app_title + " " + _("t_keys"))  # ' keys'
-        dlg.setLayout(gbox)
-        dlg.exec()
+    def add_tag_to_list(self, text, listwidget):
+        listwidget.addItem(text)
+
+    def get_listvalues(self, widget):
+        return [widget.item(i).text() for i in range(len(widget))]
 
     def accept(self):
         """geef de geselecteerde trefwoorden aan het hoofdprogramma
         """
-        self.parent.dialog_data = [self.tolist.item(i).text() for i in range(len(self.tolist))]
+        self.parent.dialog_data = self.master.confirm()
         super().accept()
 
 
 class KeywordsManager(qtw.QDialog):
     """Dialoog voor het wijzigen van trefwoorden
     """
-    def __init__(self, parent):
+    def __init__(self, master, parent, title, donetext):
+        # donetext niet gebruikt vanwege gebruik standard button
+        self.master = master
         self.parent = parent
         super().__init__(parent)
-        self.setWindowTitle(f'{self.parent.base.app_title} - {_("t_tagman")}')
+        self.setWindowTitle(title)
         self.setWindowIcon(self.parent.nt_icon)
         self.resize(400, 0)
-        self.oldtag = qtw.QComboBox(self, editable=True)
-        self.newtag = qtw.QLineEdit(self)
-        self.newtag.setMinimumHeight(self.oldtag.height())
-        self.refresh_fields()
-        remove_button = qtw.QPushButton(_("b_remtag"), self)
-        remove_button.clicked.connect(self.remove_keyword)
-        add_button = qtw.QPushButton(_('b_addtag'), self)
-        add_button.clicked.connect(self.add_keyword)
-        done_button = qtw.QPushButton(_("b_done"), self)
-        done_button.clicked.connect(self.accept)
         vbox = qtw.QVBoxLayout()
-        gbox = qtw.QGridLayout()
-        gbox.addWidget(qtw.QLabel(_('l_oldval')), 0, 0)
-        gbox.addWidget(self.oldtag, 0, 1)
-        gbox.addWidget(remove_button, 0, 2)
-        gbox.addWidget(qtw.QLabel(_('l_newval')), 1, 0)
-        gbox.addWidget(self.newtag, 1, 1)
-        gbox.addWidget(add_button, 1, 2)
-        vbox.addLayout(gbox)
-        hbox = qtw.QHBoxLayout()
-        ## hbox.addWidget(qtw.QStaticText('Changes are applied immediately'))
-        hbox.addWidget(qtw.QLabel(_('t_applied')))
-        vbox.addLayout(hbox)
-        hbox = qtw.QHBoxLayout()
-        hbox.addStretch()
-        hbox.addWidget(done_button)
-        hbox.addStretch()
-        vbox.addLayout(hbox)
-        self.setLayout(vbox)
+        self.gbox = qtw.QGridLayout(self)
+        vbox.addLayout(self.gbox)
+        bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.StandardButton.Close)
+        vbox.addWidget(bbox)
+        self.setLayout(self.gbox)
 
-    def refresh_fields(self):
+    def add_label(self, text, row, col):
+        if col == -1:
+            self.gbox.addWidget(qtw.QLabel(text), row, 0, 1,
+                                self.gbox.columnCount())
+        else:
+            self.gbox.addWidget(qtw.QLabel(text), row, col)
+
+    def add_combobox(self, row, col):
+        combo = qtw.QComboBox(self, editable=True)
+        self.gbox.addWidget(combo, row, col)
+        return combo
+
+    def add_lineinput(self, row, col):
+        editor = qtw.QLineEdit(self)
+        self.gbox.addWidget(editor, row, col)
+        return editor
+
+    def add_button(self, text, callback, row, col):
+        button = qtw.QPushButton(text, self)
+        button.clicked.connect(callback)
+        self.gbox.addWidget(button, row, col)
+
+    def reset_combobox(self, widget, items):
         """initialize items on screen
         """
-        self.oldtag.clear()
-        self.oldtag.addItems(self.parent.base.opts['Keywords'])
-        self.oldtag.clearEditText()
-        self.newtag.clear()
+        widget.clear()
+        widget.addItems(items)
+        widget.clearEditText()
 
-    def update_items(self, oldtext, newtext=''):
-        """refresh list of associated keywords
+    def reset_lineinput(self, widget):
+        """initialize items on screen
         """
-        for itemindex in range(self.parent.root.childCount()):
-            item = self.parent.root.child(itemindex)
-            keywords = item.data(1, core.Qt.ItemDataRole.UserRole)
-            try:
-                keywordindex = keywords.index(oldtext)
-            except ValueError:
-                continue
-            if newtext:
-                keywords[keywordindex] = newtext
-            else:
-                keywords.pop(keywordindex)
-            item.setData(1, core.Qt.ItemDataRole.UserRole, keywords)
+        widget.clear()
 
-    def remove_keyword(self):
-        """delete a keyword after selecting from the dropdown
-        """
-        oldtext = self.oldtag.currentText()
-        msg = _('t_remtag').format(oldtext)
-        ask = qtw.QMessageBox.question(self, self.parent.base.app_title, msg)
-        if ask != qtw.QMessageBox.StandardButton.Yes:
-            return
-        self.parent.base.opts['Keywords'].remove(oldtext)
-        self.update_items(oldtext)
-        self.refresh_fields()
+    def get_combobox_value(self, widget):
+        return widget.currentText()
 
-    def add_keyword(self):
-        """Add a new keyword or change an existing one after selecting from the dropdown
-        """
-        oldtext = self.oldtag.currentText()
-        newtext = self.newtag.text()
-        if oldtext:
-            prompter = qtw.QMessageBox()
-            prompter.setText(_('t_repltag').format(oldtext, newtext))
-            prompter.setInformativeText(_('t_repltag2'))
-            prompter.setStandardButtons(qtw.QMessageBox.StandardButton.Yes
-                                        | qtw.QMessageBox.StandardButton.No
-                                        | qtw.QMessageBox.StandardButton.Cancel)
-            prompter.setDefaultButton(qtw.QMessageBox.StandardButton.Yes)
-            ## prompter.setEscapeButton(qtw.MessageBox.StandardButton.Cancel)
-            ask = prompter.exec()
-            if ask == qtw.QMessageBox.StandardButton.Cancel:
-                return
-            ix = self.parent.base.opts['Keywords'].index(oldtext)
-            self.parent.base.opts['Keywords'][ix] = newtext
-            if ask == qtw.QMessageBox.StandardButton.Yes:
-                self.update_items(oldtext, newtext)
-            else:
-                self.update_items(oldtext)
-        else:
-            msg = _('t_addtag').format(newtext)
-            ask = qtw.QMessageBox.question(self, self.parent.base.app_title, msg)
-            if ask != qtw.QMessageBox.StandardButton.Yes:
-                return
-            self.parent.base.opts['Keywords'].append(newtext)
-        self.refresh_fields()
+    def get_lineinput_text(self, widget):
+        return widget.text()
+
+    def ask_question(self, title, text):
+        ask = qtw.QMessageBox.question(self, title, text)
+        return ask == qtw.QMessageBox.StandardButton.Yes
+
+    def ask_question_w_cancel(self, text, extratext):
+        prompter = qtw.QMessageBox()
+        prompter.setText(text)
+        prompter.setInformativeText(extratext)
+        prompter.setStandardButtons(qtw.QMessageBox.StandardButton.Yes
+                                    | qtw.QMessageBox.StandardButton.No
+                                    | qtw.QMessageBox.StandardButton.Cancel)
+        prompter.setDefaultButton(qtw.QMessageBox.StandardButton.Yes)
+        prompter.exec()
+        ask = prompter.clickedButton()
+        return ask == qtw.QMessageBox.StandardButton.Yes, ask == qtw.QMessageBox.StandardButton.Cancel
 
 
 class GetTextDialog(qtw.QDialog):
     """Dialog to get search string (with options)
     """
-    def __init__(self, parent, seltype, seltext, labeltext='', use_case=False):
+    def __init__(self, master, parent, title):
+        self.master = master
         self.parent = parent
         super().__init__(parent)
-        self.setWindowTitle(self.parent.base.app_title)
-        self.setWindowIcon(self.parent.nt_icon)
+        self.setWindowTitle(title)
+        self.setWindowIcon(parent.nt_icon)
+        self.vbox = qtw.QVBoxLayout()
+        self.setLayout(self.vbox)
 
-        self.use_case = None
-        self.create_inputwin(seltext)
-
-        self.in_exclude = qtw.QCheckBox('exclude', self)
-        self.in_exclude.setChecked(False)
-        if seltype < 0:
-            self.in_exclude.setChecked(True)
-
-        vbox = qtw.QVBoxLayout()
+    def add_label(self, labeltext):
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel(labeltext, self))
-        vbox.addLayout(hbox)
+        self.vbox.addLayout(hbox)
+
+    def add_lineinput(self, seltext):
         hbox = qtw.QHBoxLayout()
-        hbox.addWidget(self.inputwin)
-        vbox.addLayout(hbox)
+        text = qtw.QLineEdit(self)
+        text.setText(seltext)
+        hbox.addWidget(text)
+        self.vbox.addLayout(hbox)
+        return text
+
+    def add_checkbox_line(self, checkdefs):
+        result = []
         hbox = qtw.QHBoxLayout()
-        hbox.addWidget(self.in_exclude)
-        if self.use_case:
-            hbox.addWidget(self.use_case)
-            if use_case:
-                self.use_case.setChecked(True)
-        vbox.addLayout(hbox)
+        for caption, value in checkdefs:
+            check = qtw.QCheckBox(caption, self)
+            check.setChecked(value)
+            hbox.addWidget(check)
+            result.append(check)
+        self.vbox.addLayout(hbox)
+        return result
+
+    def add_okcancel_buttonbox(self):
         bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.StandardButton.Ok
                                     | qtw.QDialogButtonBox.StandardButton.Cancel)
         bbox.accepted.connect(self.accept)
         bbox.rejected.connect(self.reject)
-        vbox.addWidget(bbox)
-        self.setLayout(vbox)
+        self.vbox.addWidget(bbox)
 
-    def create_inputwin(self, seltext):
-        """define the widgets to use
-        """
-        self.inputwin = qtw.QLineEdit(self)
-        self.inputwin.setText(seltext)
-        self.use_case = qtw.QCheckBox('case_sensitive', self)
-        self.use_case.setChecked(False)
+    def get_checkbox_value(self, widget):
+        return widget.isChecked()
 
-    def get_dialog_data(self):
-        """get the changed input
-        """
-        seltext = self.inputwin.text()
-        self.parent.dialog_data = [self.in_exclude.isChecked(), seltext, self.use_case.isChecked()]
+    def get_lineinput_value(self, widget):
+        return widget.text()
 
     def accept(self):
         """confirm data changes and communicate to parent window
         """
-        self.get_dialog_data()
+        self.parent.dialog_data = self.master.confirm()
         super().accept()
 
 
-class GetItemDialog(GetTextDialog):
+class GetItemDialog(qtw.QDialog):
     """Dialog to select a keyword from a list
     """
-    def create_inputwin(self, seldata):
+    def __init__(self, master, parent, title):
+        self.master = master
+        self.parent = parent
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.setWindowIcon(parent.nt_icon)
+        self.vbox = qtw.QVBoxLayout()
+        self.setLayout(self.vbox)
+
+    def add_label(self, labeltext):
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(qtw.QLabel(labeltext, self))
+        self.vbox.addLayout(hbox)
+
+    def add_combobox(self, selection_list, selvalue):
         """define the widgets to use
         """
-        selection_list, selindex = seldata
-        self.inputwin = qtw.QComboBox(self)
-        self.inputwin.addItems(selection_list)
-        self.inputwin.setCurrentIndex(selindex)
+        hbox = qtw.QHBoxLayout()
+        combo = qtw.QComboBox(self)
+        combo.addItems(selection_list)
+        combo.setCurrentIndex(selvalue)
+        hbox.addWidget(combo)
+        self.vbox.addLayout(hbox)
+        return combo
 
-    def get_dialog_data(self):
-        """get the changed input
+    def add_checkbox(self, caption, value):
+        hbox = qtw.QHBoxLayout()
+        check = qtw.QCheckBox(caption, self)
+        check.setChecked(value)
+        hbox.addWidget(check)
+        self.vbox.addLayout(hbox)
+        return check
+
+    def add_okcancel_buttonbox(self):
+        bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.StandardButton.Ok
+                                    | qtw.QDialogButtonBox.StandardButton.Cancel)
+        bbox.accepted.connect(self.accept)
+        bbox.rejected.connect(self.reject)
+        self.vbox.addWidget(bbox)
+
+    def get_checkbox_value(self, widget):
+        return widget.isChecked()
+
+    def get_combobox_value(self, widget):
+        return widget.currentText()
+
+    def accept(self):
+        """confirm data changes and communicate to parent window
         """
-        seltext = self.inputwin.currentText()
-        self.parent.dialog_data = [self.in_exclude.isChecked(), seltext]
+        self.parent.dialog_data = self.master.confirm()
+        super().accept()
 
 
 class GridDialog(qtw.QDialog):
     """dialog showing texts in a grid layout
     """
-    def __init__(self, parent, data, title=''):
+    def __init__(self, parent, title, donetext):
         super().__init__(parent)
-        gbox = qtw.QGridLayout()
-        line = 0
-        for left, right in data:
-            gbox.addWidget(qtw.QLabel(left, self), line, 0)
-            gbox.addWidget(qtw.QLabel(right, self), line, 1)
-            line += 1
         self.setWindowTitle(title)
-        self.setLayout(gbox)
+        vbox = qtw.QVBoxLayout()
+        self.gbox = qtw.QGridLayout()
+        vbox.addLayout(self.gbox)
+        hbox = qtw.QHBoxLayout()
+        hbox.addStretch()
+        button = qtw.QPushButton(donetext, self)
+        button.clicked.connect(self.reject)
+        hbox.addWidget(button)
+        hbox.addStretch()
+        vbox.addLayout(hbox)
+        self.setLayout(vbox)
+
+    def add_label(self, row, col, text):
+        self.gbox.addWidget(qtw.QLabel(text, self), row, col)
+
+    def send(self):
+        self.exec()

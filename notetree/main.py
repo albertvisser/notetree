@@ -7,7 +7,8 @@ import shutil
 import contextlib
 from datetime import datetime
 
-from notetree import dml, gui
+from notetree import dml
+from notetree import gui
 
 app_title = "NoteTree"
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -47,7 +48,7 @@ selectionmodes = ("m_selall", "m_seltag", "m_seltxt")
 # Main screen
 #
 class NoteTree:
-    """general methods
+    """Main application class
     """
     def __init__(self, filename):
         self.app_title = app_title
@@ -140,15 +141,14 @@ class NoteTree:
     def manage_keywords(self, *args):
         """Open a dialog where keywords can be renamed, removed or added
         """
-        self.gui.show_dialog(gui.KeywordsManager)
+        self.gui.show_dialog(DefineTags)
 
     def hide_me(self, *args):
         """Minimize application to an icon in the system tray
         """
         if self.opts["AskBeforeHide"]:
-            ok, value = self.gui.show_dialog(gui.CheckDialog, "AskBeforeHide", _("sleep_message"))
-            if ok:
-                self.opts["AskBeforeHide"] = value
+            # als je in de dialoog het vinkje aanzet moet je het voor de optie juist uitzetten v.v.
+            self.opts["AskBeforeHide"] = not self.gui.show_dialog(SetCheck, _("sleep_message"))[1]
         self.gui.sleep()
 
     def choose_language(self, *args):
@@ -168,7 +168,7 @@ class NoteTree:
         "manage options for messages"
         data = {self.sett2text[x]: y for x, y in self.opts.items() if x in self.sett2text}
         text2sett = {y: x for x, y in self.sett2text.items()}
-        ok, dialog_data = self.gui.show_dialog(gui.OptionsDialog, data)
+        ok, dialog_data = self.gui.show_dialog(SetOptions, data)
         if ok:
             for sett_text, settvalue in dialog_data.items():
                 self.opts[text2sett[sett_text]] = settvalue
@@ -213,7 +213,7 @@ class NoteTree:
         if item is None or keywords is None:
             return
         helptext = [x.split(' - ', 1) for x in _("tag_help").split('\n')]
-        ok, new_keywords = self.gui.show_dialog(gui.KeywordsDialog, helptext, keywords)
+        ok, new_keywords = self.gui.show_dialog(AssignTags, helptext, keywords)
         if ok:
             self.gui.set_item_keywords(item, new_keywords)
 
@@ -261,10 +261,12 @@ class NoteTree:
                     selindex = selection_list.index(seltext)
                 except ValueError:  # kan niet?bij seltype (-)1 is dit altijd een bestaand trefwoord
                     selindex = -1
-                seldata = (selection_list, selindex)
+                # seldata = (selection_list, selindex)
             else:
-                seldata = (selection_list, -1)  # ''
-            ok, data = self.gui.show_dialog(gui.GetItemDialog, seltype, seldata, _("i_seltag"))
+                selindex = -1
+                # seldata = (selection_list, -1)  # ''
+            ok, data = self.gui.show_dialog(GetItem, seltype, selection_list, selindex,
+                                            _("i_seltag"))
         else:
             self.gui.showmsg('No keywords defined yet')
             ok = False
@@ -287,11 +289,10 @@ class NoteTree:
             seltype, seltext, use_case = self.opts['Selection']
         except ValueError:
             seltype, seltext = self.opts['Selection']
-            use_case = None
+            use_case = False
         if abs(seltype) != 2:
             seltext = ''
-        ok, data = self.gui.show_dialog(gui.GetTextDialog, seltype, seltext, _("i_seltxt"),
-                                        use_case)
+        ok, data = self.gui.show_dialog(GetText, seltype, seltext, _("i_seltxt"), use_case)
         if ok:
             exclude, text, use_case = data
             if exclude:
@@ -313,7 +314,7 @@ class NoteTree:
         """show keyboard shortcuts
         """
         data = [x.split(' - ', 1) for x in _("help_text").split('\n')]
-        self.gui.show_dialog(gui.GridDialog, data, self.app_title + " " + _("t_keys"))
+        self.gui.show_dialog(KeyHelp, self.app_title + " " + _("t_keys"), data)
 
     def open(self, first_time=False):  # , version):
         """initialize and read data file
@@ -443,9 +444,9 @@ class NoteTree:
         self.gui.open_editor()
         for actiontext in selectionmodes:
             if _(actiontext) == seltext:
-                self.gui.enable_selaction(actiontext)
+                self.gui.enable_selaction(_(actiontext))
             else:
-                self.gui.disable_selaction(actiontext)
+                self.gui.disable_selaction(_(actiontext))
 
     def set_option(self, seltype, actiontext):
         """bij cancelen selectiedialoog de juiste menukeuze weer aan/uitzetten
@@ -478,3 +479,226 @@ class NoteTree:
             if not use_case and seldata.upper() not in text.upper():
                 return True
         return False
+
+
+class SetOptions:
+    """Toon en wijzig desgewenst instellingen
+    """
+    def __init__(self, parent, text2valuedict):
+        self.parent = parent
+        self.gui = gui.OptionsDialog(self, parent, title=_('t_sett'))
+        self.controls = []
+        row = 0
+        for labeltext, value in text2valuedict.items():
+            row += 1
+            check = self.gui.add_checkbox_line_to_grid(row, _(f'{labeltext}'), value)
+            self.controls.append((labeltext, check))
+        self.gui.add_buttonbox(okvalue=_('b_apply'), cancelvalue=_('b_close'))
+
+    def confirm(self):
+        """exchange data with caller
+        """
+        return {text: self.gui.get_checkbox_value(control) for text, control in self.controls}
+
+
+class SetCheck:
+    """Geef een melding en vraag of deze gegeven moet blijven worden
+    """
+    def __init__(self, parent, message):
+        self.parent = parent
+        self.gui = gui.CheckDialog(self, parent, title=parent.base.app_title)
+        self.gui.add_label(message)
+        self.check = self.gui.add_checkbox(_("hide_message"))
+        self.gui.add_ok_buttonbox()
+
+    def confirm(self):
+        "get the input before closing the dialog"
+        return self.gui.get_checkbox_value(self.check)
+
+
+class AssignTags:
+    """Toon een dialoog voor het koppelen van trefwoorden
+    """
+    def __init__(self, parent, helptext, keywords=None):
+        self.parent = parent
+        self.helptext = helptext
+        if keywords is None:
+            keywords = []
+        all_trefw = self.parent.base.opts['Keywords']
+        curr_trefw = keywords
+
+        self.gui = gui.KeywordsDialog(self, parent, f'{self.parent.base.app_title} - {_("w_tags")}')
+        unassigned_items = [x for x in all_trefw if x not in curr_trefw]
+        self.fromlist = self.gui.add_list(_("t_left"), unassigned_items, self.move_right, first=True)
+        self.buttons = self.gui.add_buttons([(_("t_tags"), None),
+                                             (_("b_tag"), self.move_right),
+                                             (_("b_untag"), self.move_left),
+                                             ('', None),
+                                             (_("b_newtag"), self.add_trefw),
+                                             (_("m_keys"), self.keys_help)])
+        self.tolist = self.gui.add_list(_('t_right'), curr_trefw, self.move_left, last=True)
+        self.gui.create_buttonbox()
+        self.gui.create_actions([(_('a_from'), 'Ctrl+L', self.activate_left),
+                                 (_('b_tag'), 'Ctrl+Right', self.move_right),
+                                 (_('a_to'), 'Ctrl+R', self.activate_right),
+                                 (_('b_untag'), 'Ctrl+Left', self.move_left),
+                                 (_('b_newtag'), 'Ctrl+N', self.add_trefw)])
+
+    def activate_left(self, *args):
+        """activate "from" list
+        """
+        self.gui.activate(self.fromlist)
+
+    def activate_right(self, *args):
+        """activate "to" list
+        """
+        self.gui.activate(self.tolist)
+
+    def move_right(self, *args):
+        """trefwoord selecteren
+        """
+        self.gui.moveitem(self.fromlist, self.tolist)
+
+    def move_left(self, *args):
+        """trefwoord on-selecteren
+        """
+        self.gui.moveitem(self.tolist, self.fromlist)
+
+    def add_trefw(self, *args):
+        """nieuwe trefwoorden opgeven en direct in de linkerlijst zetten
+        """
+        text, ok = self.gui.ask_for_tag(caption=self.parent.base.app_title,
+                                        message=_('t_newtag'))
+        if ok:
+            self.gui.add_tag_to_list(text, self.tolist)
+            self.parent.base.opts["Keywords"].append(text)
+
+    def keys_help(self, *args):
+        """Show possible actions and accelerator keys
+        """
+        helpdialog = gui.GridDialog(self.gui, f"{self.parent.base.app_title} {_("t_keys")}",
+                                    _('b_done'))
+        row = 0
+        for left, right in self.helptext:
+            helpdialog.add_label(row, 0, left)
+            helpdialog.add_label(row, 1, right)
+            row += 1
+        helpdialog.send()
+
+    def confirm(self):
+        "get the input before closing the dialog"
+        return self.gui.get_listvalues(self.tolist)
+
+
+class DefineTags:
+    """Toon een dialoog voor het administreren van trefwoorden
+    """
+    def __init__(self, parent):
+        self.parent = parent
+        self.gui = gui.KeywordsManager(
+            self, parent, f'{self.parent.base.app_title} - {_("t_tagman")}', _('b_done'))
+        self.gui.add_label(_('l_oldval'), 0, 0)
+        self.oldtags = self.gui.add_combobox(0, 1)
+        self.gui.add_button(_('b_remtag'), self.remove_keyword, 0, 2)
+        self.gui.add_label(_('l_newval'), 1, 0)
+        self.newtag = self.gui.add_lineinput(1, 1)
+        self.gui.add_button(_('b_addtag'), self.add_keyword, 1, 2)
+        self.gui.add_label(_('t_applied'), 2, -1)
+        self.refresh_fields()
+
+    def refresh_fields(self):
+        "refill the lists after making changes"
+        self.gui.reset_combobox(self.oldtags, self.parent.base.opts['Keywords'])
+        self.gui.reset_lineinput(self.newtag)
+
+    def remove_keyword(self):
+        """delete a keyword after selecting from the dropdown
+        """
+        oldtext = self.gui.get_combobox_value(self.oldtags)
+        msg = _('t_remtag').format(oldtext)
+        if self.gui.ask_question(self.parent.base.app_title, msg):
+            self.parent.base.opts['Keywords'].remove(oldtext)
+            self.update_items(oldtext)
+            self.refresh_fields()
+
+    def add_keyword(self):
+        """Add a new keyword or change an existing one after selecting from the dropdown
+        """
+        oldtext = self.gui.get_combobox_value(self.oldtags)
+        newtext = self.gui.get_lineinput_text(self.newtag)
+        if oldtext:
+            ok, cancel = self.gui.ask_question_w_cancel(_('t_repltag').format(oldtext, newtext),
+                                                        _('t_repltag2'))
+            if cancel:
+                return
+            ix = self.parent.base.opts['Keywords'].index(oldtext)
+            self.parent.base.opts['Keywords'][ix] = newtext
+            if ok:
+                self.update_items(oldtext, newtext)
+            else:
+                self.update_items(oldtext)
+        else:
+            msg = _('t_addtag').format(newtext)
+            if self.gui.ask_question(self.parent.base.app_title, msg):
+                self.parent.base.opts['Keywords'].append(newtext)
+        self.refresh_fields()
+
+    def update_items(self, oldtext, newtext=''):
+        """refresh lists of associated keywords on deletion/replacement
+        """
+        for item in self.parent.get_treeitems()[0]:
+            tags = self.parent.get_item_keywords(item)
+            if oldtext in tags:
+                tags.remove(oldtext)
+                if newtext:
+                    tags.append(newtext)
+            self.parent.set_item_keywords(item, tags)
+
+
+class GetText:
+    """Builds a dialog to get search string
+    """
+    def __init__(self, parent, seltype, seltext, labeltext="", use_case=False):
+        self.parent = parent
+        self.gui = gui.GetTextDialog(self, parent, parent.base.app_title)
+        self.gui.add_label(labeltext)
+        self.text = self.gui.add_lineinput(seltext)
+        self.in_exclude, self.use_case = self.gui.add_checkbox_line([('exclude', seltype < 0),
+                                                                     ('case sensitive', use_case)])
+        self.gui.add_okcancel_buttonbox()
+
+    def confirm(self):
+        "get the input before closing the dialog"
+        return [self.gui.get_checkbox_value(self.in_exclude),
+                self.gui.get_lineinput_value(self.text),
+                self.gui.get_checkbox_value(self.use_case)]
+
+
+class GetItem:
+    """Builds a dialog to get tag to search for (by selection)
+    """
+    def __init__(self, parent, seltype, selection_list, seltext, labeltext=""):
+        self.parent = parent
+        self.gui = gui.GetItemDialog(self, parent, parent.base.app_title)
+        self.gui.add_label(labeltext)
+        self.text = self.gui.add_combobox(selection_list, seltext)
+        #        self.parent.base.opts['Keywords'], seltext)
+        self.in_exclude = self.gui.add_checkbox('exclude', seltype < 0)
+        self.gui.add_okcancel_buttonbox()
+
+    def confirm(self):
+        "get the input before closing the dialog"
+        return [self.gui.get_checkbox_value(self.in_exclude),
+                self.gui.get_combobox_value(self.text)]
+
+
+class KeyHelp:
+    """Help dialog for keyboard shortcuts
+    """
+    def __init__(self, parent, title, data):
+        self.gui = gui.GridDialog(parent, title, _('b_done'))
+        line = 0
+        for left, right in data:
+            self.gui.add_label(line, 0, left)
+            self.gui.add_label(line, 1, right)
+            line += 1
