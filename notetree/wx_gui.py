@@ -195,6 +195,8 @@ class MainWindow(wx.Frame):
             self.selactions[self.seltypes[abs(self.base.opts['Selection'][0])]].Check(True)
 
     def create_menuitem(self, label, menu_label, submenu, primary, info, handler):
+        """Build an entry for a menu
+        """
         if label != "":
             orig_label = label
             if primary:
@@ -504,6 +506,8 @@ class OptionsDialog(wx.Dialog):
         self.Layout()
 
     def add_checkbox_line_to_grid(self, row, labeltext, value):
+        """create a line to turn an option on/off
+        """
         # FlexGridsizer heeft row / col niet nodig
         self.gsizer.Add(wx.StaticText(self, label=labeltext), 1, wx.ALL, 5)
         chk = wx.CheckBox(self)
@@ -511,6 +515,8 @@ class OptionsDialog(wx.Dialog):
         self.gsizer.Add(chk, 1, wx.ALL, 5)
 
     def add_buttonbox(self, okvalue, cancelvalue):
+        """create a button strip with handlers
+        """
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         btn = wx.Button(self, id=wx.ID_OK, label=okvalue)
         hsizer.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
@@ -522,7 +528,8 @@ class OptionsDialog(wx.Dialog):
         self.vsizer.Add(hsizer, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
 
     def get_checkbox_value(self, check):
-        "dialoog afsluiten"
+        """return the value of a checkbox
+        """
         return check.GetValue()
 
 
@@ -551,9 +558,13 @@ class CheckDialog(wx.Dialog):
         self.Layout()
 
     def add_label(self, labeltext):
+        """create a text on the screen
+        """
         self.vsizer.Add(wx.StaticText(self, label=labeltext), 1, wx.ALL, 5)
 
     def add_checkbox(self, caption):
+        """create a checkbox
+        """
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         check = wx.CheckBox(self, label=caption)
         hsizer.Add(check, 0, wx.EXPAND)
@@ -561,10 +572,13 @@ class CheckDialog(wx.Dialog):
         return check
 
     def add_ok_buttonbox(self):
+        """create a button strip with handlers
+        """
         self.vsizer.Add(self.CreateButtonSizer(wx.OK), 0, wx.ALIGN_CENTER_HORIZONTAL)
 
     def get_checkbox_value(self, check):
-        "dialoog afsluiten"
+        """return the value of a checkbox
+        """
         return check.GetValue()
 
 
@@ -588,6 +602,8 @@ class KeywordsDialog(wx.Dialog):
         self.SetSize(400, 264)
 
     def add_list(self, title, items, callback, first=False, last=False):
+        """create a column with a listbox in it
+        """
         if first:
             self.hbox.AddStretchSpacer()
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -603,6 +619,8 @@ class KeywordsDialog(wx.Dialog):
         return lst
 
     def add_buttons(self, buttondefs):
+        """create a column of buttons
+        """
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.AddStretchSpacer()
         buttons = []
@@ -619,11 +637,13 @@ class KeywordsDialog(wx.Dialog):
         return buttons
 
     def create_buttonbox(self):
+        """add a strip of buttons with handlers
+        """
         self.vbox.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0,
                       wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
 
     def create_actions(self, actionlist):
-        """define what can be done in this screen
+        """define keyboard shortcuts for what can be done in this screen
         """
         accel_list = []
         for name, shortcut, callback in actionlist:
@@ -664,16 +684,20 @@ class KeywordsDialog(wx.Dialog):
                 tolist.Insert(selection, tolist.GetCount())
 
     def ask_for_tag(self, caption, message):
+        """return the text in the input box
+        """
         with wx.TextEntryDialog(self, message, caption) as dlg:
             ok = dlg.ShowModal() == wx.ID_OK
             text = dlg.GetValue() if ok else ''
         return text, ok
 
     def add_tag_to_list(self, text, listwidget):
+        """add a textvalue to a list
+        """
         listwidget.Append(text)
 
     def get_listvalues(self, listwidget):    # def accept(self):
-        """geef de geselecteerde trefwoorden aan het hoofdprogramma
+        """return the selected vaues in a list
         """
         return listwidget.GetItems()
 
@@ -702,6 +726,8 @@ class KeywordsManager(wx.Dialog):
         self.SetSize(408, 200)
 
     def add_label(self, text, row, col):
+        """add a text on the screen
+        """
         if col == -1:
             self.gbox.Add(wx.StaticText(self, label=text), (row, 0), (1, 3), wx.ALL, 5)
             # self.gbox.Add(wx.StaticText(self, label=text), (row, 0), (1, 3), wx.HORIZONTAL, 5)
@@ -711,45 +737,59 @@ class KeywordsManager(wx.Dialog):
                           border=5)
 
     def add_combobox(self, row, col):
+        """add a selector
+        """
         combo = wx.ComboBox(self)
         self.gbox.Add(combo, (row, col), flag=wx.ALL, border=5)
         # self.gbox.Add(combo, (row, col), flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL, border=5)
         return combo
 
     def add_lineinput(self, row, col):
+        """add a text input field
+        """
         editor = wx.TextCtrl(self, size=(180, -1))
         # self.gbox.Add(editor, (row, col), flag=wx.ALL, border=5)
         self.gbox.Add(editor, (row, col), flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL, border=5)
         return editor
 
     def add_button(self, text, callback, row, col):
+        """add a button with a handler
+        """
         button = wx.Button(self, label=text)
         button.Bind(wx.EVT_BUTTON, callback)
         self.gbox.Add(button, (row, col), flag=wx.ALL, border=5)
 
     def reset_combobox(self, widget, items):
-        """initialize items on screen
+        """clear and repopulate a combobox
         """
         widget.Clear()
         widget.AppendItems(items)
         widget.SetValue('')
 
     def reset_lineinput(self, widget):
-        """initialize items on screen
+        """clear the text field
         """
         widget.Clear()
 
     def get_combobox_value(self, widget):
+        """return the selected value in a combobox
+        """
+        return widget.GetValue()
+
+    def get_lineinput_text(self, widget):
+        """return the value in the text field
+        """
         return widget.GetValue()
 
     def ask_question(self, title, text):
+        """return the answer to a yes/no question
+        """
         ask = wx.MessageBox(text, title, wx.YES_NO | wx.ICON_QUESTION, self)
         return ask == wx.YES
 
-    def get_lineinput_text(self, widget):
-        return widget.GetValue()
-
     def ask_question_w_cancel(self, text, extratext):
+        """return the answer to a yes/no question, or if the user canceled answering
+        """
         with wx.MessageDialog(self, text, style=wx.YES_NO | wx.CANCEL) as prompter:
             prompter.SetExtendedMessage(extratext)
             ask = prompter.ShowModal()
@@ -773,11 +813,15 @@ class GetTextDialog(wx.Dialog):
         self.Layout()
 
     def add_label(self, labeltext):
+        """add some text on the screen
+        """
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(wx.StaticText(self, label=labeltext), 0, wx.ALL, 5)
         self.vbox.Add(hbox, 0, wx.ALL, 5)
 
     def add_lineinput(self, seltext):
+        """add a ext input field
+        """
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         inputwin = wx.TextCtrl(self, value=seltext)
         hbox.Add(inputwin, 1, wx.ALL, 5)
@@ -785,6 +829,8 @@ class GetTextDialog(wx.Dialog):
         return inputwin
 
     def add_checkbox_line(self, checkdefs):
+        """add a line with checkboxes
+        """
         result = []
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         for text, value in checkdefs:
@@ -796,13 +842,19 @@ class GetTextDialog(wx.Dialog):
         return result
 
     def add_okcancel_buttonbox(self):
+        """add a button strip with handlers
+        """
         self.vbox.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0,
                       wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
 
     def get_checkbox_value(self, widget):
+        """return the value of a checkbox
+        """
         return widget.GetValue()
 
     def get_lineinput_value(self, widget):
+        """return the value of the text input field
+        """
         return widget.GetValue()
 
 
@@ -823,11 +875,15 @@ class GetItemDialog(wx.Dialog):
         self.Layout()
 
     def add_label(self, labeltext):
+        """add some text on the screen
+        """
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(wx.StaticText(self, label=labeltext), 0, wx.ALL, 5)
         self.vbox.Add(hbox, 0, wx.ALL, 5)
 
     def add_combobox(self, selection_list, selvalue):
+        """add a selector
+        """
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         inputwin = wx.ComboBox(self, choices=selection_list)
         inputwin.SetSelection(selvalue)
@@ -836,6 +892,8 @@ class GetItemDialog(wx.Dialog):
         return inputwin
 
     def add_checkbox(self, text, value):
+        """add a checkbox to the screen
+        """
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         check = wx.CheckBox(self, label=text)
         check.SetValue(value)
@@ -844,13 +902,19 @@ class GetItemDialog(wx.Dialog):
         return check
 
     def add_okcancel_buttonbox(self):
+        """add a button strip with handlers
+        """
         self.vbox.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0,
                       wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
 
     def get_checkbox_value(self, widget):
+        """return the value of a checkbox
+        """
         return widget.GetValue()
 
     def get_combobox_value(self, widget):
+        """return the selected value in a combobox
+        """
         return widget.GetValue()
 
 
@@ -878,10 +942,14 @@ class GridDialog(wx.Dialog):
         self.Layout()
 
     def add_label(self, row, col, text):
+        """add some text to the screen
+        """
         # row / col niet nodig bij FlexGridSizer
         self.gbox.Add(wx.StaticText(self, label=text))
 
     def send(self):
+        """call the dialog
+        """
         with self as dlg:
             dlg.ShowModal()
 

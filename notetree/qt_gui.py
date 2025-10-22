@@ -368,6 +368,8 @@ class OptionsDialog(qtw.QDialog):
         self.setLayout(self.vbox)
 
     def add_checkbox_line_to_grid(self, row, labeltext, value):
+        """create a line to turn an option on/off
+        """
         lbl = qtw.QLabel(labeltext, self)
         self.gbox.addWidget(lbl, row, 0)
         chk = qtw.QCheckBox('', self)
@@ -376,6 +378,8 @@ class OptionsDialog(qtw.QDialog):
         return chk
 
     def add_buttonbox(self, okvalue, cancelvalue):
+        """create a button strip with handlers
+        """
         hbox = qtw.QHBoxLayout()
         hbox.addStretch(1)
         ok_button = qtw.QPushButton(okvalue, self)
@@ -388,6 +392,8 @@ class OptionsDialog(qtw.QDialog):
         self.vbox.addLayout(hbox)
 
     def get_checkbox_value(self, check):
+        """return the value of a checkbox
+        """
         return check.isChecked()
 
     def accept(self):
@@ -401,7 +407,7 @@ class CheckDialog(qtw.QDialog):
     """Generieke dialoog om iets te melden en te vragen of deze melding in het vervolg
     nog getoond moet worden
 
-    Evetueel ook te implementeren d.m.v. QErrorMessage
+    Eventueel ook te implementeren d.m.v. QErrorMessage
     """
     def __init__(self, master, parent, title):
         self.master = master
@@ -414,11 +420,15 @@ class CheckDialog(qtw.QDialog):
         # self.resize(574 + breedte, 480)
 
     def add_label(self, labeltext):
+        """create a text on the screen
+        """
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel(labeltext, self))
         self.vbox.addLayout(hbox)
 
     def add_checkbox(self, message):
+        """create a checkbox
+        """
         hbox = qtw.QHBoxLayout()
         check = qtw.QCheckBox(message, self)
         hbox.addWidget(check)
@@ -426,6 +436,8 @@ class CheckDialog(qtw.QDialog):
         return check
 
     def add_ok_buttonbox(self):
+        """create a button strip with handlers
+        """
         hbox = qtw.QHBoxLayout()
         hbox.addStretch(1)
         ok_button = qtw.QPushButton("&Ok", self)
@@ -435,6 +447,8 @@ class CheckDialog(qtw.QDialog):
         self.vbox.addLayout(hbox)
 
     def get_checkbox_value(self, check):
+        """return the value of a checkbox
+        """
         return check.isChecked()
 
     def klaar(self):
@@ -459,6 +473,8 @@ class KeywordsDialog(qtw.QDialog):
         self.setLayout(self.vbox)
 
     def add_list(self, title, items, callback, first=False, last=False):
+        """create a column with a listbox in it
+        """
         if first:
             self.hbox.addStretch()
         vbox2 = qtw.QVBoxLayout()
@@ -474,6 +490,8 @@ class KeywordsDialog(qtw.QDialog):
         return lst
 
     def add_buttons(self, buttondefs):
+        """create a column of buttons
+        """
         vbox = qtw.QVBoxLayout()
         vbox.addStretch()
         buttons = []
@@ -490,6 +508,8 @@ class KeywordsDialog(qtw.QDialog):
         return buttons
 
     def create_buttonbox(self):
+        """add a strip of buttons with handlers
+        """
         hbox = qtw.QHBoxLayout()
         hbox.addStretch()
         bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.StandardButton.Ok
@@ -501,7 +521,7 @@ class KeywordsDialog(qtw.QDialog):
         self.vbox.addLayout(hbox)
 
     def create_actions(self, actionlist):
-        """define what can be done in this screen
+        """define keyboard shortcuts for what can be done in this screen
         """
         for name, shortcut, callback in actionlist:
             act = gui.QAction(name, self)
@@ -527,16 +547,22 @@ class KeywordsDialog(qtw.QDialog):
             tolist.addItem(item)
 
     def ask_for_tag(self, caption, message):
+        """return the text in the input box
+        """
         return qtw.QInputDialog.getText(self, caption, message)
 
     def add_tag_to_list(self, text, listwidget):
+        """add a textvalue to a list
+        """
         listwidget.addItem(text)
 
     def get_listvalues(self, widget):
+        """return the selected vaues in a list
+        """
         return [widget.item(i).text() for i in range(len(widget))]
 
     def accept(self):
-        """geef de geselecteerde trefwoorden aan het hoofdprogramma
+        """dialoog afsluiten
         """
         self.parent.dialog_data = self.master.confirm()
         super().accept()
@@ -561,6 +587,8 @@ class KeywordsManager(qtw.QDialog):
         self.setLayout(self.gbox)
 
     def add_label(self, text, row, col):
+        """add a text on the screen
+        """
         if col == -1:
             self.gbox.addWidget(qtw.QLabel(text), row, 0, 1,
                                 self.gbox.columnCount())
@@ -568,43 +596,57 @@ class KeywordsManager(qtw.QDialog):
             self.gbox.addWidget(qtw.QLabel(text), row, col)
 
     def add_combobox(self, row, col):
+        """add a selector
+        """
         combo = qtw.QComboBox(self, editable=True)
         self.gbox.addWidget(combo, row, col)
         return combo
 
     def add_lineinput(self, row, col):
+        """add a text input field
+        """
         editor = qtw.QLineEdit(self)
         self.gbox.addWidget(editor, row, col)
         return editor
 
     def add_button(self, text, callback, row, col):
+        """add a button with a handler
+        """
         button = qtw.QPushButton(text, self)
         button.clicked.connect(callback)
         self.gbox.addWidget(button, row, col)
 
     def reset_combobox(self, widget, items):
-        """initialize items on screen
+        """clear and repopulate a combobox
         """
         widget.clear()
         widget.addItems(items)
         widget.clearEditText()
 
     def reset_lineinput(self, widget):
-        """initialize items on screen
+        """clear the text field
         """
         widget.clear()
 
     def get_combobox_value(self, widget):
+        """return the selected value in a combobox
+        """
         return widget.currentText()
 
     def get_lineinput_text(self, widget):
+        """return the value in the text field
+        """
         return widget.text()
 
     def ask_question(self, title, text):
+        """return the answer to a yes/no question
+        """
         ask = qtw.QMessageBox.question(self, title, text)
         return ask == qtw.QMessageBox.StandardButton.Yes
 
     def ask_question_w_cancel(self, text, extratext):
+        """return the answer to a yes/no question, or if the user canceled answering
+        """
         prompter = qtw.QMessageBox()
         prompter.setText(text)
         prompter.setInformativeText(extratext)
@@ -630,11 +672,15 @@ class GetTextDialog(qtw.QDialog):
         self.setLayout(self.vbox)
 
     def add_label(self, labeltext):
+        """add some text on the screen
+        """
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel(labeltext, self))
         self.vbox.addLayout(hbox)
 
     def add_lineinput(self, seltext):
+        """add a ext input field
+        """
         hbox = qtw.QHBoxLayout()
         text = qtw.QLineEdit(self)
         text.setText(seltext)
@@ -643,6 +689,8 @@ class GetTextDialog(qtw.QDialog):
         return text
 
     def add_checkbox_line(self, checkdefs):
+        """add a line with checkboxes
+        """
         result = []
         hbox = qtw.QHBoxLayout()
         for caption, value in checkdefs:
@@ -654,6 +702,8 @@ class GetTextDialog(qtw.QDialog):
         return result
 
     def add_okcancel_buttonbox(self):
+        """add a button strip with handlers
+        """
         bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.StandardButton.Ok
                                     | qtw.QDialogButtonBox.StandardButton.Cancel)
         bbox.accepted.connect(self.accept)
@@ -661,13 +711,17 @@ class GetTextDialog(qtw.QDialog):
         self.vbox.addWidget(bbox)
 
     def get_checkbox_value(self, widget):
+        """return the value of a checkbox
+        """
         return widget.isChecked()
 
     def get_lineinput_value(self, widget):
+        """return the value of the text input field
+        """
         return widget.text()
 
     def accept(self):
-        """confirm data changes and communicate to parent window
+        """communicate data changes to parent window and close dialog
         """
         self.parent.dialog_data = self.master.confirm()
         super().accept()
@@ -686,12 +740,14 @@ class GetItemDialog(qtw.QDialog):
         self.setLayout(self.vbox)
 
     def add_label(self, labeltext):
+        """add some text on the screen
+        """
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel(labeltext, self))
         self.vbox.addLayout(hbox)
 
     def add_combobox(self, selection_list, selvalue):
-        """define the widgets to use
+        """add a selector
         """
         hbox = qtw.QHBoxLayout()
         combo = qtw.QComboBox(self)
@@ -702,6 +758,8 @@ class GetItemDialog(qtw.QDialog):
         return combo
 
     def add_checkbox(self, caption, value):
+        """add a checkbox to the screen
+        """
         hbox = qtw.QHBoxLayout()
         check = qtw.QCheckBox(caption, self)
         check.setChecked(value)
@@ -710,6 +768,8 @@ class GetItemDialog(qtw.QDialog):
         return check
 
     def add_okcancel_buttonbox(self):
+        """add a button strip with handlers
+        """
         bbox = qtw.QDialogButtonBox(qtw.QDialogButtonBox.StandardButton.Ok
                                     | qtw.QDialogButtonBox.StandardButton.Cancel)
         bbox.accepted.connect(self.accept)
@@ -717,9 +777,13 @@ class GetItemDialog(qtw.QDialog):
         self.vbox.addWidget(bbox)
 
     def get_checkbox_value(self, widget):
+        """return the value of a checkbox
+        """
         return widget.isChecked()
 
     def get_combobox_value(self, widget):
+        """return the selected value in a combobox
+        """
         return widget.currentText()
 
     def accept(self):
@@ -748,7 +812,11 @@ class GridDialog(qtw.QDialog):
         self.setLayout(vbox)
 
     def add_label(self, row, col, text):
+        """add some text to the screen
+        """
         self.gbox.addWidget(qtw.QLabel(text, self), row, col)
 
     def send(self):
+        """call the dialog
+        """
         self.exec()
