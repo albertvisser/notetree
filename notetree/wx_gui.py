@@ -41,14 +41,10 @@ class MainWindow(wx.Frame):
         "define an icon to put in the systray"
         # tray icon wordt pas opgezet in de hide() methode
 
-    def setup_split_screen(self):
+    def setup_horizontal_splitter(self):
         "define the main splitter widget and place its components"
         self.splitter = wx.SplitterWindow(self)
         self.splitter.SetMinimumPaneSize(1)
-        self.splitter.SplitVertically(self.setup_tree(), self.setup_editor())
-        self.splitter.SetSashPosition(180, True)
-        self.app.SetTopWindow(self)
-        self.Show(True)
 
     def setup_tree(self):
         "define the tree panel"
@@ -58,16 +54,23 @@ class MainWindow(wx.Frame):
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGING, self.OnSelChanging)
         # self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, self.tree)
         self.tree.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged)
-        return self.tree
+        # return self.tree
 
     def setup_editor(self):
         "define the editor panel"
         # self.editor = wx.TextCtrl(self.splitter, style=wx.TE_MULTILINE)
-        self.editor = stc.StyledTextCtrl(self.splitter)  # , style=wx.TE_MULTILINE)
+        self.editor = stc.StyledTextCtrl(self.splitter)
         self.editor.Enable(False)
         self.setup_text()
         self.editor.Bind(wx.EVT_TEXT, self.OnEvtText)
-        return self.editor
+        # return self.editor
+
+    def finish_screen(self):
+        "put the split-screen together and show it"
+        self.splitter.SplitVertically(self.tree, self.editor)
+        self.splitter.SetSashPosition(180, True)
+        self.app.SetTopWindow(self)
+        self.Show(True)
 
     def setup_text(self):
         "define the scintilla widget's properties"

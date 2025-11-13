@@ -1272,25 +1272,11 @@ class TestOptionsDialog:
         assert testobj.parent == 'parent'
         assert isinstance(testobj.vsizer, testee.wx.BoxSizer)
         assert isinstance(testobj.gsizer, testee.wx.FlexGridSizer)
-        # assert len(testobj.controls) == 1
-        # assert testobj.controls[0][0] == 'text'
         assert capsys.readouterr().out == (
                 "called Dialog.__init__ with args ('title',) {}\n"
                 f'called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n'
                 "called GridSizer.__init__ with args () {'cols': 2}\n"
-                # f"called StaticText.__init__ with args ({testobj},) {{'label': 'text'}}\n"
-                # "called GridSizer.Add with args <item> (1, 240, 5)\n"
-                # f"called CheckBox.__init__ with args ({testobj},) {{}}\n"
-                # "called checkbox.SetValue with args ('value',)\n"
-                # "called GridSizer.Add with args <item> (1, 240, 5)\n"
                 "called vert sizer.Add with args <item> (0, 2544, 5)\n"
-                # f'called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n'
-                # f"called Button.__init__ with args ({testobj},) {{'id': 5100, 'label': 'b_apply'}}\n"
-                # "called hori sizer.Add with args <item> (0, 8432, 2)\n"
-                # f"called Button.__init__ with args ({testobj},) {{'id': 5001, 'label': 'b_close'}}\n"
-                # "called hori sizer.Add with args <item> (0, 8432, 2)\n"
-                # "called dialog.SetEscapeId\n"
-                # "called vert sizer.Add with args <item> (0, 2544, 5)\n"
                 "called dialog.SetSizer with args (vert sizer,)\n"
                 "called dialog.SetAutoLayout with args (True,)\n"
                 f"called vert sizer.Fit with args ({testobj},)\n"

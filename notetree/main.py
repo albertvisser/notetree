@@ -66,13 +66,21 @@ class NoteTree:
             self.gui.start()
 
     def define_screen(self):
-        "setup main application window"
+        """setup main application window
+        """
         title = f"{self.project_file} - {self.app_title}"
         iconame = os.path.join(os.path.dirname(__file__), "notetree.ico")
         self.gui.init_screen(title=title, iconame=iconame)
         self.gui.setup_statusbar()
         self.gui.setup_trayicon()
-        self.gui.setup_split_screen()
+        # create flexible container for tree and editor side-by-side
+        self.gui.setup_horizontal_splitter()
+        # create the content areas
+        self.gui.setup_tree()
+        self.gui.setup_editor()
+        # organize and display
+        self.gui.finish_screen()
+
 
     def get_menudata(self):
         """define of menu options and callbacks

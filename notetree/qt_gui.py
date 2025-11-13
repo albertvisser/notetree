@@ -44,13 +44,10 @@ class MainWindow(qtw.QMainWindow):
         self.tray_icon.activated.connect(self.revive)
         self.tray_icon.hide()
 
-    def setup_split_screen(self):
+    def setup_horizontal_splitter(self):
         "define the main splitter widget and place its components"
         self.splitter = qtw.QSplitter(self)
         self.setCentralWidget(self.splitter)
-        self.splitter.addWidget(self.setup_tree())
-        self.splitter.addWidget(self.setup_editor())
-        self.show()
 
     def setup_tree(self):
         "define the tree panel"
@@ -60,7 +57,7 @@ class MainWindow(qtw.QMainWindow):
         self.tree.headerItem().setHidden(True)
         self.tree.setSelectionMode(qtw.QTreeWidget.SelectionMode.SingleSelection)
         self.tree.itemSelectionChanged.connect(self.changeselection)
-        return self.tree
+        # return self.tree
 
     def setup_editor(self):
         "define the editor panel"
@@ -76,7 +73,13 @@ class MainWindow(qtw.QMainWindow):
         self.editor.setCaretLineBackgroundColor(gui.QColor("#ffe4e4"))
         self.editor.setLexer(qsc.QsciLexerMarkdown())
         self.editor.setEnabled(False)
-        return self.editor
+        # return self.editor
+
+    def finish_screen(self):
+        "put the split-screen together and show it"
+        self.splitter.addWidget(self.tree)
+        self.splitter.addWidget(self.editor)
+        self.show()
 
     def create_menu(self):
         """build the application menu
