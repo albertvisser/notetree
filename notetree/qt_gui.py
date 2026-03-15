@@ -44,7 +44,7 @@ class MainWindow(qtw.QMainWindow):
         self.tray_icon.activated.connect(self.revive)
         self.tray_icon.hide()
 
-    def setup_horizontal_splitter(self):
+    def setup_split_screen(self):
         "define the main splitter widget and place its components"
         self.splitter = qtw.QSplitter(self)
         self.setCentralWidget(self.splitter)

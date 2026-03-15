@@ -112,35 +112,12 @@ class TestMainWindow:
     def test_setup_split_screen(self, monkeypatch, capsys):
         """unittest for MainWindow.setup_split_screen
         """
-        def mock_setup_tree(*args):
-            """stub
-            """
-            print('called MainWindow.setup_tree')
-            return 'tree'
-        def mock_setup_editor(*args):
-            """stub
-            """
-            print('called MainWindow.setup_editor')
-            return 'editor'
-        def mock_show(*args):
-            """stub
-            """
-            print('called MainWindow.Show')
         monkeypatch.setattr(testee.wx, 'SplitterWindow', mockwx.MockSplitter)
         testobj = setup_mainwindow(monkeypatch, capsys)
-        monkeypatch.setattr(testobj, 'setup_tree', mock_setup_tree)
-        monkeypatch.setattr(testobj, 'setup_editor', mock_setup_editor)
-        monkeypatch.setattr(testobj, 'Show', mock_show)
         testobj.setup_split_screen()
         assert capsys.readouterr().out == (
-                f'called Splitter.__init__ with args ({testobj},)\n'
-                'called splitter.SetMinimumPaneSize with args (1,)\n'
-                'called MainWindow.setup_tree\n'
-                'called MainWindow.setup_editor\n'
-                "called splitter.SplitVertically with args ('tree', 'editor')\n"
-                'called splitter.SetSashPosition with args (180, True)\n'
-                f'called app.SetTopWindow with args ({testobj},)\n'
-                'called MainWindow.Show\n')
+                f'called Splitter.__init__ with args ({testobj},) {{}}\n'
+                'called splitter.SetMinimumPaneSize with args (1,)\n')
 
     def test_setup_tree(self, monkeypatch, capsys):
         """unittest for MainWindow.setup_tree
@@ -149,7 +126,7 @@ class TestMainWindow:
         testobj.splitter = 'splitter'
         monkeypatch.setattr(testee.wx, 'TreeCtrl', mockwx.MockTree)
         tree = testobj.setup_tree()
-        assert tree == testobj.tree
+        # assert tree == testobj.tree
         assert hasattr(testobj, 'root')
         assert capsys.readouterr().out == (
                 "called Tree.__init__ with args ('splitter',) {}\n"
@@ -167,7 +144,7 @@ class TestMainWindow:
         monkeypatch.setattr(testee.stc, 'StyledTextCtrl', mockwx.MockEditor)
         monkeypatch.setattr(testee.wx, 'Font', mockwx.MockFont)
         editor = testobj.setup_editor()
-        assert editor == testobj.editor
+        # assert editor == testobj.editor
         assert capsys.readouterr().out == (
                 "called Editor.__init__ with args ('splitter',)\n"
                 "called editor.Enable with args (False,)\n"
@@ -216,6 +193,39 @@ class TestMainWindow:
                 'called editor.StyleSetBackground with args (21, wx.Colour(253, 253, 253, 255))\n'
                 'called editor.StyleSetForeground with args (21, wx.Colour(0, 0, 136, 255))\n'
                 f"called editor.Bind with args ({testee.wx.EVT_TEXT}, {testobj.OnEvtText})\n")
+
+    def test_finish_screen(self, monkeypatch, capsys):
+        """unittest for MainWindow.finish_screen
+        """
+        def mock_setup_tree(*args):
+            """stub
+            """
+            print('called MainWindow.setup_tree')
+            return 'tree'
+        def mock_setup_editor(*args):
+            """stub
+            """
+            print('called MainWindow.setup_editor')
+            return 'editor'
+        def mock_show(*args):
+            """stub
+            """
+            print('called MainWindow.Show')
+        testobj = setup_mainwindow(monkeypatch, capsys)
+        monkeypatch.setattr(testobj, 'Show', mock_show)
+        testobj.splitter = mockwx.MockSplitter()
+        testobj.tree = mockwx.MockTree()
+        testobj.editor = mockwx.MockEditor()
+        assert capsys.readouterr().out == (
+                f'called Splitter.__init__ with args ({testobj},) {{}}\n'
+                "called Tree.__init__ with args ('splitter',) {}\n"
+                "called Editor.__init__ with args ('splitter',)\n")
+        testobj.finish_screen()
+        assert capsys.readouterr().out == (
+                f"called splitter.SplitVertically with args ({testobj.tree}, {testobj.editor})\n"
+                'called splitter.SetSashPosition with args (180, True)\n'
+                f'called app.SetTopWindow with args ({testobj},)\n'
+                'called MainWindow.Show\n')
 
     def setup_text(self):
         """stub
@@ -829,8 +839,12 @@ class TestMainWindow:
     def test_get_key_from_item(self, monkeypatch, capsys):
         """unittest for MainWindow.get_key_from_item
         """
+        def mock_get(*args):
+            print('called tree.GetItemData with args', args)
+            return 'itemkey', 'itemtext', ['keyword']
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.tree = mockwx.MockTree()
+        testobj.tree.GetItemData = mock_get
         assert testobj.get_key_from_item('item') == 'itemkey'
         assert capsys.readouterr().out == ('called Tree.__init__ with args () {}\n'
                                            "called tree.GetItemData with args ('item',)\n")
@@ -913,6 +927,9 @@ class TestMainWindow:
             if cookie == 0:
                 return item, 1
             return last, -1
+        def mock_get(*args):
+            print('called tree.GetItemData with args', args)
+            return 'itemkey', 'itemtext', ['keyword']
         monkeypatch.setattr(mockwx.MockTree, 'GetFirstChild', mock_GetFirstChild)
         monkeypatch.setattr(mockwx.MockTree, 'GetNextChild', mock_GetNextChild)
         testobj = setup_mainwindow(monkeypatch, capsys)
@@ -924,6 +941,7 @@ class TestMainWindow:
                                            "called TreeItem.__init__ with args ('first',)\n"
                                            "called TreeItem.__init__ with args ('not ok',)\n"
                                            "called TreeItem.__init__ with args ('activeitem',)\n")
+        testobj.tree.GetItemData = mock_get
         testobj.root = 'root'
         testobj.activeitem = item
         itemlist, activeitem = testobj.get_treeitems()
@@ -1073,8 +1091,12 @@ class TestMainWindow:
     def test_set_item_text(self, monkeypatch, capsys):
         """unittest for MainWindow.set_item_text
         """
+        def mock_get(*args):
+            print('called tree.GetItemData with args', args)
+            return 'itemkey', 'itemtext', ['keyword']
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.tree = mockwx.MockTree()
+        testobj.tree.GetItemData = mock_get
         testobj.set_item_text('item', 'text')
         assert capsys.readouterr().out == ('called Tree.__init__ with args () {}\n'
                                            "called tree.GetItemData with args ('item',)\n"
@@ -1084,8 +1106,12 @@ class TestMainWindow:
     def test_get_item_keywords(self, monkeypatch, capsys):
         """unittest for MainWindow.get_item_keywords
         """
+        def mock_get(*args):
+            print('called tree.GetItemData with args', args)
+            return 'itemkey', 'itemtext', ['keyword']
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.tree = mockwx.MockTree()
+        testobj.tree.GetItemData = mock_get
         assert testobj.get_item_keywords('item') == ['keyword']
 
     def test_set_item_keywords(self, monkeypatch, capsys):

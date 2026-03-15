@@ -74,6 +74,11 @@ class MockMainWindow:
         """
         print("called MainWindow.setup_editor()")
 
+    def finish_screen(self):
+        """stub
+        """
+        print("called MainWindow.finish_screen()")
+
     def create_menu(self):
         """stub
         """
@@ -396,7 +401,10 @@ class TestNoteTree:
         assert capsys.readouterr().out == ("called MainWindow.init_screen()\n"
             "called MainWindow.setup_statusbar()\n"
             "called MainWindow.setup_trayicon()\n"
-            "called MainWindow.setup_split_screen()\n")
+            "called MainWindow.setup_split_screen()\n"
+            "called MainWindow.setup_tree()\n"
+            "called MainWindow.setup_editor()\n"
+            "called MainWindow.finish_screen()\n")
 
     def test_get_menudata(self, monkeypatch, capsys):
         """unittest for NoteTree.get_menudata

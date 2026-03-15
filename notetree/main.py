@@ -74,7 +74,7 @@ class NoteTree:
         self.gui.setup_statusbar()
         self.gui.setup_trayicon()
         # create flexible container for tree and editor side-by-side
-        self.gui.setup_horizontal_splitter()
+        self.gui.setup_split_screen()
         # create the content areas
         self.gui.setup_tree()
         self.gui.setup_editor()

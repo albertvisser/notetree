@@ -41,7 +41,7 @@ class MainWindow(wx.Frame):
         "define an icon to put in the systray"
         # tray icon wordt pas opgezet in de hide() methode
 
-    def setup_horizontal_splitter(self):
+    def setup_split_screen(self):
         "define the main splitter widget and place its components"
         self.splitter = wx.SplitterWindow(self)
         self.splitter.SetMinimumPaneSize(1)

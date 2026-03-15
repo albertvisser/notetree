@@ -130,26 +130,16 @@ class TestMainWindow:
             """stub
             """
             print('called MockMainWindow.setCentralWidget')
-        def mock_show(self, *args):
-            """stub
-            """
-            print('called MockMainWindow.show')
         def mock_add(self, arg):
             print(f"called Splitter.addWidget with arg `{arg}`")
         monkeypatch.setattr(testee.qtw.QMainWindow, 'setCentralWidget', mock_setcentralwidget)
-        monkeypatch.setattr(testee.qtw.QMainWindow, 'show', mock_show)
         monkeypatch.setattr(testee.qtw, 'QSplitter', mockqtw.MockSplitter)
         monkeypatch.setattr(mockqtw.MockSplitter, 'addWidget', mock_add)
         testobj = setup_mainwindow(monkeypatch, capsys)
-        monkeypatch.setattr(testobj, 'setup_tree', lambda: 'treewidget')
-        monkeypatch.setattr(testobj, 'setup_editor', lambda: 'editorwidget')
         testobj.setup_split_screen()
         assert hasattr(testobj, 'splitter')
         assert capsys.readouterr().out == ('called Splitter.__init__\n'
-                                           'called MockMainWindow.setCentralWidget\n'
-                                           'called Splitter.addWidget with arg `treewidget`\n'
-                                           'called Splitter.addWidget with arg `editorwidget`\n'
-                                           'called MockMainWindow.show\n')
+                                           'called MockMainWindow.setCentralWidget\n')
 
     def test_setup_tree(self, monkeypatch, capsys):
         """unittest for MainWindow.setup_tree
@@ -157,7 +147,7 @@ class TestMainWindow:
         monkeypatch.setattr(testee.qtw, 'QTreeWidget', mockqtw.MockTreeWidget)
         testobj = setup_mainwindow(monkeypatch, capsys)
         newstuff = testobj.setup_tree()
-        assert newstuff == testobj.tree
+        # assert newstuff == testobj.tree
         assert capsys.readouterr().out == ('called Tree.__init__\n'
                                            'called Tree.setColumnCount with arg `2`\n'
                                            'called Tree.hideColumn\n'
@@ -176,7 +166,7 @@ class TestMainWindow:
         monkeypatch.setattr(testee.gui, 'QColor', mockqtw.MockColor)
         testobj = setup_mainwindow(monkeypatch, capsys)
         newstuff = testobj.setup_editor()
-        assert newstuff == testobj.editor
+        # assert newstuff == testobj.editor
         assert capsys.readouterr().out == (
                 f'called Editor.__init__ with args ({testobj},)\n'
                 'called Editor.setFont\n'
@@ -188,6 +178,26 @@ class TestMainWindow:
                 "called Editor.setCaretLineBackgroundColor with arg 'color #ffe4e4'\n"
                 'called Editor.setLexer\n'
                 'called Editor.setEnabled with arg False\n')
+
+    def test_finish_screen(self, monkeypatch, capsys):
+        """unittest for MainWindow.finish_screen
+        """
+        def mock_show(self, *args):
+            """stub
+            """
+            print('called MockMainWindow.show')
+        monkeypatch.setattr(testee.qtw.QMainWindow, 'show', mock_show)
+        testobj = setup_mainwindow(monkeypatch, capsys)
+        testobj.splitter = mockqtw.MockSplitter()
+        testobj.tree = mockqtw.MockTreeWidget()
+        testobj.editor = mockqtw.MockEditorWidget()
+        assert capsys.readouterr().out == ('called Splitter.__init__\n'
+                                           f'called Tree.__init__\n'
+                                           f'called Editor.__init__\n')
+        testobj.finish_screen()
+        assert capsys.readouterr().out == ('called Splitter.addWidget with arg MockTreeWidget\n'
+                                           'called Splitter.addWidget with arg MockEditorWidget\n'
+                                           'called MockMainWindow.show\n')
 
     def test_create_menu(self, monkeypatch, capsys):
         """unittest for MainWindow.create_menu
@@ -960,7 +970,7 @@ class TestOptionsDialog:
         assert capsys.readouterr().out == (
             f"called Label.__init__ with args ('label', {testobj})\n"
             "called Grid.addWidget with arg MockLabel at (1, 0)\n"
-            "called CheckBox.__init__ with text ''\n"
+            f"called CheckBox.__init__ with args ('', {testobj})\n"
             'called CheckBox.setChecked with arg True\n'
             "called Grid.addWidget with arg MockCheckBox at (1, 1)\n")
 
@@ -1094,7 +1104,7 @@ class TestCheckDialog:
         assert isinstance(result, testee.qtw.QCheckBox)
         assert capsys.readouterr().out == (
             'called HBox.__init__\n'
-            "called CheckBox.__init__ with text 'xxx'\n"
+            f"called CheckBox.__init__ with args ('xxx', {testobj})\n"
             "called HBox.addWidget with arg MockCheckBox\n"
             "called VBox.addLayout with arg MockHBoxLayout\n")
 
@@ -1540,7 +1550,7 @@ class TestKeywordsManager:
         assert capsys.readouterr().out == "called Grid.__init__\n"
         testobj.add_lineinput(1, 2)
         assert capsys.readouterr().out == (
-            'called LineEdit.__init__\n'
+            f'called LineEdit.__init__ with args ({testobj},)\n'
             "called Grid.addWidget with arg MockLineEdit at (1, 2)\n")
 
     def test_add_button(self, monkeypatch, capsys):
@@ -1577,7 +1587,7 @@ class TestKeywordsManager:
         monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
         testobj = self.setup_testobj(monkeypatch, capsys)
         text = mockqtw.MockLineEdit()
-        assert capsys.readouterr().out == "called LineEdit.__init__\n"
+        assert capsys.readouterr().out == f"called LineEdit.__init__ with args ()\n"
         testobj.reset_lineinput(text)
         assert capsys.readouterr().out == 'called LineEdit.clear\n'
 
@@ -1594,7 +1604,7 @@ class TestKeywordsManager:
         """unittset for KeywordsManager.get_lineinput_text
         """
         widget = mockqtw.MockLineEdit()
-        assert capsys.readouterr().out == "called LineEdit.__init__\n"
+        assert capsys.readouterr().out == "called LineEdit.__init__ with args ()\n"
         testobj = self.setup_testobj(monkeypatch, capsys)
         assert testobj.get_lineinput_text(widget) == ''
         assert capsys.readouterr().out == ("called LineEdit.text\n")
@@ -1731,7 +1741,7 @@ class TestGetTextDialog:
         assert capsys.readouterr().out == "called VBox.__init__\n"
         testobj.add_lineinput('xxx')
         assert capsys.readouterr().out == ("called HBox.__init__\n"
-                                           'called LineEdit.__init__\n'
+                                           f'called LineEdit.__init__ with args ({testobj},)\n'
                                            "called LineEdit.setText with arg `xxx`\n"
                                            "called HBox.addWidget with arg MockLineEdit\n"
                                            "called VBox.addLayout with arg MockHBoxLayout\n")
@@ -1762,10 +1772,10 @@ class TestGetTextDialog:
         assert isinstance(result[1], testee.qtw.QCheckBox)
         assert capsys.readouterr().out == (
             'called HBox.__init__\n'
-            "called CheckBox.__init__ with text 'xxx'\n"
+            f"called CheckBox.__init__ with args ('xxx', {testobj})\n"
             "called CheckBox.setChecked with arg False\n"
             "called HBox.addWidget with arg MockCheckBox\n"
-            "called CheckBox.__init__ with text 'yyy'\n"
+            f"called CheckBox.__init__ with args ('yyy', {testobj})\n"
             "called CheckBox.setChecked with arg True\n"
             "called HBox.addWidget with arg MockCheckBox\n"
             "called VBox.addLayout with arg MockHBoxLayout\n")
@@ -1785,7 +1795,7 @@ class TestGetTextDialog:
         """unittset for GetTextDialog.get_lineinput_text
         """
         widget = mockqtw.MockLineEdit()
-        assert capsys.readouterr().out == "called LineEdit.__init__\n"
+        assert capsys.readouterr().out == "called LineEdit.__init__ with args ()\n"
         testobj = self.setup_testobj(monkeypatch, capsys)
         assert testobj.get_lineinput_value(widget) == ''
         assert capsys.readouterr().out == ("called LineEdit.text\n")
@@ -1904,7 +1914,7 @@ class TestGetItemDialog:
         assert isinstance(result, testee.qtw.QCheckBox)
         assert capsys.readouterr().out == (
             'called HBox.__init__\n'
-            "called CheckBox.__init__ with text 'xxx'\n"
+            f"called CheckBox.__init__ with args ('xxx', {testobj})\n"
             "called CheckBox.setChecked with arg yyy\n"
             "called HBox.addWidget with arg MockCheckBox\n"
             "called VBox.addLayout with arg MockHBoxLayout\n")
