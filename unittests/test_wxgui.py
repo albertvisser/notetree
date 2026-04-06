@@ -1,6 +1,7 @@
 """unittests for ./notetree/wx_gui.py
 """
 import types
+import pytest
 from mockgui import mockwxwidgets as mockwx
 from notetree import wx_gui as testee
 
@@ -217,9 +218,9 @@ class TestMainWindow:
         testobj.tree = mockwx.MockTree()
         testobj.editor = mockwx.MockEditor()
         assert capsys.readouterr().out == (
-                f'called Splitter.__init__ with args ({testobj},) {{}}\n'
-                "called Tree.__init__ with args ('splitter',) {}\n"
-                "called Editor.__init__ with args ('splitter',)\n")
+                f'called Splitter.__init__ with args () {{}}\n'
+                "called Tree.__init__ with args () {}\n"
+                "called Editor.__init__ with args ()\n")
         testobj.finish_screen()
         assert capsys.readouterr().out == (
                 f"called splitter.SplitVertically with args ({testobj.tree}, {testobj.editor})\n"
@@ -554,7 +555,7 @@ class TestMainWindow:
         assert testobj.seltypes == ["m_selall", "m_seltag", "m_seltxt"]
         assert capsys.readouterr().out == (
                 'called MenuBar.__init__ with args ()\n'
-                'called menubar.GetMenus with args ()\n'
+                'called menubar.GetMenus\n'
                 'called Menu.__init__ with args ()\n'
                 'called Menu.__init__ with args ()\n'
                 'called Menu.__init__ with args ()\n'
@@ -707,9 +708,12 @@ class TestMainWindow:
         """
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.splitter = mockwx.MockSplitter()
-        testobj.set_splitter('split')
-        assert capsys.readouterr().out == ('called Splitter.__init__ with args ()\n'
-                                           "called splitter.SetSashPosition with args ('s', True)\n")
+        assert capsys.readouterr().out == 'called Splitter.__init__ with args () {}\n'
+        with pytest.raises(ValueError):
+            testobj.set_splitter('split')
+        assert capsys.readouterr().out == "called splitter.SetSashPosition with args ('s', True)\n"
+        testobj.set_splitter((10, 20))
+        assert capsys.readouterr().out == "called splitter.SetSashPosition with args (10, True)\n"
 
     def test_create_root(self, monkeypatch, capsys):
         """unittest for MainWindow.create_root
@@ -1068,8 +1072,12 @@ class TestMainWindow:
     def test_get_item_text(self, monkeypatch, capsys):
         """unittest for MainWindow.get_item_text
         """
+        def mock_get(*args):
+            print('called tree.GetItemData with args', args)
+            return 'itemkey', 'itemtext', ['keyword']
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.tree = mockwx.MockTree()
+        testobj.tree.GetItemData = mock_get
         assert testobj.get_item_text('item') == 'itemtext'
 
     def test_set_editor_text(self, monkeypatch, capsys):
@@ -1117,8 +1125,12 @@ class TestMainWindow:
     def test_set_item_keywords(self, monkeypatch, capsys):
         """unittest for MainWindow.set_item_keywords
         """
+        def mock_get(*args):
+            print('called tree.GetItemData with args', args)
+            return 'itemkey', 'itemtext', ['keyword']
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.tree = mockwx.MockTree()
+        testobj.tree.GetItemData = mock_get
         testobj.set_item_keywords('item', ['data'])
         assert capsys.readouterr().out == ('called Tree.__init__ with args () {}\n'
                                            "called tree.GetItemData with args ('item',)\n"
@@ -1130,26 +1142,27 @@ class TestMainWindow:
         """
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.sb = mockwx.MockStatusBar()
+        assert capsys.readouterr().out == "called StatusBar.__init__ with args ()\n"
         testobj.show_statusbar_message('text')
-        assert capsys.readouterr().out == ("called statusbar.SetStatusText with args ('text',)\n")
+        assert capsys.readouterr().out == "called statusbar.SetStatusText with args ('text',)\n"
 
     def test_enable_selaction(self, monkeypatch, capsys):
         """unittest for MainWindow.enable_selaction
         """
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.selactions = {'actiontext': mockwx.MockMenuItem()}
+        assert capsys.readouterr().out == 'called MenuItem.__init__ with args () {}\n'
         testobj.enable_selaction('actiontext')
-        assert capsys.readouterr().out == ('called MenuItem.__init__ with args ()\n'
-                                           'called menuitem.Check with arg True\n')
+        assert capsys.readouterr().out == 'called menuitem.Check with arg True\n'
 
     def test_disable_selaction(self, monkeypatch, capsys):
         """unittest for MainWindow.disable_selaction
         """
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.selactions = {'actiontext': mockwx.MockMenuItem()}
+        assert capsys.readouterr().out == 'called MenuItem.__init__ with args () {}\n'
         testobj.disable_selaction('actiontext')
-        assert capsys.readouterr().out == ('called MenuItem.__init__ with args ()\n'
-                                           'called menuitem.Check with arg False\n')
+        assert capsys.readouterr().out == 'called menuitem.Check with arg False\n'
 
     def test_showmsg(self, monkeypatch, capsys):
         """unittest for MainWindow.showmsg
@@ -1196,7 +1209,7 @@ class TestMainWindow:
             """stub
             """
             return testee.wx.ID_OK
-        monkeypatch.setattr(testee.wx.Dialog, 'ShowModal', mock_showmodal)
+        monkeypatch.setattr(mockwx.MockDialog, 'ShowModal', mock_showmodal)
         testobj = setup_mainwindow(monkeypatch, capsys)
         assert testobj.show_dialog(MockDialogParent, 'title') == (True, 'confirmation data')
         assert capsys.readouterr().out == (
@@ -1226,59 +1239,60 @@ class TestMainWindow:
                 f"called Dialog.__init__ with args ({testobj}, 'title') {{}}\n")
 
     def test_get_text_from_user(self, monkeypatch, capsys):
-        """unittest for MainWindow.get_text_from_user
+        """unittest for MainWindow.get_text_from_user: cancel prompt
         """
         monkeypatch.setattr(testee.wx, 'TextEntryDialog', mockwx.MockTextDialog)
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.base.app_title = 'title'
-        assert testobj.get_text_from_user('prompt', 'default') == ('entered value', True)
+        assert testobj.get_text_from_user('prompt', 'default') == ('', False)
         assert capsys.readouterr().out == ('called TextDialog.__init__ with args'
                                            " ('prompt', 'title', 'default') {}\n"
                                            'called TextDialog.ShowModal\n'
                                            'called TextDialog.GetValue\n')
 
     def test_get_text_from_user_2(self, monkeypatch, capsys):
-        """unittest for MainWindow.get_text_from_user: cancel prompt
+        """unittest for MainWindow.get_text_from_user
         """
         def mock_showmodal(self, *args):
             """stub
             """
-            return testee.wx.ID_CANCEL
+            return testee.wx.ID_OK
         monkeypatch.setattr(testee.wx, 'TextEntryDialog', mockwx.MockTextDialog)
         monkeypatch.setattr(mockwx.MockTextDialog, 'ShowModal', mock_showmodal)
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.base.app_title = 'title'
-        assert testobj.get_text_from_user('prompt', 'default') == ('entered value', False)
+        assert testobj.get_text_from_user('prompt', 'default') == ('', True)
         assert capsys.readouterr().out == ('called TextDialog.__init__ with args'
                                            " ('prompt', 'title', 'default') {}\n"
                                            'called TextDialog.GetValue\n')
 
     def test_get_choice_from_user(self, monkeypatch, capsys):
-        """unittest for MainWindow.get_choice_from_user
+        """unittest for MainWindow.get_choice_from_user: cancel
         """
         monkeypatch.setattr(testee.wx, 'SingleChoiceDialog', mockwx.MockChoiceDialog)
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.base.app_title = 'title'
         assert testobj.get_choice_from_user('prompt', ['choices'], 'default') == (
-            'selected value', True)
+            'selected value', False)
         assert capsys.readouterr().out == ('called ChoiceDialog.__init__ with args'
                                            " ('prompt', 'title', ['choices'])\n"
                                            "called ChoiceDialog.SetSelection with arg 'default'\n"
+                                           "called ChoiceDialog.ShowModal\n"
                                            'called ChoiceDialog.GetStringSelection\n')
 
     def test_get_choice_from_user_2(self, monkeypatch, capsys):
-        """unittest for MainWindow.get_choice_from_user: cancel
+        """unittest for MainWindow.get_choice_from_user
         """
         def mock_showmodal(self, *args):
             """stub
             """
-            return testee.wx.ID_CANCEL
+            return testee.wx.ID_OK
         monkeypatch.setattr(testee.wx, 'SingleChoiceDialog', mockwx.MockChoiceDialog)
         monkeypatch.setattr(mockwx.MockChoiceDialog, 'ShowModal', mock_showmodal)
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.base.app_title = 'title'
         assert testobj.get_choice_from_user('prompt', ['choices'], 'default') == (
-            'selected value', False)
+            'selected value', True)
 
 
 class TestOptionsDialog:
@@ -1302,7 +1316,7 @@ class TestOptionsDialog:
                 "called Dialog.__init__ with args ('title',) {}\n"
                 f'called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n'
                 "called GridSizer.__init__ with args () {'cols': 2}\n"
-                "called vert sizer.Add with args <item> (0, 2544, 5)\n"
+                "called vert sizer.Add with args MockGridSizer (0, 2544, 5)\n"
                 "called dialog.SetSizer with args (vert sizer,)\n"
                 "called dialog.SetAutoLayout with args (True,)\n"
                 f"called vert sizer.Fit with args ({testobj},)\n"
@@ -1332,10 +1346,10 @@ class TestOptionsDialog:
         testobj.add_checkbox_line_to_grid(1, 'xxx', 'yyy')
         assert capsys.readouterr().out == (
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'xxx'}}\n"
-                "called GridSizer.Add with args <item> (1, 240, 5)\n"
+                "called GridSizer.Add with args MockStaticText (1, 240, 5)\n"
                 f"called CheckBox.__init__ with args ({testobj},) {{}}\n"
                 "called checkbox.SetValue with args ('yyy',)\n"
-                "called GridSizer.Add with args <item> (1, 240, 5)\n")
+                "called GridSizer.Add with args MockCheckBox (1, 240, 5)\n")
 
     def test_add_buttonbox(self, monkeypatch, capsys):
         """unittest for OptionsDialog.add_buttonbox
@@ -1352,11 +1366,11 @@ class TestOptionsDialog:
         assert capsys.readouterr().out == (
                 "called BoxSizer.__init__ with args (4,)\n"
                 f"called Button.__init__ with args ({testobj},) {{'id': 5100, 'label': 'xxx'}}\n"
-                "called hori sizer.Add with args <item> (0, 8432, 2)\n"
+                "called hori sizer.Add with args MockButton (0, 8432, 2)\n"
                 f"called Button.__init__ with args ({testobj},) {{'id': 5001, 'label': 'yyy'}}\n"
-                "called hori sizer.Add with args <item> (0, 8432, 2)\n"
+                "called hori sizer.Add with args MockButton (0, 8432, 2)\n"
                 "called OptionsDialog.SetEscapeId with arg 5001\n"
-                "called vert sizer.Add with args <item> (0, 2544, 5)\n")
+                "called vert sizer.Add with args MockBoxSizer (0, 2544, 5)\n")
 
     def test_get_checkbox_value(self, monkeypatch, capsys):
         """unittest for OptionsDialog.get_checkbox_value
@@ -1422,7 +1436,7 @@ class TestCheckDialog:
         assert capsys.readouterr().out == (
                 "called BoxSizer.__init__ with args (8,)\n"
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'message'}}\n"
-                'called vert sizer.Add with args <item> (1, 240, 5)\n')
+                'called vert sizer.Add with args MockStaticText (1, 240, 5)\n')
 
     def test_add_checkbox(self, monkeypatch, capsys):
         """unittest for OptionsDialog.add_checkbox
@@ -1436,8 +1450,8 @@ class TestCheckDialog:
                 "called BoxSizer.__init__ with args (8,)\n"
                 f'called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n'
                 f"called CheckBox.__init__ with args ({testobj},) {{'label': 'hide_message'}}\n"
-                'called hori sizer.Add with args <item> (0, 8192)\n'
-                'called vert sizer.Add with args <item> (0, 256)\n')
+                'called hori sizer.Add with args MockCheckBox (0, 8192)\n'
+                'called vert sizer.Add with args MockBoxSizer (0, 256)\n')
 
     def test_add_ok_buttonbox(self, monkeypatch, capsys):
         """unittest for OptionsDialog.add_ok_buttonbox
@@ -1450,7 +1464,8 @@ class TestCheckDialog:
         assert capsys.readouterr().out == (
                 "called BoxSizer.__init__ with args (8,)\n"
                 'called dialog.CreateButtonSizer with args (4,)\n'
-                'called vert sizer.Add with args <item> (0, 256)\n')
+                'called BoxSizer.__init__ with args ()\n'
+                'called vert sizer.Add with args MockBoxSizer (0, 256)\n')
 
     def test_get_checkbox_value(self, monkeypatch, capsys):
         """unittest for OptionsDialog.get_checkbox_value
@@ -1493,7 +1508,7 @@ class TestKeywordsDialog:
                 "called Dialog.SetIcon with args ('icon',)\n"
                 f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
                 f"called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n"
-                "called vert sizer.Add with args <item> (0, 496, 5)\n"
+                "called vert sizer.Add with args MockBoxSizer (0, 496, 5)\n"
                 "called dialog.SetSizer with args (vert sizer,)\n"
                 "called dialog.SetAutoLayout with args (True,)\n"
                 f"called vert sizer.Fit with args ({testobj},)\n"
@@ -1529,25 +1544,25 @@ class TestKeywordsDialog:
         assert capsys.readouterr().out == (
                 f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'xxx'}}\n"
-                "called vert sizer.Add with args <item> ()\n"
+                "called vert sizer.Add with args MockStaticText ()\n"
                 f"called ListBox.__init__ with args ({testobj},)"
                 " {'size': (120, 156), 'style': 128}\n"
                 f"called listbox.bind with args ({testee.wx.EVT_LISTBOX_DCLICK}, {callback})\n"
                 "called listbox.Append with args (['yyy', 'zzz'],)\n"
-                "called vert sizer.Add with args <item> ()\n"
-                "called hori sizer.Add with args <item> ()\n")
+                "called vert sizer.Add with args MockListBox ()\n"
+                "called hori sizer.Add with args MockBoxSizer ()\n")
         testobj.add_list('xxx', ['yyy', 'zzz'], callback, True, True)
         assert capsys.readouterr().out == (
                 "called hori sizer.AddStretchSpacer\n"
                 f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'xxx'}}\n"
-                "called vert sizer.Add with args <item> ()\n"
+                "called vert sizer.Add with args MockStaticText ()\n"
                 f"called ListBox.__init__ with args ({testobj},)"
                 " {'size': (120, 156), 'style': 128}\n"
                 f"called listbox.bind with args ({testee.wx.EVT_LISTBOX_DCLICK}, {callback})\n"
                 "called listbox.Append with args (['yyy', 'zzz'],)\n"
-                "called vert sizer.Add with args <item> ()\n"
-                "called hori sizer.Add with args <item> ()\n"
+                "called vert sizer.Add with args MockListBox ()\n"
+                "called hori sizer.Add with args MockBoxSizer ()\n"
                 "called hori sizer.AddStretchSpacer\n")
 
     def test_add_buttons(self, monkeypatch, capsys):
@@ -1567,18 +1582,18 @@ class TestKeywordsDialog:
                 f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
                 "called vert sizer.AddStretchSpacer\n"
                 "called vert sizer.AddStretchSpacer\n"
-                "called hori sizer.Add with args <item> ()\n")
+                "called hori sizer.Add with args MockBoxSizer ()\n")
         testobj.add_buttons([('xxx', callback), ('yyy', None)])
         assert capsys.readouterr().out == (
                 f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
                 "called vert sizer.AddStretchSpacer\n"
                 f"called Button.__init__ with args ({testobj},) {{'label': 'xxx'}}\n"
                 f"called Button.Bind with args ({testee.wx.EVT_BUTTON}, {callback}) {{}}\n"
-                "called vert sizer.Add with args <item> ()\n"
+                "called vert sizer.Add with args MockButton ()\n"
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'yyy'}}\n"
-                "called vert sizer.Add with args <item> ()\n"
+                "called vert sizer.Add with args MockStaticText ()\n"
                 "called vert sizer.AddStretchSpacer\n"
-                "called hori sizer.Add with args <item> ()\n")
+                "called hori sizer.Add with args MockBoxSizer ()\n")
 
     def test_create_buttonbox(self, monkeypatch, capsys):
         """unittest for KeywordsDialog.create_buttonbox
@@ -1590,8 +1605,10 @@ class TestKeywordsDialog:
         assert capsys.readouterr().out == (
                 f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n")
         testobj.create_buttonbox()
-        assert capsys.readouterr().out == ("called dialog.CreateButtonSizer with args (20,)\n"
-                                           "called vert sizer.Add with args <item> (0, 496, 10)\n")
+        assert capsys.readouterr().out == (
+                "called dialog.CreateButtonSizer with args (20,)\n"
+                "called BoxSizer.__init__ with args ()\n"
+                "called vert sizer.Add with args MockBoxSizer (0, 496, 10)\n")
 
     def test_create_actions(self, monkeypatch, capsys):
         """unittest for KeywordsDialog.create_actions
@@ -1619,12 +1636,12 @@ class TestKeywordsDialog:
                 'called dialog.SetAcceleratorTable\n')
         testobj.create_actions([('xxx', 'yyy', callback), ('zzz', 'qqq', callback)])
         assert capsys.readouterr().out == (
-                'called MenuItem.__init__ with args ()\n'
+                "called MenuItem.__init__ with args () {'text': 'xxx'}\n"
                 f"called KeywordsDialog.Bind with args ({callback}, '<menu item>')\n"
                 'called menuitem.GetId\n'
                 "called AcceleratorEntry.__init__ with args () {'cmd': 'NewID'}\n"
                 "called AcceleratorEntry.FromString with args ('yyy',)\n"
-                'called MenuItem.__init__ with args ()\n'
+                "called MenuItem.__init__ with args () {'text': 'zzz'}\n"
                 f"called KeywordsDialog.Bind with args ({callback}, '<menu item>')\n"
                 'called menuitem.GetId\n'
                 "called AcceleratorEntry.__init__ with args () {'cmd': 'NewID'}\n"
@@ -1634,12 +1651,12 @@ class TestKeywordsDialog:
         monkeypatch.setattr(mockwx.MockAcceleratorEntry, 'FromString', mock_fromstring)
         testobj.create_actions([('xxx', 'yyy', callback), ('zzz', 'qqq', callback)])
         assert capsys.readouterr().out == (
-                'called MenuItem.__init__ with args ()\n'
+                "called MenuItem.__init__ with args () {'text': 'xxx'}\n"
                 f"called KeywordsDialog.Bind with args ({callback}, '<menu item>')\n"
                 'called menuitem.GetId\n'
                 "called AcceleratorEntry.__init__ with args () {'cmd': 'NewID'}\n"
                 "called AcceleratorEntry.FromString with args ('yyy',)\n"
-                'called MenuItem.__init__ with args ()\n'
+                "called MenuItem.__init__ with args () {'text': 'zzz'}\n"
                 f"called KeywordsDialog.Bind with args ({callback}, '<menu item>')\n"
                 'called menuitem.GetId\n'
                 "called AcceleratorEntry.__init__ with args () {'cmd': 'NewID'}\n"
@@ -1692,19 +1709,19 @@ class TestKeywordsDialog:
         """
         def mock_show(self):
             print('called TextDialog.ShowModal')
-            return testee.wx.ID_CANCEL
+            return testee.wx.ID_OK
         monkeypatch.setattr(testee.wx, 'TextEntryDialog', mockwx.MockTextDialog)
         testobj = self.setup_testobj(monkeypatch, capsys)
-        assert testobj.ask_for_tag('xxx', 'yyy') == ('entered value', True)
-        assert capsys.readouterr().out == (
-                "called TextDialog.__init__ with args ('yyy', 'xxx') {}\n"
-                "called TextDialog.ShowModal\n"
-                "called TextDialog.GetValue\n")
-        monkeypatch.setattr(mockwx.MockTextDialog, 'ShowModal', mock_show)
         assert testobj.ask_for_tag('xxx', 'yyy') == ('', False)
         assert capsys.readouterr().out == (
                 "called TextDialog.__init__ with args ('yyy', 'xxx') {}\n"
                 "called TextDialog.ShowModal\n")
+        monkeypatch.setattr(mockwx.MockTextDialog, 'ShowModal', mock_show)
+        assert testobj.ask_for_tag('xxx', 'yyy') == ('', True)
+        assert capsys.readouterr().out == (
+                "called TextDialog.__init__ with args ('yyy', 'xxx') {}\n"
+                "called TextDialog.ShowModal\n"
+                "called TextDialog.GetValue\n")
 
     def test_add_tag_to_list(self, monkeypatch, capsys):
         """unittest for KeywordsDialog.add_tag_to_list
@@ -1756,13 +1773,13 @@ class TestKeywordsManager:
                 "called Dialog.SetIcon with args ('nt_icon',)\n"
                 f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
                 "called GridSizer.__init__ with args () {}\n"
-                'called vert sizer.Add with args <item> (1, 240, 5)\n'
+                'called vert sizer.Add with args MockGridSizer (1, 240, 5)\n'
                 f"called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n"
                 f"called Button.__init__ with args ({testobj},) {{'label': 'yyy'}}\n"
                 'called Button.GetId\n'
-                'called dialog.SetAffirmativeId with args (None,)\n'
-                'called hori sizer.Add with args <item> ()\n'
-                'called vert sizer.Add with args <item> (0, 384, 10)\n'
+                "called dialog.SetAffirmativeId with args ('id',)\n"
+                'called hori sizer.Add with args MockButton ()\n'
+                'called vert sizer.Add with args MockBoxSizer (0, 384, 10)\n'
                 'called dialog.SetSizer with args (vert sizer,)\n'
                 'called dialog.SetAutoLayout with args (True,)\n'
                 f'called vert sizer.Fit with args ({testobj},)\n'
@@ -1792,12 +1809,12 @@ class TestKeywordsManager:
         testobj.add_label('message', 'row', 'col')
         assert capsys.readouterr().out == (
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'message'}}\n"
-                "called GridSizer.Add with args <item>"
+                "called GridSizer.Add with args MockStaticText"
                 " (('row', 'col'),) {'flag': 2288, 'border': 5}\n")
         testobj.add_label('message', 'row', -1)
         assert capsys.readouterr().out == (
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'message'}}\n"
-                "called GridSizer.Add with args <item> (('row', 0), (1, 3), 240, 5)\n")
+                "called GridSizer.Add with args MockStaticText (('row', 0), (1, 3), 240, 5)\n")
 
     def test_add_combobox(self, monkeypatch, capsys):
         """unittest for KeywordsManager.add_combobox
@@ -1810,7 +1827,7 @@ class TestKeywordsManager:
         assert isinstance(result, testee.wx.ComboBox)
         assert capsys.readouterr().out == (
                 f'called ComboBox.__init__ with args ({testobj},) {{}}\n'
-                "called GridSizer.Add with args <item>"
+                "called GridSizer.Add with args MockComboBox"
                 " (('x', 'y'),) {'flag': 240, 'border': 5}\n")
 
     def test_add_lineinput(self, monkeypatch, capsys):
@@ -1824,7 +1841,7 @@ class TestKeywordsManager:
         assert isinstance(result, testee.wx.TextCtrl)
         assert capsys.readouterr().out == (
                 f"called TextCtrl.__init__ with args ({testobj},) {{'size': (180, -1)}}\n"
-                "called GridSizer.Add with args <item>"
+                "called GridSizer.Add with args MockTextCtrl"
                 " (('x', 'y'),) {'flag': 2288, 'border': 5}\n")
 
     def test_add_button(self, monkeypatch, capsys):
@@ -1840,7 +1857,7 @@ class TestKeywordsManager:
         assert capsys.readouterr().out == (
                 f"called Button.__init__ with args ({testobj},) {{'label': 'aaa'}}\n"
                 f'called Button.Bind with args ({testee.wx.EVT_BUTTON}, {callback}) {{}}\n'
-                "called GridSizer.Add with args <item>"
+                "called GridSizer.Add with args MockButton"
                 " (('x', 'y'),) {'flag': 240, 'border': 5}\n")
 
     def test_reset_combobox(self, monkeypatch, capsys):
@@ -1996,8 +2013,8 @@ class TestGetTextDialog:
         assert capsys.readouterr().out == (
                 "called BoxSizer.__init__ with args (4,)\n"
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'message'}}\n"
-                "called hori sizer.Add with args <item> (0, 240, 5)\n"
-                "called vert sizer.Add with args <item> (0, 240, 5)\n")
+                "called hori sizer.Add with args MockStaticText (0, 240, 5)\n"
+                "called vert sizer.Add with args MockBoxSizer (0, 240, 5)\n")
 
     def test_add_lineinput(self, monkeypatch, capsys):
         """unittest for KeywordsManager.add_lineinput
@@ -2012,8 +2029,8 @@ class TestGetTextDialog:
         assert capsys.readouterr().out == (
                 "called BoxSizer.__init__ with args (4,)\n"
                 f"called TextCtrl.__init__ with args ({testobj},) {{'value': 'xxx'}}\n"
-                "called hori sizer.Add with args <item> (1, 240, 5)\n"
-                "called vert sizer.Add with args <item> (1, 240, 5)\n")
+                "called hori sizer.Add with args MockTextCtrl (1, 240, 5)\n"
+                "called vert sizer.Add with args MockBoxSizer (1, 240, 5)\n")
 
     def test_add_checkbox_line(self, monkeypatch, capsys):
         """unittest for GetTextDialog.add_checkbox
@@ -2026,17 +2043,17 @@ class TestGetTextDialog:
         testobj.add_checkbox_line([])
         assert capsys.readouterr().out == (
                 f'called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n'
-                'called vert sizer.Add with args <item> (0, 240, 5)\n')
+                'called vert sizer.Add with args MockBoxSizer (0, 240, 5)\n')
         testobj.add_checkbox_line([('xxx', True), ('yyy', False)])
         assert capsys.readouterr().out == (
                 f'called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n'
                 f"called CheckBox.__init__ with args ({testobj},) {{'label': 'xxx'}}\n"
                 "called checkbox.SetValue with args (True,)\n"
-                'called hori sizer.Add with args <item> (0, 240, 5)\n'
+                'called hori sizer.Add with args MockCheckBox (0, 240, 5)\n'
                 f"called CheckBox.__init__ with args ({testobj},) {{'label': 'yyy'}}\n"
                 "called checkbox.SetValue with args (False,)\n"
-                'called hori sizer.Add with args <item> (0, 240, 5)\n'
-                'called vert sizer.Add with args <item> (0, 240, 5)\n')
+                'called hori sizer.Add with args MockCheckBox (0, 240, 5)\n'
+                'called vert sizer.Add with args MockBoxSizer (0, 240, 5)\n')
 
     def test_add_okcancel_buttonbox(self, monkeypatch, capsys):
         """unittest for GetTextDialog.add_ok_buttonbox
@@ -2049,7 +2066,8 @@ class TestGetTextDialog:
         testobj.add_okcancel_buttonbox()
         assert capsys.readouterr().out == (
                 'called dialog.CreateButtonSizer with args (20,)\n'
-                'called vert sizer.Add with args <item> (0, 496, 10)\n')
+                "called BoxSizer.__init__ with args ()\n"
+                'called vert sizer.Add with args MockBoxSizer (0, 496, 10)\n')
 
     def test_get_checkbox_value(self, monkeypatch, capsys):
         """unittest for GetTextDialog.get_checkbox_value
@@ -2128,8 +2146,8 @@ class TestGetItemDialog:
         assert capsys.readouterr().out == (
                 "called BoxSizer.__init__ with args (4,)\n"
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'message'}}\n"
-                "called hori sizer.Add with args <item> (0, 240, 5)\n"
-                "called vert sizer.Add with args <item> (0, 240, 5)\n")
+                "called hori sizer.Add with args MockStaticText (0, 240, 5)\n"
+                "called vert sizer.Add with args MockBoxSizer (0, 240, 5)\n")
 
     def test_add_combobox(self, monkeypatch, capsys):
         """unittest for KeywordsManager.add_combobox
@@ -2145,8 +2163,8 @@ class TestGetItemDialog:
                 "called BoxSizer.__init__ with args (4,)\n"
                 f"called ComboBox.__init__ with args ({testobj},) {{'choices': ['x', 'y']}}\n"
                 "called combobox.SetSelection with args ('z',)\n"
-                "called hori sizer.Add with args <item> (1, 240, 5)\n"
-                "called vert sizer.Add with args <item> (1, 240, 5)\n")
+                "called hori sizer.Add with args MockComboBox (1, 240, 5)\n"
+                "called vert sizer.Add with args MockBoxSizer (1, 240, 5)\n")
 
     def test_add_checkbox(self, monkeypatch, capsys):
         """unittest for GetItemDialog.add_checkbox
@@ -2161,8 +2179,8 @@ class TestGetItemDialog:
                 f'called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n'
                 f"called CheckBox.__init__ with args ({testobj},) {{'label': 'xxx'}}\n"
                 "called checkbox.SetValue with args (True,)\n"
-                "called hori sizer.Add with args <item> (0, 240, 5)\n"
-                "called vert sizer.Add with args <item> (0, 240, 5)\n")
+                "called hori sizer.Add with args MockCheckBox (0, 240, 5)\n"
+                "called vert sizer.Add with args MockBoxSizer (0, 240, 5)\n")
 
     def test_add_okcancel_buttonbox(self, monkeypatch, capsys):
         """unittest for GetItemDialog.add_okcancel_buttonbox
@@ -2175,7 +2193,8 @@ class TestGetItemDialog:
         testobj.add_okcancel_buttonbox()
         assert capsys.readouterr().out == (
                 'called dialog.CreateButtonSizer with args (20,)\n'
-                'called vert sizer.Add with args <item> (0, 496, 10)\n')
+                "called BoxSizer.__init__ with args ()\n"
+                'called vert sizer.Add with args MockBoxSizer (0, 496, 10)\n')
 
     def test_get_checkbox_value(self, monkeypatch, capsys):
         """unittest for GetItemDialog.get_checkbox_value
@@ -2225,11 +2244,11 @@ class TestGridDialog:
                 "called Dialog.__init__ with args () {'title': 'title', 'size': (-1, 320)}\n"
                 f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
                 "called GridSizer.__init__ with args () {'cols': 2, 'vgap': 2, 'hgap': 25}\n"
-                'called vert sizer.Add with args <item> (0, 8432, 5)\n'
+                'called vert sizer.Add with args MockGridSizer (0, 8432, 5)\n'
                 f"called Button.__init__ with args ({testobj},) {{'label': 'donetext'}}\n"
                 "called Button.GetId\n"
-                "called dialog.SetAffirmativeId with args (None,)\n"
-                'called vert sizer.Add with args <item> (0, 496, 5)\n'
+                "called dialog.SetAffirmativeId with args ('id',)\n"
+                'called vert sizer.Add with args MockButton (0, 496, 5)\n'
                 'called dialog.SetSizer with args (vert sizer,)\n'
                 'called dialog.SetAutoLayout with args (True,)\n'
                 f'called vert sizer.Fit with args ({testobj},)\n'
@@ -2258,7 +2277,7 @@ class TestGridDialog:
         testobj.add_label('row', 'col', 'message')
         assert capsys.readouterr().out == (
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'message'}}\n"
-                "called GridSizer.Add with args <item> ()\n")
+                "called GridSizer.Add with args MockStaticText ()\n")
 
     def test_send(self, monkeypatch, capsys):
         """unittest for OptionsDialog.send
@@ -2267,7 +2286,8 @@ class TestGridDialog:
         monkeypatch.setattr(testee.wx.Dialog, 'Destroy', mockwx.MockDialog.Destroy)
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.send()
-        assert capsys.readouterr().out == ("called dialog.Destroy\n")
+        assert capsys.readouterr().out == ("called Dialog.ShowModal\n"
+                                           "called dialog.Destroy\n")
 
 
 class TestTaskbarIcon:
@@ -2318,4 +2338,5 @@ class TestTaskbarIcon:
         assert capsys.readouterr().out == (
                 'called trayicon.__init__\n'
                 'called Menu.__init__ with args ()\n'
-                f"called menu.Append with args ({testobj.id_revive}, 'Revive NoteTree')\n")
+                # f"called menu.Append with args ({testobj.id_revive}, 'Revive NoteTree')\n")
+                "called menu.Append with args WindowIDRef\n")
