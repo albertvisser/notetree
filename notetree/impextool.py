@@ -138,6 +138,7 @@ def import_(nt_file, extfile, remove_unused):
     nt_data = collections.OrderedDict()
     nt_data[0] = settings
     all_keywords = set()
+    title, text, keywords = '', '', []
     with open(extfile) as _i:
         oldkey = ''
         in_text = False

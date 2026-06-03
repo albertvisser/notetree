@@ -192,8 +192,8 @@ class TestMainWindow:
         testobj.tree = mockqtw.MockTreeWidget()
         testobj.editor = mockqtw.MockEditorWidget()
         assert capsys.readouterr().out == ('called Splitter.__init__\n'
-                                           f'called Tree.__init__\n'
-                                           f'called Editor.__init__\n')
+                                           'called Tree.__init__\n'
+                                           'called Editor.__init__\n')
         testobj.finish_screen()
         assert capsys.readouterr().out == ('called Splitter.addWidget with arg MockTreeWidget\n'
                                            'called Splitter.addWidget with arg MockEditorWidget\n'
@@ -1587,7 +1587,7 @@ class TestKeywordsManager:
         monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
         testobj = self.setup_testobj(monkeypatch, capsys)
         text = mockqtw.MockLineEdit()
-        assert capsys.readouterr().out == f"called LineEdit.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called LineEdit.__init__ with args ()\n"
         testobj.reset_lineinput(text)
         assert capsys.readouterr().out == 'called LineEdit.clear\n'
 

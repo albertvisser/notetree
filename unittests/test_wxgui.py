@@ -147,7 +147,7 @@ class TestMainWindow:
         editor = testobj.setup_editor()
         # assert editor == testobj.editor
         assert capsys.readouterr().out == (
-                "called Editor.__init__ with args ('splitter',)\n"
+                "called Editor.__init__ with args ('splitter',) {}\n"
                 "called editor.Enable with args (False,)\n"
                 "called Font.__init__ with args ()\n"
                 "called font.SetFamily with args (76,)\n"
@@ -218,9 +218,9 @@ class TestMainWindow:
         testobj.tree = mockwx.MockTree()
         testobj.editor = mockwx.MockEditor()
         assert capsys.readouterr().out == (
-                f'called Splitter.__init__ with args () {{}}\n'
+                'called Splitter.__init__ with args () {}\n'
                 "called Tree.__init__ with args () {}\n"
-                "called Editor.__init__ with args ()\n")
+                "called Editor.__init__ with args () {}\n")
         testobj.finish_screen()
         assert capsys.readouterr().out == (
                 f"called splitter.SplitVertically with args ({testobj.tree}, {testobj.editor})\n"
@@ -678,7 +678,7 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.editor = mockwx.MockEditor()
         testobj.clear_editor()
-        assert capsys.readouterr().out == ('called Editor.__init__ with args ()\n'
+        assert capsys.readouterr().out == ('called Editor.__init__ with args () {}\n'
                                            'called editor.Clear\n'
                                            'called editor.Enable with args (False,)\n')
 
@@ -688,7 +688,7 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.editor = mockwx.MockEditor()
         testobj.open_editor()
-        assert capsys.readouterr().out == ('called Editor.__init__ with args ()\n'
+        assert capsys.readouterr().out == ('called Editor.__init__ with args () {}\n'
                                            'called editor.Enable with args (True,)\n')
 
     def test_set_screen(self, monkeypatch, capsys):
@@ -750,7 +750,7 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.editor = mockwx.MockEditor()
         assert testobj.editor_text_was_changed() == 'ismodified'
-        assert capsys.readouterr().out == ('called Editor.__init__ with args ()\n')
+        assert capsys.readouterr().out == ('called Editor.__init__ with args () {}\n')
 
     def test_copy_text_from_editor_to_activeitem(self, monkeypatch, capsys):
         """unittest for MainWindow.copy_text_from_editor_to_activeitem
@@ -764,7 +764,7 @@ class TestMainWindow:
         testobj.editor = mockwx.MockEditor()
         monkeypatch.setattr(testobj, 'set_item_text', mock_set_itemtext)
         testobj.copy_text_from_editor_to_activeitem()
-        assert capsys.readouterr().out == ('called Editor.__init__ with args ()\n'
+        assert capsys.readouterr().out == ('called Editor.__init__ with args () {}\n'
                                            'called editor.GetValue\n'
                                            'set text of `active item` to `fake editor value`\n')
 
@@ -780,7 +780,7 @@ class TestMainWindow:
         testobj.editor = mockwx.MockEditor()
         monkeypatch.setattr(testobj, 'get_item_text', mock_get_itemtext)
         testobj.copy_text_from_activeitem_to_editor()
-        assert capsys.readouterr().out == ('called Editor.__init__ with args ()\n'
+        assert capsys.readouterr().out == ('called Editor.__init__ with args () {}\n'
                                            'called editor.SetValue with arg `item text`\n')
 
     def test_select_item(self, monkeypatch, capsys):
@@ -886,7 +886,7 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.editor = mockwx.MockEditor()
         testobj.set_focus_to_editor()
-        assert capsys.readouterr().out == ('called Editor.__init__ with args ()\n'
+        assert capsys.readouterr().out == ('called Editor.__init__ with args () {}\n'
                                            'called editor.SetFocus\n')
 
     def test_add_item_to_tree(self, monkeypatch, capsys):
@@ -1086,7 +1086,7 @@ class TestMainWindow:
         testobj = setup_mainwindow(monkeypatch, capsys)
         testobj.editor = mockwx.MockEditor()
         testobj.set_editor_text('text')
-        assert capsys.readouterr().out == ('called Editor.__init__ with args ()\n'
+        assert capsys.readouterr().out == ('called Editor.__init__ with args () {}\n'
                                            'called editor.SetValue with arg `text`\n')
 
     def test_get_editor_text(self, monkeypatch, capsys):

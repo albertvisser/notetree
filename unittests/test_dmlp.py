@@ -55,8 +55,8 @@ def test_load_5(monkeypatch, tmp_path):
             'SashPosition': [55]}
     monkeypatch.setattr(dmlp.pck, 'load', lambda x: {0: conf, '01-01-0001 00:00:00': 'x'})
     assert dmlp.load_file(dest) == {0: {'Application': 'NoteTree', 'ScreenSize': (9, 6),
-                                    'Selection': (10,1), 'SashPosition': (55,)},
-                                    '01-01-0001 00:00:00': 'x'}  # is dit alleen text, geen keywords?
+                                        'Selection': (10, 1), 'SashPosition': (55,)},
+                                        '01-01-0001 00:00:00': 'x'}
 
 
 def test_save(monkeypatch, capsys, tmp_path):

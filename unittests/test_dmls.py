@@ -137,7 +137,7 @@ def test_load_4(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(MockCursor, '__iter__', mock_iter)
     # assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'Keywords': []},
     assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'ScreenSize': (9, 6),
-                                        'Selection': (10,1), 'SashPosition': (55,), 'Keywords': []},
+                                        'Selection': (10, 1), 'SashPosition': (55,), 'Keywords': []},
                                     '01-01-0001 00:00:00': ('title_1', 'text_1', [])}
     assert capsys.readouterr().out == ('execute SQL:'
                                        ' `SELECT noteid, created, title, text FROM notes`\n'
@@ -173,7 +173,7 @@ def test_load_5(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(MockCursor, '__iter__', mock_iter)
     # assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'Keywords': ['tag_title_1']},
     assert dmls.load_file(dest) == {0: {'Application': 'NoteTree', 'ScreenSize': (9, 6),
-                                        'Selection': (10,1), 'SashPosition': (55,),
+                                        'Selection': (10, 1), 'SashPosition': (55,),
                                         'Keywords': ['tag_title_1']},
                                     '01-01-0001 00:00:00': ('title_1', 'text_1', ['tag_title_1'])}
     assert capsys.readouterr().out == ('execute SQL:'
